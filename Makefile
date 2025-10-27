@@ -15,6 +15,14 @@ install: ## 安装依赖
 	@echo "📦 安装依赖..."
 	npm ci
 
+# 服务器管理
+ssh-dev: ## 连接到AWS开发服务器
+	@echo "🌐 连接到AWS开发服务器..."
+	ssh aws-in-dev
+
+ssh-prod: ## 连接到AWS生产服务器
+	@echo "🌐 连接到AWS生产服务器..."
+	ssh aws-prod
 dev: ## 启动开发服务器
 	@echo "🛠️ 启动开发服务器..."
 	npm run dev

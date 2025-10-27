@@ -79,56 +79,56 @@ jobs:
         command_timeout: 10m
         script: |
           # 创建应用目录
-          mkdir -p /root/inpayos-cashier-admin/logs
-          cd /root/inpayos-cashier-admin
+          mkdir -p /root/inpayos-admin/logs
+          cd /root/inpayos-admin
           
           # 登录到 GitHub Container Registry
           echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           
           # 停止并删除现有容器
-          docker stop inpayos-cashier-admin || true
-          docker rm inpayos-cashier-admin || true
+          docker stop inpayos-admin || true
+          docker rm inpayos-admin || true
           
           # 拉取最新镜像
-          docker pull ghcr.io/ayhero/inpayos-cashier-admin:latest
+          docker pull ghcr.io/ayhero/inpayos-admin:latest
           
           # 启动应用容器（nginx + Node.js 代理服务器）
           docker run -d \
-            --name inpayos-cashier-admin \
+            --name inpayos-admin \
             --restart unless-stopped \
-            -p 3201:80 \
-            -v /root/inpayos-cashier-admin/logs:/var/log/supervisor \
+            -p 3301:80 \
+            -v /root/inpayos-admin/logs:/var/log/supervisor \
             --add-host host.docker.internal:host-gateway \
-            ghcr.io/ayhero/inpayos-cashier-admin:latest
+            ghcr.io/ayhero/inpayos-admin:latest
           
           # 等待服务启动
           sleep 15
           
           # 检查容器状态
           echo "🔍 Checking container status:"
-          docker ps -a | grep inpayos-cashier-admin
+          docker ps -a | grep inpayos-admin
           
           # 检查应用是否启动成功
-          if docker ps | grep inpayos-cashier-admin | grep -q "Up"; then
-            echo "✅ InPayOS Cashier Admin frontend is running"
+          if docker ps | grep inpayos-admin | grep -q "Up"; then
+            echo "✅ InPayOS Admin frontend is running"
             
             # 检查端口监听
             echo "🔍 Checking port status:"
-            netstat -tlnp | grep ":3201" || echo "Port 3201 may still be binding..."
+            netstat -tlnp | grep ":3301" || echo "Port 3301 may still be binding..."
             
             # 尝试健康检查
             echo "🏥 Health check:"
-            if curl -f http://localhost:3201 2>/dev/null; then
-              echo "✅ Cashier Admin frontend health check passed"
+            if curl -f http://localhost:3301 2>/dev/null; then
+              echo "✅ Admin frontend health check passed"
             else
-              echo "⚠️ Cashier Admin frontend health check failed (may still be starting)"
+              echo "⚠️ Admin frontend health check failed (may still be starting)"
             fi
             
             # 显示最近日志
             echo "📝 Recent logs:"
-            docker logs --tail=20 inpayos-cashier-admin
+            docker logs --tail=20 inpayos-admin
           else
-            echo "❌ InPayOS Cashier Admin container failed to start"
-            docker logs inpayos-cashier-admin
+            echo "❌ InPayOS Admin container failed to start"
+            docker logs inpayos-admin
             exit 1
           fi
