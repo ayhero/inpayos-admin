@@ -60,9 +60,6 @@ export function CashierManagement() {
       if (statusFilter !== 'all') {
         params.status = statusFilter;
       }
-      if (regionFilter !== 'all') {
-        params.region = regionFilter;
-      }
       if (typeFilter !== 'all') {
         params.type = typeFilter;
       }
@@ -113,7 +110,8 @@ export function CashierManagement() {
   useEffect(() => {
     fetchCashiers();
     fetchStats();
-  }, [fetchCashiers, fetchStats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagination.page, statusFilter, regionFilter, typeFilter, searchTerm]);
 
   const handleSearch = () => {
     // fetchCashiers 会自动触发，因为 searchTerm 是依赖项
@@ -165,13 +163,16 @@ export function CashierManagement() {
   };
 
   const formatDateTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString('zh-CN');
+    if (!timestamp) return '-';
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return '-';
+    return date.toLocaleString('zh-CN');
   };
 
   // 查看Cashier详情
   const handleViewDetail = async (cashier: Cashier) => {
     try {
-      const response = await cashierService.getCashierDetail({ cashier_id: cashier.cashier_id });
+      const response = await cashierService.getCashierDetail({ cid: cashier.cid });
       if (response.success) {
         setSelectedCashier(response.data);
       } else {
@@ -348,8 +349,8 @@ export function CashierManagement() {
                 </TableRow>
               ) : (
                 (cashiers || []).map((cashier) => (
-                  <TableRow key={cashier.cashier_id}>
-                    <TableCell className="font-mono text-sm">{cashier.cashier_id}</TableCell>
+                  <TableRow key={cashier.cid}>
+                    <TableCell className="font-mono text-sm">{cashier.cid}</TableCell>
                     <TableCell className="font-medium">{cashier.holder_name}</TableCell>
                     <TableCell>{cashier.bank_name}</TableCell>
                     <TableCell className="font-mono text-sm">{cashier.card_number}</TableCell>
@@ -377,7 +378,7 @@ export function CashierManagement() {
                               <div className="grid grid-cols-2 gap-4 py-4 max-h-[500px] overflow-y-auto">
                                 <div>
                                   <label className="text-sm text-muted-foreground">Cashier ID</label>
-                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.cashier_id}</p>
+                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.cid}</p>
                                 </div>
                                 <div>
                                   <label className="text-sm text-muted-foreground">持卡人姓名</label>
@@ -438,7 +439,6 @@ export function CashierManagement() {
                                 <div>
                                   <label className="text-sm text-muted-foreground">更新时间</label>
                                   <p className="text-base font-semibold mt-1">{formatDateTime(selectedCashier.updated_at)}</p>
-                                  <p className="text-sm text-muted-foreground">{formatDateTime(selectedCashier.updatedAt)}</p>
                                 </div>
                               </div>
                             )}

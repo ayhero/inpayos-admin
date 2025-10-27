@@ -3,7 +3,7 @@ import { api, ApiResponse } from './api';
 // 商户信息接口
 export interface Merchant {
   id: number;
-  merchant_id: string;
+  mid: string; // 后端返回 mid 而不是 merchant_id
   name: string;
   type: string;
   email: string;
@@ -15,7 +15,7 @@ export interface Merchant {
 
 // 商户列表查询参数
 export interface MerchantListParams {
-  merchant_id?: string;
+  mid?: string; // 后端期望 mid 而不是 merchant_id
   name?: string;
   email?: string;
   phone?: string;
@@ -39,7 +39,7 @@ export interface PaginatedResponse<T> {
 
 // 商户详情参数
 export interface MerchantDetailParams {
-  merchant_id: string;
+  mid: string; // 后端期望 mid 而不是 merchant_id
 }
 
 // 商户统计数据
@@ -69,11 +69,19 @@ class MerchantService {
         };
       }
 
+      // 转换后端返回的数据格式: { records, total, current, size } -> { list, pagination, total }
       return {
         success: true,
         code: response.code,
         msg: response.msg || '成功',
-        data: response.data
+        data: {
+          list: response.data.records || [],
+          pagination: { 
+            page: response.data.current || params.page, 
+            size: response.data.size || params.size 
+          },
+          total: response.data.total || 0
+        }
       };
     } catch (error: any) {
       console.error('获取商户列表失败:', error);

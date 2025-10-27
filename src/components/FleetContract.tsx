@@ -5,10 +5,11 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Search, RefreshCw, FileText } from 'lucide-react';
 import { contractService, Contract, ContractListParams, ContractStats } from '../services/contractService';
 import { toast } from '../utils/toast';
+import { getStatusDisplayName, getStatusColor } from '../constants/status';
 
 export function FleetContract() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -48,7 +49,7 @@ export function FleetContract() {
       const params: ContractListParams = {
         page: pagination.page,
         size: pagination.size,
-        contract_type: 'fleet' // 只获取车队合约
+        stype: 'cashier_team' // 只获取车队合约
       };
 
       if (statusFilter !== 'all') {
@@ -57,8 +58,8 @@ export function FleetContract() {
       if (searchTerm) {
         if (searchTerm.startsWith('CT')) {
           params.contract_id = searchTerm;
-        } else {
-          params.merchant_name = searchTerm;
+        } else if (searchTerm.startsWith('T')) {
+          params.sid = searchTerm; // 车队ID
         }
       }
 
@@ -88,7 +89,8 @@ export function FleetContract() {
   useEffect(() => {
     fetchContracts();
     fetchStats();
-  }, [fetchContracts, fetchStats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagination.page, pagination.size, statusFilter, searchTerm]);
 
   const handleRefresh = () => {
     fetchContracts();
@@ -96,22 +98,41 @@ export function FleetContract() {
   };
 
   const getStatusBadge = (status: string) => {
-    const configs: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className: string }> = {
-      'active': { label: '生效中', variant: 'default', className: 'bg-green-500' },
-      'expired': { label: '已过期', variant: 'secondary', className: 'bg-gray-500' },
-      'pending': { label: '待生效', variant: 'secondary', className: 'bg-yellow-500' },
-      'terminated': { label: '已终止', variant: 'destructive', className: '' }
+    const displayName = getStatusDisplayName(status);
+    const color = getStatusColor(status);
+    
+    const getVariantAndClass = (color: string) => {
+      switch (color) {
+        case 'success':
+          return { variant: 'default' as const, className: 'bg-green-500' };
+        case 'error':
+          return { variant: 'destructive' as const, className: '' };
+        case 'warning':
+          return { variant: 'secondary' as const, className: 'bg-yellow-500' };
+        case 'info':
+          return { variant: 'secondary' as const, className: 'bg-blue-500' };
+        default:
+          return { variant: 'secondary' as const, className: 'bg-gray-500' };
+      }
     };
-    const config = configs[status?.toLowerCase()] || { label: status || '-', variant: 'outline' as const, className: '' };
-    return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
+    
+    const { variant, className } = getVariantAndClass(color);
+    return <Badge variant={variant} className={className}>{displayName}</Badge>;
   };
 
   const formatDateTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('zh-CN');
-  };
-
-  const formatCurrency = (amount: number, currency: string) => {
-    return `${currency} ${amount.toLocaleString()}`;
+    if (!timestamp) return '-';
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return '-';
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
   };
 
   const handleViewDetail = async (contract: Contract) => {
@@ -192,7 +213,7 @@ export function FleetContract() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  placeholder="搜索合约ID或团队名称..."
+                  placeholder="搜索合约ID或车队ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -219,18 +240,17 @@ export function FleetContract() {
         <CardContent className="pt-6">
           {loading ? (
             <div className="text-center py-12">加载中...</div>
-          ) : contracts.length === 0 ? (
+          ) : !contracts || contracts.length === 0 ? (
             <div className="text-center py-12 text-gray-500">暂无数据</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>合约ID</TableHead>
-                  <TableHead>合约编号</TableHead>
-                  <TableHead>车队名称</TableHead>
-                  <TableHead>金额</TableHead>
-                  <TableHead>签订日期</TableHead>
-                  <TableHead>有效期</TableHead>
+                  <TableHead>车队ID</TableHead>
+                  <TableHead>类型</TableHead>
+                  <TableHead>生效时间</TableHead>
+                  <TableHead>过期时间</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
@@ -239,13 +259,10 @@ export function FleetContract() {
                 {contracts.map((contract) => (
                   <TableRow key={contract.id}>
                     <TableCell className="font-mono text-xs">{contract.contract_id}</TableCell>
-                    <TableCell>{contract.contract_number}</TableCell>
-                    <TableCell>{contract.merchant_name}</TableCell>
-                    <TableCell>{formatCurrency(contract.amount, contract.currency)}</TableCell>
-                    <TableCell>{formatDateTime(contract.sign_date)}</TableCell>
-                    <TableCell>
-                      {formatDateTime(contract.start_date)} - {formatDateTime(contract.end_date)}
-                    </TableCell>
+                    <TableCell className="font-mono text-xs">{contract.sid}</TableCell>
+                    <TableCell>{contract.stype === 'cashier_team' ? '车队' : '商户'}</TableCell>
+                    <TableCell>{formatDateTime(contract.start_at)}</TableCell>
+                    <TableCell>{contract.expired_at ? formatDateTime(contract.expired_at) : '永久'}</TableCell>
                     <TableCell>{getStatusBadge(contract.status)}</TableCell>
                     <TableCell>
                       <Button variant="ghost" size="sm" onClick={() => handleViewDetail(contract)}>
@@ -260,7 +277,7 @@ export function FleetContract() {
         </CardContent>
       </Card>
 
-      {!loading && contracts.length > 0 && (
+      {!loading && contracts && contracts.length > 0 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-500">
             共 {pagination.total} 条记录，第 {pagination.page} / {pagination.totalPages} 页
@@ -287,53 +304,181 @@ export function FleetContract() {
       )}
 
       <Dialog open={!!selectedContract} onOpenChange={() => setSelectedContract(null)}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-[45vw] w-[45vw] min-w-[600px]" style={{width: '45vw', maxWidth: '45vw'}}>
           <DialogHeader>
             <DialogTitle>车队合约详情</DialogTitle>
-            <DialogDescription>查看车队合约的详细信息</DialogDescription>
           </DialogHeader>
           {selectedContract && (
-            <div className="grid gap-6">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-6 max-h-[500px] overflow-y-auto">
+              {/* 基本信息 */}
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">合约ID</label>
                   <p className="mt-1 font-mono text-sm">{selectedContract.contract_id}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">合约编号</label>
-                  <p className="mt-1">{selectedContract.contract_number}</p>
+                  <label className="text-sm font-medium text-gray-500">原合约ID</label>
+                  <p className="mt-1 font-mono text-sm">{selectedContract.ori_contract_id || '-'}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">合约标题</label>
-                  <p className="mt-1">{selectedContract.title}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">车队名称</label>
-                  <p className="mt-1">{selectedContract.merchant_name}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">合约金额</label>
-                  <p className="mt-1 text-lg font-semibold">
-                    {formatCurrency(selectedContract.amount, selectedContract.currency)}
-                  </p>
+                  <label className="text-sm font-medium text-gray-500">车队ID</label>
+                  <p className="mt-1 font-mono text-sm">{selectedContract.sid}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">状态</label>
                   <p className="mt-1">{getStatusBadge(selectedContract.status)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">签订日期</label>
-                  <p className="mt-1">{formatDateTime(selectedContract.sign_date)}</p>
+                  <label className="text-sm font-medium text-gray-500">生效时间</label>
+                  <p className="mt-1 text-sm">{formatDateTime(selectedContract.start_at)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">生效日期</label>
-                  <p className="mt-1">{formatDateTime(selectedContract.start_date)}</p>
+                  <label className="text-sm font-medium text-gray-500">过期时间</label>
+                  <p className="mt-1 text-sm">{selectedContract.expired_at ? formatDateTime(selectedContract.expired_at) : '永久有效'}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">到期日期</label>
-                  <p className="mt-1">{formatDateTime(selectedContract.end_date)}</p>
+                  <label className="text-sm font-medium text-gray-500">创建时间</label>
+                  <p className="mt-1 text-sm">{formatDateTime(selectedContract.created_at)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">更新时间</label>
+                  <p className="mt-1 text-sm">{formatDateTime(selectedContract.updated_at)}</p>
                 </div>
               </div>
+              
+              {/* 代收配置 */}
+              {selectedContract.payin && (
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">代收配置</h3>
+                    {getStatusBadge(selectedContract.payin.status)}
+                  </div>
+                  
+                  {/* 交易配置列表 */}
+                  {selectedContract.payin.configs && selectedContract.payin.configs.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">交易配置</h4>
+                      <div className="space-y-2">
+                        {selectedContract.payin.configs.map((config: any, index: number) => (
+                          <div key={index} className="bg-gray-50 p-3 rounded text-sm space-y-1">
+                            {config.pkg && <div><span className="text-gray-600">业务包:</span> <span className="font-medium">{config.pkg}</span></div>}
+                            {config.trx_method && <div><span className="text-gray-600">支付方式:</span> <span className="font-medium">{config.trx_method}</span></div>}
+                            {config.trx_ccy && <div><span className="text-gray-600">币种:</span> <span className="font-medium">{config.trx_ccy}</span></div>}
+                            {config.country && <div><span className="text-gray-600">国家:</span> <span className="font-medium">{config.country}</span></div>}
+                            {(config.min_amount || config.max_amount) && (
+                              <div>
+                                <span className="text-gray-600">金额范围:</span>{' '}
+                                <span className="font-medium">
+                                  {config.min_amount ? `${config.min_amount}` : '不限'} ~ {config.max_amount ? `${config.max_amount}` : '不限'}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 结算配置列表 */}
+                  {selectedContract.payin.settle && selectedContract.payin.settle.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">结算配置</h4>
+                      <div className="space-y-2">
+                        {selectedContract.payin.settle.map((settle: any, index: number) => (
+                          <div key={index} className="bg-blue-50 p-3 rounded text-sm space-y-1">
+                            <div><span className="text-gray-600">结算类型:</span> <span className="font-medium">{settle.type}</span></div>
+                            {settle.pkg && <div><span className="text-gray-600">业务包:</span> <span className="font-medium">{settle.pkg}</span></div>}
+                            {settle.trx_method && <div><span className="text-gray-600">支付方式:</span> <span className="font-medium">{settle.trx_method}</span></div>}
+                            {settle.trx_ccy && <div><span className="text-gray-600">币种:</span> <span className="font-medium">{settle.trx_ccy}</span></div>}
+                            {settle.country && <div><span className="text-gray-600">国家:</span> <span className="font-medium">{settle.country}</span></div>}
+                            {(settle.min_amount || settle.max_amount) && (
+                              <div>
+                                <span className="text-gray-600">金额范围:</span>{' '}
+                                <span className="font-medium">
+                                  {settle.min_amount ? `${settle.min_amount}` : '不限'} ~ {settle.max_amount ? `${settle.max_amount}` : '不限'}
+                                </span>
+                              </div>
+                            )}
+                            {settle.strategies && settle.strategies.length > 0 && (
+                              <div>
+                                <span className="text-gray-600">策略:</span>{' '}
+                                <span className="font-medium">{settle.strategies.join(', ')}</span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* 代付配置 */}
+              {selectedContract.payout && (
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">代付配置</h3>
+                    {getStatusBadge(selectedContract.payout.status)}
+                  </div>
+                  
+                  {/* 交易配置列表 */}
+                  {selectedContract.payout.configs && selectedContract.payout.configs.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">交易配置</h4>
+                      <div className="space-y-2">
+                        {selectedContract.payout.configs.map((config: any, index: number) => (
+                          <div key={index} className="bg-gray-50 p-3 rounded text-sm space-y-1">
+                            {config.pkg && <div><span className="text-gray-600">业务包:</span> <span className="font-medium">{config.pkg}</span></div>}
+                            {config.trx_method && <div><span className="text-gray-600">支付方式:</span> <span className="font-medium">{config.trx_method}</span></div>}
+                            {config.trx_ccy && <div><span className="text-gray-600">币种:</span> <span className="font-medium">{config.trx_ccy}</span></div>}
+                            {config.country && <div><span className="text-gray-600">国家:</span> <span className="font-medium">{config.country}</span></div>}
+                            {(config.min_amount || config.max_amount) && (
+                              <div>
+                                <span className="text-gray-600">金额范围:</span>{' '}
+                                <span className="font-medium">
+                                  {config.min_amount ? `${config.min_amount}` : '不限'} ~ {config.max_amount ? `${config.max_amount}` : '不限'}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 结算配置列表 */}
+                  {selectedContract.payout.settle && selectedContract.payout.settle.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">结算配置</h4>
+                      <div className="space-y-2">
+                        {selectedContract.payout.settle.map((settle: any, index: number) => (
+                          <div key={index} className="bg-blue-50 p-3 rounded text-sm space-y-1">
+                            <div><span className="text-gray-600">结算类型:</span> <span className="font-medium">{settle.type}</span></div>
+                            {settle.pkg && <div><span className="text-gray-600">业务包:</span> <span className="font-medium">{settle.pkg}</span></div>}
+                            {settle.trx_method && <div><span className="text-gray-600">支付方式:</span> <span className="font-medium">{settle.trx_method}</span></div>}
+                            {settle.trx_ccy && <div><span className="text-gray-600">币种:</span> <span className="font-medium">{settle.trx_ccy}</span></div>}
+                            {settle.country && <div><span className="text-gray-600">国家:</span> <span className="font-medium">{settle.country}</span></div>}
+                            {(settle.min_amount || settle.max_amount) && (
+                              <div>
+                                <span className="text-gray-600">金额范围:</span>{' '}
+                                <span className="font-medium">
+                                  {settle.min_amount ? `${settle.min_amount}` : '不限'} ~ {settle.max_amount ? `${settle.max_amount}` : '不限'}
+                                </span>
+                              </div>
+                            )}
+                            {settle.strategies && settle.strategies.length > 0 && (
+                              <div>
+                                <span className="text-gray-600">策略:</span>{' '}
+                                <span className="font-medium">{settle.strategies.join(', ')}</span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

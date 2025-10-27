@@ -16,7 +16,7 @@ export class UserService {
   // 获取用户信息
   static async getUserInfo(): Promise<ApiResponse<UserInfo>> {
     try {
-      const response = await api.post<UserInfo>('/info', {});
+      const response = await api.get<UserInfo>('/info');
       return response;
     } catch (error) {
       console.error('获取用户信息失败:', error);

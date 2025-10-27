@@ -76,7 +76,7 @@ interface BackendTransactionInfo {
   actual_amount?: string;
   usd_amount?: string;
   link?: string;
-  createdAt: number; // 毫秒时间戳
+  created_at: number; // 毫秒时间戳
   updated_at: number; // 毫秒时间戳
   completed_at?: number; // 毫秒时间戳
   confirmed_at?: number; // 毫秒时间戳

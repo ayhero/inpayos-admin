@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Search, RefreshCw, Building2 } from 'lucide-react';
 import { merchantService, Merchant, MerchantListParams, MerchantStats } from '../services/merchantService';
 import { toast } from '../utils/toast';
@@ -13,7 +13,6 @@ import { toast } from '../utils/toast';
 export function MerchantManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
   const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(null);
   const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [stats, setStats] = useState<MerchantStats>({
@@ -56,9 +55,6 @@ export function MerchantManagement() {
       if (statusFilter !== 'all') {
         params.status = statusFilter;
       }
-      if (typeFilter !== 'all') {
-        params.type = typeFilter;
-      }
       if (searchTerm) {
         if (searchTerm.includes('@')) {
           params.email = searchTerm;
@@ -90,12 +86,13 @@ export function MerchantManagement() {
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.size, statusFilter, typeFilter, searchTerm]);
+  }, [pagination.page, pagination.size, statusFilter, searchTerm]);
 
   useEffect(() => {
     fetchMerchants();
     fetchStats();
-  }, [fetchMerchants, fetchStats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagination.page, pagination.size, statusFilter, searchTerm]);
 
   const handleRefresh = () => {
     fetchMerchants();
@@ -114,12 +111,15 @@ export function MerchantManagement() {
   };
 
   const formatDateTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString('zh-CN');
+    if (!timestamp) return '-';
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return '-';
+    return date.toLocaleString('zh-CN');
   };
 
   const handleViewDetail = async (merchant: Merchant) => {
     try {
-      const response = await merchantService.getMerchantDetail({ merchant_id: merchant.merchant_id });
+      const response = await merchantService.getMerchantDetail({ mid: merchant.mid });
       if (response.success) {
         setSelectedMerchant(response.data);
       } else {
@@ -215,16 +215,6 @@ export function MerchantManagement() {
                 <SelectItem value="suspended">暂停</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-full md:w-40">
-                <SelectValue placeholder="类型" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部类型</SelectItem>
-                <SelectItem value="individual">个人</SelectItem>
-                <SelectItem value="enterprise">企业</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </CardContent>
       </Card>
@@ -234,7 +224,7 @@ export function MerchantManagement() {
         <CardContent className="pt-6">
           {loading ? (
             <div className="text-center py-12">加载中...</div>
-          ) : merchants.length === 0 ? (
+          ) : !merchants || merchants.length === 0 ? (
             <div className="text-center py-12 text-gray-500">暂无数据</div>
           ) : (
             <Table>
@@ -244,7 +234,6 @@ export function MerchantManagement() {
                   <TableHead>商户名称</TableHead>
                   <TableHead>邮箱</TableHead>
                   <TableHead>电话</TableHead>
-                  <TableHead>类型</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>创建时间</TableHead>
                   <TableHead>操作</TableHead>
@@ -253,11 +242,10 @@ export function MerchantManagement() {
               <TableBody>
                 {merchants.map((merchant) => (
                   <TableRow key={merchant.id}>
-                    <TableCell className="font-mono text-xs">{merchant.merchant_id}</TableCell>
+                    <TableCell className="font-mono text-xs">{merchant.mid}</TableCell>
                     <TableCell>{merchant.name}</TableCell>
                     <TableCell>{merchant.email}</TableCell>
                     <TableCell>{merchant.phone}</TableCell>
-                    <TableCell>{merchant.type}</TableCell>
                     <TableCell>{getStatusBadge(merchant.status)}</TableCell>
                     <TableCell>{formatDateTime(merchant.created_at)}</TableCell>
                     <TableCell>
@@ -274,7 +262,7 @@ export function MerchantManagement() {
       </Card>
 
       {/* 分页 */}
-      {!loading && merchants.length > 0 && (
+      {!loading && merchants && merchants.length > 0 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-500">
             共 {pagination.total} 条记录，第 {pagination.page} / {pagination.totalPages} 页
@@ -302,48 +290,39 @@ export function MerchantManagement() {
 
       {/* 商户详情对话框 */}
       <Dialog open={!!selectedMerchant} onOpenChange={() => setSelectedMerchant(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[45vw] w-[45vw] min-w-[600px]" style={{width: '45vw', maxWidth: '45vw'}}>
           <DialogHeader>
             <DialogTitle>商户详情</DialogTitle>
-            <DialogDescription>
-              查看商户的详细信息
-            </DialogDescription>
           </DialogHeader>
           {selectedMerchant && (
-            <div className="grid gap-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">商户ID</label>
-                  <p className="mt-1 font-mono text-sm">{selectedMerchant.merchant_id}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">商户名称</label>
-                  <p className="mt-1">{selectedMerchant.name}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">邮箱</label>
-                  <p className="mt-1">{selectedMerchant.email}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">电话</label>
-                  <p className="mt-1">{selectedMerchant.phone}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">类型</label>
-                  <p className="mt-1">{selectedMerchant.type}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">状态</label>
-                  <p className="mt-1">{getStatusBadge(selectedMerchant.status)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">创建时间</label>
-                  <p className="mt-1">{formatDateTime(selectedMerchant.created_at)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">更新时间</label>
-                  <p className="mt-1">{formatDateTime(selectedMerchant.updated_at)}</p>
-                </div>
+            <div className="grid grid-cols-2 gap-4 py-4 max-h-[500px] overflow-y-auto">
+              <div>
+                <label className="text-sm text-muted-foreground">商户ID</label>
+                <p className="text-base font-semibold font-mono mt-1">{selectedMerchant.mid}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">商户名称</label>
+                <p className="text-base font-semibold mt-1">{selectedMerchant.name}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">邮箱</label>
+                <p className="text-base font-semibold mt-1">{selectedMerchant.email}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">电话</label>
+                <p className="text-base font-semibold mt-1">{selectedMerchant.phone}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">状态</label>
+                <p className="mt-1">{getStatusBadge(selectedMerchant.status)}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">创建时间</label>
+                <p className="text-base font-semibold mt-1">{formatDateTime(selectedMerchant.created_at)}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">更新时间</label>
+                <p className="text-base font-semibold mt-1">{formatDateTime(selectedMerchant.updated_at)}</p>
               </div>
             </div>
           )}

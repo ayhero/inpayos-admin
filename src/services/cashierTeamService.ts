@@ -69,11 +69,19 @@ class CashierTeamService {
         };
       }
 
+      // 转换后端返回的数据格式: { records, total, current, size } -> { list, pagination, total }
       return {
         success: true,
         code: response.code,
         msg: response.msg || '成功',
-        data: response.data
+        data: {
+          list: response.data.records || [],
+          pagination: { 
+            page: response.data.current || params.page, 
+            size: response.data.size || params.size 
+          },
+          total: response.data.total || 0
+        }
       };
     } catch (error: any) {
       console.error('获取 CashierTeam 列表失败:', error);

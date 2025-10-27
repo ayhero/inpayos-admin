@@ -1,93 +1,109 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { Search, Filter, Download } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Search, RefreshCw } from 'lucide-react';
 import { getStatusDisplayName, getStatusColor } from '../constants/status';
-
-const transactions = [
-  {
-    id: 'TXN001',
-    orderId: 'ORD2024001',
-    amount: 1250.50,
-    currency: 'CNY',
-    status: 'success',
-    customer: '张三',
-    customerEmail: 'zhangsan@example.com',
-    paymentMethod: '支付宝',
-    createTime: '2024-01-15 14:30:25',
-    completeTime: '2024-01-15 14:30:28',
-    description: '商品购买'
-  },
-  {
-    id: 'TXN002',
-    orderId: 'ORD2024002',
-    amount: 890.00,
-    currency: 'CNY',
-    status: 'pending',
-    customer: '李四',
-    customerEmail: 'lisi@example.com',
-    paymentMethod: '微信支付',
-    createTime: '2024-01-15 15:45:12',
-    completeTime: null,
-    description: '服务费用'
-  },
-  {
-    id: 'TXN003',
-    orderId: 'ORD2024003',
-    amount: 2100.75,
-    currency: 'CNY',
-    status: 'success',
-    customer: '王五',
-    customerEmail: 'wangwu@example.com',
-    paymentMethod: '银行卡',
-    createTime: '2024-01-15 16:20:45',
-    completeTime: '2024-01-15 16:20:50',
-    description: '充值'
-  },
-  {
-    id: 'TXN004',
-    orderId: 'ORD2024004',
-    amount: 675.25,
-    currency: 'CNY',
-    status: 'failed',
-    customer: '赵六',
-    customerEmail: 'zhaoliu@example.com',
-    paymentMethod: '支付宝',
-    createTime: '2024-01-15 17:10:30',
-    completeTime: null,
-    description: '商品购买'
-  },
-  {
-    id: 'TXN005',
-    orderId: 'ORD2024005',
-    amount: 1500.00,
-    currency: 'CNY',
-    status: 'success',
-    customer: '孙七',
-    customerEmail: 'sunqi@example.com',
-    paymentMethod: '微信支付',
-    createTime: '2024-01-15 18:25:15',
-    completeTime: '2024-01-15 18:25:18',
-    description: '会员充值'
-  }
-];
+import { transactionService, TransactionInfo, TransactionType, TransactionQueryParams } from '../services/transactionService';
+import { toast } from '../utils/toast';
 
 export function Transactions() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
-
-  const filteredTransactions = transactions.filter(transaction => {
-    const matchesSearch = transaction.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.customer.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || transaction.status === statusFilter;
-    return matchesSearch && matchesStatus;
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [trxTypeFilter, setTrxTypeFilter] = useState<TransactionType>(TransactionType.PAYOUT);
+  const [selectedTransaction, setSelectedTransaction] = useState<TransactionInfo | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [transactions, setTransactions] = useState<TransactionInfo[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    size: 20,
+    total: 0,
+    totalPages: 0
   });
+
+  // 获取交易列表
+  const fetchTransactions = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params: TransactionQueryParams = {
+        trxType: trxTypeFilter,
+        page: pagination.page,
+        pageSize: pagination.size,
+      };
+
+      if (statusFilter !== 'all') {
+        params.status = statusFilter as any;
+      }
+      if (searchTerm) {
+        params.trxID = searchTerm;
+      }
+
+      const response = await transactionService.getTransactions(params);
+      if (response.success) {
+        setTransactions(response.data.items);
+        setPagination(prev => ({
+          ...prev,
+          total: response.data.total,
+          totalPages: response.data.totalPages
+        }));
+      } else {
+        setTransactions([]);
+        setPagination(prev => ({ ...prev, total: 0, totalPages: 0 }));
+        setError(response.msg || '获取数据失败');
+      }
+    } catch (error: any) {
+      console.error('获取交易列表失败:', error);
+      setTransactions([]);
+      setPagination(prev => ({ ...prev, total: 0, totalPages: 0 }));
+      setError(error.message || '网络错误，请稍后重试');
+    } finally {
+      setLoading(false);
+    }
+  }, [pagination.page, pagination.size, statusFilter, trxTypeFilter, searchTerm]);
+
+  useEffect(() => {
+    fetchTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagination.page, pagination.size, statusFilter, trxTypeFilter, searchTerm]);
+
+  const handleRefresh = () => {
+    fetchTransactions();
+  };
+
+  const handleSearch = () => {
+    setPagination(prev => ({ ...prev, page: 1 }));
+    fetchTransactions();
+  };
+
+  // 查看交易详情
+  const handleViewDetail = async (transaction: TransactionInfo) => {
+    setDialogOpen(true);
+    setDetailLoading(true);
+    setSelectedTransaction(null);
+    try {
+      const response = await transactionService.getTransactionDetail(transaction.trxID, transaction.trxType);
+      if (response.success) {
+        setSelectedTransaction(response.data);
+      } else {
+        toast.error('获取交易详情失败', response.msg);
+        setDialogOpen(false);
+      }
+    } catch (error) {
+      console.error('获取交易详情失败:', error);
+      toast.error('获取交易详情失败', '网络错误，请稍后重试');
+      setDialogOpen(false);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     const displayName = getStatusDisplayName(status);
@@ -114,12 +130,41 @@ export function Transactions() {
     return <Badge variant={variant} className={className}>{displayName}</Badge>;
   };
 
+  const formatDateTime = (timestamp?: string) => {
+    if (!timestamp) return '-';
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return '-';
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+  };
+
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1>交易记录</h1>
-        <p className="text-muted-foreground">查看和管理所有交易记录</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold">交易记录</h1>
+          <p className="text-muted-foreground">查看和管理所有交易记录</p>
+        </div>
+        <Button onClick={handleRefresh} className="gap-2" variant="outline">
+          <RefreshCw className="h-4 w-4" />
+          刷新
+        </Button>
       </div>
+
+      {error && (
+        <Card className="border-red-500">
+          <CardContent className="pt-6">
+            <p className="text-red-500">错误: {error}</p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* 筛选和搜索 */}
       <Card>
@@ -132,31 +177,37 @@ export function Transactions() {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="搜索订单号或客户名..."
+                  placeholder="搜索交易ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
             </div>
+            <Select value={trxTypeFilter} onValueChange={(value) => setTrxTypeFilter(value as TransactionType)}>
+              <SelectTrigger className="w-full md:w-40">
+                <SelectValue placeholder="交易类型" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={TransactionType.PAYIN}>代收</SelectItem>
+                <SelectItem value={TransactionType.PAYOUT}>代付</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48">
+              <SelectTrigger className="w-full md:w-40">
                 <SelectValue placeholder="交易状态" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">所有状态</SelectItem>
                 <SelectItem value="success">成功</SelectItem>
-                <SelectItem value="pending">处理中</SelectItem>
+                <SelectItem value="pending">待处理</SelectItem>
+                <SelectItem value="processing">处理中</SelectItem>
                 <SelectItem value="failed">失败</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" />
-              高级筛选
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              导出
+            <Button onClick={handleSearch} className="gap-2">
+              <Search className="h-4 w-4" />
+              搜索
             </Button>
           </div>
         </CardContent>
@@ -166,101 +217,190 @@ export function Transactions() {
       <Card>
         <CardHeader>
           <CardTitle>交易列表</CardTitle>
-          <CardDescription>共找到 {filteredTransactions.length} 条交易记录</CardDescription>
+          <CardDescription>
+            {loading ? '加载中...' : `共找到 ${pagination.total} 条交易记录`}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>交易ID</TableHead>
-                <TableHead>订单号</TableHead>
-                <TableHead>客户</TableHead>
-                <TableHead>金额</TableHead>
-                <TableHead>支付方式</TableHead>
-                <TableHead>状态</TableHead>
-                <TableHead>创建时间</TableHead>
-                <TableHead>操作</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTransactions.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell className="font-mono text-sm">{transaction.id}</TableCell>
-                  <TableCell className="font-mono text-sm">{transaction.orderId}</TableCell>
-                  <TableCell>{transaction.customer}</TableCell>
-                  <TableCell>¥{transaction.amount.toFixed(2)}</TableCell>
-                  <TableCell>{transaction.paymentMethod}</TableCell>
-                  <TableCell>{getStatusBadge(transaction.status)}</TableCell>
-                  <TableCell>{transaction.createTime}</TableCell>
-                  <TableCell>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setSelectedTransaction(transaction)}
-                        >
-                          详情
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>交易详情</DialogTitle>
-                          <DialogDescription>
-                            交易ID: {selectedTransaction?.id}
-                          </DialogDescription>
-                        </DialogHeader>
-                        {selectedTransaction && (
-                          <div className="grid grid-cols-2 gap-4 py-4">
-                            <div>
-                              <label className="font-medium">订单号</label>
-                              <p className="text-sm text-muted-foreground">{selectedTransaction.orderId}</p>
-                            </div>
-                            <div>
-                              <label className="font-medium">交易金额</label>
-                              <p className="text-sm text-muted-foreground">¥{selectedTransaction.amount.toFixed(2)}</p>
-                            </div>
-                            <div>
-                              <label className="font-medium">客户姓名</label>
-                              <p className="text-sm text-muted-foreground">{selectedTransaction.customer}</p>
-                            </div>
-                            <div>
-                              <label className="font-medium">客户邮箱</label>
-                              <p className="text-sm text-muted-foreground">{selectedTransaction.customerEmail}</p>
-                            </div>
-                            <div>
-                              <label className="font-medium">支付方式</label>
-                              <p className="text-sm text-muted-foreground">{selectedTransaction.paymentMethod}</p>
-                            </div>
-                            <div>
-                              <label className="font-medium">交易状态</label>
-                              <p className="text-sm text-muted-foreground">{getStatusBadge(selectedTransaction.status)}</p>
-                            </div>
-                            <div>
-                              <label className="font-medium">创建时间</label>
-                              <p className="text-sm text-muted-foreground">{selectedTransaction.createTime}</p>
-                            </div>
-                            <div>
-                              <label className="font-medium">完成时间</label>
-                              <p className="text-sm text-muted-foreground">
-                                {selectedTransaction.completeTime || '未完成'}
-                              </p>
-                            </div>
-                            <div className="col-span-2">
-                              <label className="font-medium">交易描述</label>
-                              <p className="text-sm text-muted-foreground">{selectedTransaction.description}</p>
-                            </div>
-                          </div>
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                  </TableCell>
+          {loading ? (
+            <div className="text-center py-12">加载中...</div>
+          ) : !transactions || transactions.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">暂无数据</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>交易ID</TableHead>
+                  <TableHead>请求ID</TableHead>
+                  <TableHead>金额</TableHead>
+                  <TableHead>状态</TableHead>
+                  <TableHead>创建时间</TableHead>
+                  <TableHead>操作</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {transactions.map((transaction) => (
+                  <TableRow key={transaction.trxID}>
+                    <TableCell className="font-mono text-sm">{transaction.trxID}</TableCell>
+                    <TableCell className="font-mono text-sm">{transaction.reqID}</TableCell>
+                    <TableCell>
+                      {transaction.amount} {transaction.ccy}
+                      {transaction.usdAmount && transaction.usdAmount !== transaction.amount && (
+                        <span className="text-muted-foreground text-sm ml-1">(${transaction.usdAmount})</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="hidden">{transaction.ccy}</TableCell>
+                    <TableCell>{getStatusBadge(transaction.status)}</TableCell>
+                    <TableCell>{formatDateTime(transaction.createdAt)}</TableCell>
+                    <TableCell>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleViewDetail(transaction)}
+                      >
+                        详情
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
+
+      {/* 交易详情对话框 */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-[45vw] w-[45vw] min-w-[600px]" style={{width: '45vw', maxWidth: '45vw'}}>
+          <DialogHeader>
+            <DialogTitle>交易详情</DialogTitle>
+          </DialogHeader>
+          {detailLoading ? (
+            <div className="text-center py-12">加载中...</div>
+          ) : selectedTransaction ? (
+            <div className="grid grid-cols-2 gap-4 py-4 max-h-[500px] overflow-y-auto">
+              <div>
+                <label className="text-sm text-muted-foreground">交易ID</label>
+                <p className="text-base font-semibold font-mono mt-1">{selectedTransaction.trxID}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">请求ID</label>
+                <p className="text-base font-semibold font-mono mt-1">{selectedTransaction.reqID}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">交易类型</label>
+                <p className="text-base font-semibold mt-1">{selectedTransaction.trxType}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">交易方式</label>
+                <p className="text-base font-semibold mt-1">{selectedTransaction.trxMethod || '-'}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">金额</label>
+                <p className="text-base font-semibold mt-1">
+                  {selectedTransaction.amount} {selectedTransaction.ccy}
+                  {selectedTransaction.usdAmount && selectedTransaction.usdAmount !== selectedTransaction.amount && (
+                    <span className="text-muted-foreground text-sm ml-2">(${selectedTransaction.usdAmount})</span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">状态</label>
+                <p className="mt-1">{getStatusBadge(selectedTransaction.status)}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">渠道状态</label>
+                <p className="text-base font-semibold mt-1">{selectedTransaction.channelStatus ?? '-'}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">渠道代码</label>
+                <p className="text-base font-semibold mt-1">{selectedTransaction.channelCode || '-'}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">渠道交易ID</label>
+                <p className="text-base font-semibold font-mono mt-1">{selectedTransaction.channelTrxID || '-'}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">流水号</label>
+                <p className="text-base font-semibold font-mono mt-1">{selectedTransaction.flowNo || '-'}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">国家</label>
+                <p className="text-base font-semibold mt-1">{selectedTransaction.country || '-'}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">手续费</label>
+                <p className="text-base font-semibold mt-1">{selectedTransaction.feeAmount ? `${selectedTransaction.feeAmount} ${selectedTransaction.feeCcy}` : '-'}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">响应代码</label>
+                <p className="text-base font-semibold mt-1">{selectedTransaction.resCode || '-'}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">创建时间</label>
+                <p className="text-base font-semibold mt-1">{formatDateTime(selectedTransaction.createdAt)}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">更新时间</label>
+                <p className="text-base font-semibold mt-1">{formatDateTime(selectedTransaction.updatedAt)}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">完成时间</label>
+                <p className="text-base font-semibold mt-1">{formatDateTime(selectedTransaction.completedAt)}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">结算状态</label>
+                <p className="text-base font-semibold mt-1">{selectedTransaction.settleStatus ?? '-'}</p>
+              </div>
+              {selectedTransaction.resMsg && (
+                <div className="col-span-2">
+                  <label className="text-sm text-muted-foreground">响应消息</label>
+                  <p className="text-base font-semibold mt-1">{selectedTransaction.resMsg}</p>
+                </div>
+              )}
+              {selectedTransaction.reason && (
+                <div className="col-span-2">
+                  <label className="text-sm text-muted-foreground">失败原因</label>
+                  <p className="text-base font-semibold mt-1">{selectedTransaction.reason}</p>
+                </div>
+              )}
+              {selectedTransaction.remark && (
+                <div className="col-span-2">
+                  <label className="text-sm text-muted-foreground">备注</label>
+                  <p className="text-base font-semibold mt-1">{selectedTransaction.remark}</p>
+                </div>
+              )}
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      {/* 分页 */}
+      {!loading && transactions && transactions.length > 0 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-500">
+            共 {pagination.total} 条记录，第 {pagination.page} / {pagination.totalPages} 页
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
+              disabled={pagination.page === 1}
+            >
+              上一页
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPagination(prev => ({ ...prev, page: Math.min(prev.totalPages, prev.page + 1) }))}
+              disabled={pagination.page >= pagination.totalPages}
+            >
+              下一页
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
