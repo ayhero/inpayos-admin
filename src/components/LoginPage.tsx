@@ -42,7 +42,7 @@ export function LoginPage({ onLogin, onSwitchToRegister, onSwitchToResetPassword
       
       if (response.code === "0000" && response.success) {
         login(response.data.user, response.data.token, response.data.refreshToken);
-        toast.success('登录成功', '欢迎回到InPayOSCashier后台');
+        toast.success('登录成功', '欢迎回到InPayOS管理后台');
         onLogin(response.data.user, response.data.token, response.data.refreshToken);
       } else {
         setErrorMessage(response.msg);
@@ -72,7 +72,7 @@ export function LoginPage({ onLogin, onSwitchToRegister, onSwitchToResetPassword
       
       if (response.code === "0000" && response.success) {
         login(response.data.user, response.data.token, response.data.refreshToken);
-        toast.success('登录成功', '欢迎回到InPayOSCashier后台');
+        toast.success('登录成功', '欢迎回到InPayOS管理后台');
         onLogin(response.data.user, response.data.token, response.data.refreshToken);
       } else {
         setErrorMessage(response.msg);
@@ -92,7 +92,7 @@ export function LoginPage({ onLogin, onSwitchToRegister, onSwitchToResetPassword
       <div className="w-full max-w-md">
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">车队登录</CardTitle>
+            <CardTitle className="text-2xl">管理员登录</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={(value) => {

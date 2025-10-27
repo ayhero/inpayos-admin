@@ -45,7 +45,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # 暴露端口
-EXPOSE 80 3202
+EXPOSE 80 3302
 
 # 启动 supervisor 管理多个服务
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

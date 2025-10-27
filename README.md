@@ -1,13 +1,14 @@
-# InPayOS Cashier后台管理系统
+# InPayOS Admin后台管理系统
 
-一个现代化的支付系统Cashier后台管理界面，基于 React + TypeScript + Vite 构建。
+一个现代化的支付系统超级管理员后台管理界面，基于 React + TypeScript + Vite 构建。
 
 ## 功能特性
 
 - 🎯 **仪表板** - 交易数据可视化展示
 - 💰 **交易管理** - 代收、代付、充值记录管理
 - 📊 **数据分析** - 实时统计和趋势分析
-- ⚙️ **商户配置** - 支付方式和参数配置
+- 👥 **商户管理** - 管理所有商户和Cashier团队
+- ⚙️ **系统配置** - 支付方式和参数配置
 - 🔐 **身份认证** - JWT Token 认证机制
 - 🌐 **国际化** - 支持中文界面
 - 📱 **响应式设计** - 适配各种屏幕尺寸
@@ -26,23 +27,23 @@
 
 | 服务 | 端口 | 描述 |
 |------|------|------|
-| 前端开发服务器 | 3201 | Vite开发服务器 |
-| API代理服务器 | 3202 | 转发前端API请求到后端 |
-| 后端CashierAdmin API | 6084 | 出纳员管理后台API服务 |
+| 前端开发服务器 | 3301 | Vite开发服务器 |
+| API代理服务器 | 3302 | 转发前端API请求到后端 |
+| 后端Admin API | 6082 | 超级管理员后台API服务 |
 
 ### 启动服务
 
 ```bash
-# 启动API代理服务器 (端口3202)
+# 启动API代理服务器 (端口3302)
 npm run proxy
 
-# 启动前端开发服务器 (端口3201)  
+# 启动前端开发服务器 (端口3301)  
 npm run dev
 ```
 
 访问地址：
-- 前端界面: http://localhost:3201
-- API代理: http://localhost:3202
+- 前端界面: http://localhost:3301
+- API代理: http://localhost:3302
 
 ## 项目结构
 
@@ -85,7 +86,7 @@ npm install
 npm run dev
 ```
 
-访问 http://localhost:3201
+访问 http://localhost:3301
 
 ### 构建部署
 
@@ -111,8 +112,8 @@ npm run lint
 主要环境变量：
 
 ```bash
-VITE_APP_TITLE=InPayOS Cashier后台
-VITE_API_BASE_URL=http://localhost:3202
+VITE_APP_TITLE=InPayOS Admin后台
+VITE_API_BASE_URL=http://localhost:3302
 VITE_APP_ENV=development
 VITE_ENABLE_DEBUG=true
 VITE_LOG_LEVEL=debug

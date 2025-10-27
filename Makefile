@@ -1,10 +1,10 @@
-# InPayOS Cashier Admin Frontend Makefile
+# InPayOS Admin Frontend Makefile
 
 .PHONY: help install dev build preview clean lint format sync-config-dev sync-config-prod check-github-auth switch-github-auth
 
 # 默认目标
 help: ## 显示帮助信息
-	@echo "InPayOS Cashier Admin Frontend 开发工具"
+	@echo "InPayOS Admin Frontend 开发工具"
 	@echo ""
 	@echo "使用方法: make [target]"
 	@echo ""

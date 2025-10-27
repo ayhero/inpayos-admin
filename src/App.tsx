@@ -16,7 +16,9 @@ import {
   Building2,
   Menu,
   KeyRound,
-  Users
+  Users,
+  Store,
+  FileText
 } from 'lucide-react';
 
 import { AuthContainer } from './components/AuthContainer';
@@ -31,6 +33,10 @@ import { AccountBalance } from './components/AccountBalance';
 import { ChangePasswordPage } from './components/ChangePasswordPage';
 import { ToastContainer } from './components/Toast';
 import { CashierManagement } from './components/CashierManagement';
+import { MerchantManagement } from './components/MerchantManagement';
+import { CashierTeamManagement } from './components/CashierTeamManagement';
+import { MerchantContract } from './components/MerchantContract';
+import { FleetContract } from './components/FleetContract';
 
 export default function App() {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -92,12 +98,35 @@ export default function App() {
       component: PayoutRecords
     },
     {
+      id: 'merchant',
+      label: 'Merchant',
+      icon: Store,
+      component: MerchantManagement
+    },
+    {
+      id: 'merchant-contract',
+      label: '合约',
+      icon: FileText,
+      component: MerchantContract
+    },
+    {
+      id: 'cashier-team',
+      label: 'CashierTeam',
+      icon: Users,
+      component: CashierTeamManagement
+    },
+    {
       id: 'cashier',
       label: 'Cashier',
       icon: Users,
       component: CashierManagement
     },
-
+    {
+      id: 'fleet-contract',
+      label: '合约',
+      icon: FileText,
+      component: FleetContract
+    },
     // {
     //   id: 'refund',
     //   label: '退款',
@@ -128,7 +157,6 @@ export default function App() {
       icon: Settings,
       component: Config
     },
-
   ];
 
   const ActiveComponent = menuItems.find(item => item.id === activeMenu)?.component || Dashboard;
@@ -152,7 +180,7 @@ export default function App() {
               )}
             </div>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto py-4">
             {/* 首页 */}
             <div className="px-3 mb-4">
@@ -177,7 +205,57 @@ export default function App() {
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(1, 4).map((item) => (
+                {menuItems.slice(1, 3).map((item) => (
+                  <div
+                    key={item.id}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
+                      activeMenu === item.id 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'hover:bg-muted'
+                    }`}
+                    onClick={() => setActiveMenu(item.id)}
+                  >
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    {sidebarOpen && <span>{item.label}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 商户 */}
+            <div className="px-3 mb-4">
+              {sidebarOpen && (
+                <h4 className="text-xs font-semibold text-muted-foreground px-3 py-2 uppercase tracking-wider">
+                  商户
+                </h4>
+              )}
+              <div className="space-y-1">
+                {menuItems.slice(3, 5).map((item) => (
+                  <div
+                    key={item.id}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
+                      activeMenu === item.id 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'hover:bg-muted'
+                    }`}
+                    onClick={() => setActiveMenu(item.id)}
+                  >
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    {sidebarOpen && <span>{item.label}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 车队 */}
+            <div className="px-3 mb-4">
+              {sidebarOpen && (
+                <h4 className="text-xs font-semibold text-muted-foreground px-3 py-2 uppercase tracking-wider">
+                  车队
+                </h4>
+              )}
+              <div className="space-y-1">
+                {menuItems.slice(5, 8).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
@@ -202,7 +280,7 @@ export default function App() {
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(5, 7).map((item) => (
+                {menuItems.slice(8, 11).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${

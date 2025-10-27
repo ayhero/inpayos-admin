@@ -45,9 +45,9 @@ router.all('/api/(.*)', async (ctx) => {
     const { method, header, query } = ctx.request;
     const body = ctx.request.body;
     
-    // /api/auth -> /auth -> http://TARGET_HOST:6084/auth
+    // /api/auth -> /auth -> http://TARGET_HOST:6082/auth
     const targetPath = '/' + ctx.params[0];
-    const targetUrl = `http://${TARGET_HOST}:6084${targetPath}`;
+    const targetUrl = `http://${TARGET_HOST}:6082${targetPath}`;
     
     console.log(`[PROXY] ${method} ${ctx.url} -> ${targetUrl}`);
     
@@ -84,9 +84,9 @@ app.use(router.routes());
 app.use(router.allowedMethods());
 
 // 启动服务器
-app.listen(3202, () => {
-  console.log(`🚀 API Proxy Server running on http://localhost:3202`);
-  console.log(`🎯 Forwarding /api/* to http://${TARGET_HOST}:6084/*`);
+app.listen(3302, () => {
+  console.log(`🚀 API Proxy Server running on http://localhost:3302`);
+  console.log(`🎯 Forwarding /api/* to http://${TARGET_HOST}:6082/*`);
 });
 
 process.on('SIGTERM', () => process.exit(0));
