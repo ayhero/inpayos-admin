@@ -19,7 +19,6 @@ install: ## 安装依赖
 ssh-dev: ## 连接到AWS开发服务器
 	@echo "🌐 连接到AWS开发服务器..."
 	ssh aws-in-dev
-
 ssh-prod: ## 连接到AWS生产服务器
 	@echo "🌐 连接到AWS生产服务器..."
 	ssh aws-prod
