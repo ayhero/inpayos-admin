@@ -9,6 +9,14 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 获取今天日期
+  const getTodayDate = () => {
+    const today = new Date();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${month}-${day}`;
+  };
+
   // 获取Dashboard数据
   const fetchDashboardData = async () => {
     try {
@@ -100,8 +108,10 @@ export function Dashboard() {
         <h1>首页</h1>
       </div>
 
-      {/* 关键指标卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* 今日统计 */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">今日统计 ({getTodayDate()})</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">今日代收</CardTitle>
@@ -152,6 +162,7 @@ export function Dashboard() {
             </p>
           </CardContent>
         </Card>
+        </div>
       </div>
 
       {/* 交易趋势图表 - 单独一行 */}

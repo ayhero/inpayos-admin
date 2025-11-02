@@ -15,8 +15,6 @@ export function CashierManagement() {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [regionFilter, setRegionFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
   const [selectedCashier, setSelectedCashier] = useState<Cashier | null>(null);
   const [cashiers, setCashiers] = useState<Cashier[]>([]);
   const [stats, setStats] = useState<CashierStats>({
@@ -60,9 +58,6 @@ export function CashierManagement() {
       if (statusFilter !== 'all') {
         params.status = statusFilter;
       }
-      if (typeFilter !== 'all') {
-        params.type = typeFilter;
-      }
       if (searchTerm) {
         // 支持按持卡人姓名、邮箱、电话、卡号搜索
         if (searchTerm.includes('@')) {
@@ -105,13 +100,13 @@ export function CashierManagement() {
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, statusFilter, regionFilter, typeFilter, searchTerm]);
+  }, [pagination.page, statusFilter, searchTerm]);
 
   useEffect(() => {
     fetchCashiers();
     fetchStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination.page, statusFilter, regionFilter, typeFilter, searchTerm]);
+  }, [pagination.page, statusFilter, searchTerm]);
 
   const handleSearch = () => {
     // fetchCashiers 会自动触发，因为 searchTerm 是依赖项
@@ -253,9 +248,9 @@ export function CashierManagement() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 md:flex-initial md:w-64">
+            <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="搜索姓名/邮箱/电话..."
                   value={searchTerm}
@@ -266,48 +261,20 @@ export function CashierManagement() {
               </div>
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-32">
-                <SelectValue placeholder="状态" />
+              <SelectTrigger className="w-full md:w-40">
+                <SelectValue placeholder="在线状态" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">所有状态</SelectItem>
+                <SelectItem value="all">在线状态</SelectItem>
                 <SelectItem value="active">激活</SelectItem>
                 <SelectItem value="inactive">未激活</SelectItem>
                 <SelectItem value="suspended">暂停</SelectItem>
                 <SelectItem value="pending">待审核</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-full md:w-32">
-                <SelectValue placeholder="类型" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">所有类型</SelectItem>
-                <SelectItem value="admin">管理员</SelectItem>
-                <SelectItem value="cashier">出纳员</SelectItem>
-                <SelectItem value="operator">操作员</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={regionFilter} onValueChange={setRegionFilter}>
-              <SelectTrigger className="w-full md:w-32">
-                <SelectValue placeholder="地区" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">所有地区</SelectItem>
-                <SelectItem value="north">北部</SelectItem>
-                <SelectItem value="south">南部</SelectItem>
-                <SelectItem value="east">东部</SelectItem>
-                <SelectItem value="west">西部</SelectItem>
-                <SelectItem value="central">中部</SelectItem>
-              </SelectContent>
-            </Select>
             <Button onClick={handleSearch} className="gap-2">
               <Search className="h-4 w-4" />
               搜索
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" />
-              高级筛选
             </Button>
             <Button variant="outline" className="gap-2">
               <Download className="h-4 w-4" />

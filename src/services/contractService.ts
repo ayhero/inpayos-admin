@@ -155,9 +155,13 @@ class ContractService {
   }
 
   // 获取合约统计数据
-  async getContractStats(): Promise<ApiResponse<ContractStats>> {
+  async getContractStats(sid?: string, stype?: string): Promise<ApiResponse<ContractStats>> {
     try {
-      const response = await api.post<ContractStats>('/contract/stats', {});
+      const params: any = {};
+      if (sid) params.sid = sid;
+      if (stype) params.stype = stype;
+      
+      const response = await api.post<ContractStats>('/contract/stats', params);
       return {
         success: response.code === '0000',
         code: response.code,

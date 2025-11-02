@@ -18,18 +18,18 @@ import {
   KeyRound,
   Users,
   Store,
-  FileText
+  FileText,
+  Clock
 } from 'lucide-react';
 
 import { AuthContainer } from './components/AuthContainer';
 import { Dashboard } from './components/Dashboard';
 import { PayinRecords } from './components/Payin';
 import { PayoutRecords } from './components/Payout';
-import { Config } from './components/Config';
+// import { Config } from './components/Config';
 // import { RefundRecords } from './components/RefundRecords';
 // import { RechargeRecords } from './components/RechargeRecords';
 import { SettlementRecords } from './components/SettlementRecords';
-import { AccountBalance } from './components/AccountBalance';
 import { ChangePasswordPage } from './components/ChangePasswordPage';
 import { ToastContainer } from './components/Toast';
 import { CashierManagement } from './components/CashierManagement';
@@ -37,6 +37,11 @@ import { MerchantManagement } from './components/MerchantManagement';
 import { CashierTeamManagement } from './components/CashierTeamManagement';
 import { MerchantContract } from './components/MerchantContract';
 import { FleetContract } from './components/FleetContract';
+import { MerchantAccount } from './components/MerchantAccount';
+import { FleetAccount } from './components/FleetAccount';
+import { MerchantSettlement } from './components/MerchantSettlement';
+import { FleetSettlement } from './components/FleetSettlement';
+import TaskManagement from './components/TaskManagement';
 
 export default function App() {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -110,6 +115,18 @@ export default function App() {
       component: MerchantContract
     },
     {
+      id: 'merchant-account',
+      label: '账户',
+      icon: Wallet,
+      component: MerchantAccount
+    },
+    {
+      id: 'merchant-settlement',
+      label: '结算',
+      icon: Calculator,
+      component: MerchantSettlement
+    },
+    {
       id: 'cashier-team',
       label: 'CashierTeam',
       icon: Users,
@@ -126,6 +143,18 @@ export default function App() {
       label: '合约',
       icon: FileText,
       component: FleetContract
+    },
+    {
+      id: 'fleet-account',
+      label: '账户',
+      icon: Wallet,
+      component: FleetAccount
+    },
+    {
+      id: 'fleet-settlement',
+      label: '结算',
+      icon: Calculator,
+      component: FleetSettlement
     },
     // {
     //   id: 'refund',
@@ -146,16 +175,10 @@ export default function App() {
       component: SettlementRecords
     },
     {
-      id: 'account',
-      label: '账户',
-      icon: Wallet,
-      component: AccountBalance
-    },
-    {
-      id: 'config',
-      label: '配置',
-      icon: Settings,
-      component: Config
+      id: 'task-management',
+      label: '定时任务',
+      icon: Clock,
+      component: TaskManagement
     },
   ];
 
@@ -230,7 +253,7 @@ export default function App() {
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(3, 5).map((item) => (
+                {menuItems.slice(3, 7).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
@@ -255,7 +278,7 @@ export default function App() {
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(5, 8).map((item) => (
+                {menuItems.slice(7, 12).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
@@ -273,14 +296,39 @@ export default function App() {
             </div>
 
             {/* 账户与设置 */}
-            <div className="px-3">
+            <div className="px-3 mb-4">
               {sidebarOpen && (
                 <h4 className="text-xs font-semibold text-muted-foreground px-3 py-2 uppercase tracking-wider">
                   账户与设置
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(8, 11).map((item) => (
+                {menuItems.slice(12, 13).map((item) => (
+                  <div
+                    key={item.id}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
+                      activeMenu === item.id 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'hover:bg-muted'
+                    }`}
+                    onClick={() => setActiveMenu(item.id)}
+                  >
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    {sidebarOpen && <span>{item.label}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 系统管理 */}
+            <div className="px-3">
+              {sidebarOpen && (
+                <h4 className="text-xs font-semibold text-muted-foreground px-3 py-2 uppercase tracking-wider">
+                  系统管理
+                </h4>
+              )}
+              <div className="space-y-1">
+                {menuItems.slice(13, 14).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
@@ -340,10 +388,6 @@ export default function App() {
                   <DropdownMenuItem onClick={() => setShowChangePasswordDialog(true)}>
                     <KeyRound className="mr-2 h-4 w-4" />
                     修改密码
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setActiveMenu('config')}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    设置
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>

@@ -33,7 +33,7 @@ export function MerchantContract() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const response = await contractService.getContractStats();
+      const response = await contractService.getContractStats(undefined, 'merchant');
       if (response.success) {
         setStats(response.data);
       }

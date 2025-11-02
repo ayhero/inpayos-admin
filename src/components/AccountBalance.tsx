@@ -123,7 +123,8 @@ export function AccountBalance() {
   // 筛选条件
   const [currencyFilter, setCurrencyFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
-  const [dateFilter, setDateFilter] = useState('');
+  const [dateStartFilter, setDateStartFilter] = useState('');
+  const [dateEndFilter, setDateEndFilter] = useState('');
 
   // 获取账户数据
   const fetchAccountData = async () => {
@@ -169,12 +170,14 @@ export function AccountBalance() {
       if (typeFilter !== 'all') {
         requestParams.direction = typeFilter === 'credit' ? 'in' : 'out';
       }
-      if (dateFilter) {
-        // 将日期转换为时间戳范围
-        const startDate = new Date(dateFilter);
-        const endDate = new Date(dateFilter);
-        endDate.setDate(endDate.getDate() + 1);
+      if (dateStartFilter) {
+        const startDate = new Date(dateStartFilter);
+        startDate.setHours(0, 0, 0, 0);
         requestParams.created_at_start = startDate.getTime();
+      }
+      if (dateEndFilter) {
+        const endDate = new Date(dateEndFilter);
+        endDate.setHours(23, 59, 59, 999);
         requestParams.created_at_end = endDate.getTime();
       }
 
@@ -212,7 +215,7 @@ export function AccountBalance() {
   // 筛选条件变化时重新获取流水数据
   useEffect(() => {
     fetchFlowData();
-  }, [currencyFilter, typeFilter, dateFilter, flowPage]);
+  }, [currencyFilter, typeFilter, dateStartFilter, dateEndFilter, flowPage]);
 
   const handleWithdraw = () => {
     console.log('提现:', { amount: withdrawAmount, currency: selectedCurrency, method: withdrawMethod });
@@ -541,20 +544,30 @@ export function AccountBalance() {
                   <SelectItem value="debit">出账</SelectItem>
                 </SelectContent>
               </Select>
-              <Input
-                type="date"
-                className="w-[180px]"
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                placeholder="选择日期"
-              />
+              <div className="flex items-center gap-1 bg-gray-50 px-3 py-1 rounded-md border">
+                <Label className="text-sm text-gray-600 whitespace-nowrap">从</Label>
+                <Input
+                  type="date"
+                  className="w-[140px] border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
+                  value={dateStartFilter}
+                  onChange={(e) => setDateStartFilter(e.target.value)}
+                />
+                <Label className="text-sm text-gray-600">至</Label>
+                <Input
+                  type="date"
+                  className="w-[140px] border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
+                  value={dateEndFilter}
+                  onChange={(e) => setDateEndFilter(e.target.value)}
+                />
+              </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
                   setCurrencyFilter('all');
                   setTypeFilter('all');
-                  setDateFilter('');
+                  setDateStartFilter('');
+                  setDateEndFilter('');
                   setFlowPage(1);
                 }}
                 className="gap-1"

@@ -33,7 +33,7 @@ export function FleetContract() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const response = await contractService.getContractStats();
+      const response = await contractService.getContractStats(undefined, 'cashier_team');
       if (response.success) {
         setStats(response.data);
       }
