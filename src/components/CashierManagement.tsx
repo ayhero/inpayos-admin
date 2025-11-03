@@ -59,12 +59,22 @@ export function CashierManagement() {
         params.status = statusFilter;
       }
       if (searchTerm) {
-        // 支持按持卡人姓名、邮箱、电话、卡号搜索
+        // 智能搜索检测
         if (searchTerm.includes('@')) {
-          params.holder_email = searchTerm;
-        } else if (/^\d+$/.test(searchTerm)) {
+          // 包含 @ 符号：UPI ID 搜索
+          params.upi = searchTerm;
+        } else if (/^\d{10,}$/.test(searchTerm)) {
+          // 10位以上数字：手机号或卡号搜索
           params.holder_phone = searchTerm;
+        } else if (searchTerm.startsWith('C') || searchTerm.startsWith('U')) {
+          // C 开头：account_id，U 开头：user_id
+          if (searchTerm.startsWith('C')) {
+            params.account_id = searchTerm;
+          } else {
+            params.user_id = searchTerm;
+          }
         } else {
+          // 其他：按持卡人姓名搜索
           params.holder_name = searchTerm;
         }
       }
@@ -127,6 +137,7 @@ export function CashierManagement() {
         case '0':
           return { label: '未激活', variant: 'secondary' as const, className: 'bg-gray-500' };
         case 'suspended':
+        case 'frozen':
         case '2':
           return { label: '暂停', variant: 'destructive' as const, className: '' };
         case 'pending':
@@ -141,19 +152,24 @@ export function CashierManagement() {
     return <Badge variant={variant} className={className}>{label}</Badge>;
   };
 
-  const getTypeBadge = (type: string) => {
-    const getTypeConfig = (type: string) => {
-      switch (type?.toLowerCase()) {
-        case 'private':
-          return { label: '私户', variant: 'default' as const, className: 'bg-blue-500' };
-        case 'corporate':
-          return { label: '公户', variant: 'secondary' as const, className: 'bg-purple-500' };
+  // 在线状态徽章
+  const getOnlineStatusBadge = (onlineStatus: string) => {
+    const getOnlineConfig = (status: string) => {
+      switch (status?.toLowerCase()) {
+        case 'online':
+          return { label: '在线', variant: 'default' as const, className: 'bg-green-500' };
+        case 'offline':
+          return { label: '离线', variant: 'secondary' as const, className: 'bg-gray-500' };
+        case 'busy':
+          return { label: '忙碌', variant: 'secondary' as const, className: 'bg-yellow-500' };
+        case 'locked':
+          return { label: '锁定', variant: 'destructive' as const, className: '' };
         default:
-          return { label: type || '-', variant: 'outline' as const, className: '' };
+          return { label: status || '-', variant: 'outline' as const, className: '' };
       }
     };
     
-    const { label, variant, className } = getTypeConfig(type);
+    const { label, variant, className} = getOnlineConfig(onlineStatus);
     return <Badge variant={variant} className={className}>{label}</Badge>;
   };
 
@@ -167,7 +183,7 @@ export function CashierManagement() {
   // 查看Cashier详情
   const handleViewDetail = async (cashier: Cashier) => {
     try {
-      const response = await cashierService.getCashierDetail({ cid: cashier.cid });
+      const response = await cashierService.getCashierDetail({ account_id: cashier.account_id });
       if (response.success) {
         setSelectedCashier(response.data);
       } else {
@@ -290,13 +306,15 @@ export function CashierManagement() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Cashier ID</TableHead>
+                <TableHead>Account ID</TableHead>
+                <TableHead>User ID</TableHead>
+                <TableHead>APP账号</TableHead>
                 <TableHead>持卡人</TableHead>
                 <TableHead>银行</TableHead>
-                <TableHead>卡号/UPI</TableHead>
+                <TableHead>UPI/卡号</TableHead>
                 <TableHead>电话</TableHead>
-                <TableHead>类型</TableHead>
-                <TableHead>状态</TableHead>
+                <TableHead>账户状态</TableHead>
+                <TableHead>在线状态</TableHead>
                 <TableHead>创建时间</TableHead>
                 <TableHead>操作</TableHead>
               </TableRow>
@@ -304,26 +322,28 @@ export function CashierManagement() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-4">
+                  <TableCell colSpan={11} className="text-center py-4">
                     加载中...
                   </TableCell>
                 </TableRow>
               ) : !cashiers || cashiers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-4 text-muted-foreground">
+                  <TableCell colSpan={11} className="text-center py-4 text-muted-foreground">
                     暂无数据
                   </TableCell>
                 </TableRow>
               ) : (
                 (cashiers || []).map((cashier) => (
-                  <TableRow key={cashier.cid}>
-                    <TableCell className="font-mono text-sm">{cashier.cid}</TableCell>
+                  <TableRow key={cashier.account_id}>
+                    <TableCell className="font-mono text-sm">{cashier.account_id}</TableCell>
+                    <TableCell className="font-mono text-sm">{cashier.user_id}</TableCell>
+                    <TableCell className="font-mono text-sm">{cashier.app_account || '-'}</TableCell>
                     <TableCell className="font-medium">{cashier.holder_name}</TableCell>
-                    <TableCell>{cashier.bank_name}</TableCell>
-                    <TableCell className="font-mono text-sm">{cashier.card_number}</TableCell>
+                    <TableCell>{cashier.bank_name || '-'}</TableCell>
+                    <TableCell className="font-mono text-sm">{cashier.upi || cashier.card_number || '-'}</TableCell>
                     <TableCell>{cashier.holder_phone}</TableCell>
-                    <TableCell>{getTypeBadge(cashier.type)}</TableCell>
                     <TableCell>{getStatusBadge(cashier.status)}</TableCell>
+                    <TableCell>{getOnlineStatusBadge(cashier.online_status)}</TableCell>
                     <TableCell>{formatDateTime(cashier.created_at)}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
@@ -344,24 +364,44 @@ export function CashierManagement() {
                             {selectedCashier && (
                               <div className="grid grid-cols-2 gap-4 py-4 max-h-[500px] overflow-y-auto">
                                 <div>
-                                  <label className="text-sm text-muted-foreground">Cashier ID</label>
-                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.cid}</p>
+                                  <label className="text-sm text-muted-foreground">Account ID</label>
+                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.account_id}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">User ID</label>
+                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.user_id}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">APP类型</label>
+                                  <p className="text-base font-semibold mt-1">{selectedCashier.app_type}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">APP账号</label>
+                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.app_account || '-'}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">UPI ID</label>
+                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.upi || '-'}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">UPI提供商</label>
+                                  <p className="text-base font-semibold mt-1">{selectedCashier.provider || '-'}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">银行代码</label>
+                                  <p className="text-base font-semibold mt-1">{selectedCashier.bank_code || '-'}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">银行名称</label>
+                                  <p className="text-base font-semibold mt-1">{selectedCashier.bank_name || '-'}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">银行卡号</label>
+                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.card_number || '-'}</p>
                                 </div>
                                 <div>
                                   <label className="text-sm text-muted-foreground">持卡人姓名</label>
                                   <p className="text-base font-semibold mt-1">{selectedCashier.holder_name}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">银行代码</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.bank_code}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">银行名称</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.bank_name}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">卡号/UPI</label>
-                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.card_number}</p>
                                 </div>
                                 <div>
                                   <label className="text-sm text-muted-foreground">持卡人电话</label>
@@ -369,31 +409,23 @@ export function CashierManagement() {
                                 </div>
                                 <div>
                                   <label className="text-sm text-muted-foreground">持卡人邮箱</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.holder_email}</p>
+                                  <p className="text-base font-semibold mt-1">{selectedCashier.holder_email || '-'}</p>
                                 </div>
                                 <div>
-                                  <label className="text-sm text-muted-foreground">类型</label>
-                                  <p className="mt-1">{getTypeBadge(selectedCashier.type)}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">国家</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.country || '-'}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">省份</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.province || '-'}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">城市</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.city || '-'}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">币种</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.ccy}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">状态</label>
+                                  <label className="text-sm text-muted-foreground">账户状态</label>
                                   <p className="mt-1">{getStatusBadge(selectedCashier.status)}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">在线状态</label>
+                                  <p className="mt-1">{getOnlineStatusBadge(selectedCashier.online_status)}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">代收状态</label>
+                                  <p className="text-base font-semibold mt-1">{selectedCashier.payin_status || '-'}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">代付状态</label>
+                                  <p className="text-base font-semibold mt-1">{selectedCashier.payout_status || '-'}</p>
                                 </div>
                                 <div>
                                   <label className="text-sm text-muted-foreground">备注</label>
@@ -406,6 +438,14 @@ export function CashierManagement() {
                                 <div>
                                   <label className="text-sm text-muted-foreground">更新时间</label>
                                   <p className="text-base font-semibold mt-1">{formatDateTime(selectedCashier.updated_at)}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">绑定时间</label>
+                                  <p className="text-base font-semibold mt-1">{formatDateTime(selectedCashier.bound_at)}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">最后活跃时间</label>
+                                  <p className="text-base font-semibold mt-1">{formatDateTime(selectedCashier.last_active_at)}</p>
                                 </div>
                               </div>
                             )}
