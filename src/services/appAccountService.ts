@@ -80,12 +80,12 @@ class AppAccountService {
         code: response.code,
         msg: response.msg || '成功',
         data: {
-          list: response.data.list || [],
+          list: response.data.records || [], // 后端PageResult返回的是records字段
           pagination: { 
             page: response.data.current || params.page, 
             size: response.data.size || params.size 
           },
-          total: response.data.total || 0
+          total: response.data.total || 0 // 使用total字段作为总记录数
         }
       };
     } catch (error: any) {
