@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Search, RefreshCw, Smartphone, User, Phone, Wallet } from 'lucide-react';
-import { appAccountService, AppAccount, AppAccountListParams } from '../services/appAccountService';
+import { appAccountService, AppAccount, AppAccountListParams, AppAccountTodayStats } from '../services/appAccountService';
 import { toast } from '../utils/toast';
 
 export function AppAccountManagement() {
@@ -24,6 +24,13 @@ export function AppAccountManagement() {
     size: 20,
     total: 0,
     totalPages: 0
+  });
+  const [stats, setStats] = useState<AppAccountTodayStats>({
+    totalCount: 0,
+    activeCount: 0,
+    verifiedCount: 0,
+    totalBalance: '0.00',
+    todayNewCount: 0
   });
 
   // 获取应用账户列表
@@ -91,13 +98,27 @@ export function AppAccountManagement() {
     }
   }, [pagination.page, pagination.size, statusFilter, appTypeFilter, verifyStatusFilter, searchTerm]);
 
+  // 获取统计数据
+  const fetchStats = useCallback(async () => {
+    try {
+      const response = await appAccountService.getAppAccountTodayStats();
+      if (response.success && response.data) {
+        setStats(response.data);
+      }
+    } catch (error: any) {
+      console.error('获取统计数据失败:', error);
+    }
+  }, []);
+
   useEffect(() => {
     fetchAccounts();
+    fetchStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.page, pagination.size, statusFilter, appTypeFilter, verifyStatusFilter, searchTerm]);
 
   const handleRefresh = () => {
     fetchAccounts();
+    fetchStats();
   };
 
   const getStatusBadge = (status: string) => {
@@ -184,15 +205,15 @@ export function AppAccountManagement() {
       )}
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">总数</CardTitle>
+            <CardTitle className="text-sm font-medium">总账户数</CardTitle>
             <Smartphone className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pagination.total}</div>
-            <p className="text-xs text-muted-foreground">应用账户总数</p>
+            <div className="text-2xl font-bold">{stats.totalCount}</div>
+            <p className="text-xs text-muted-foreground">所有应用账户</p>
           </CardContent>
         </Card>
         <Card>
@@ -201,10 +222,8 @@ export function AppAccountManagement() {
             <User className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {accounts.filter(a => a.status === 'active').length}
-            </div>
-            <p className="text-xs text-muted-foreground">当前页活跃</p>
+            <div className="text-2xl font-bold text-green-600">{stats.activeCount}</div>
+            <p className="text-xs text-muted-foreground">状态为活跃</p>
           </CardContent>
         </Card>
         <Card>
@@ -213,10 +232,8 @@ export function AppAccountManagement() {
             <Phone className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {accounts.filter(a => a.verify_status === 'verified').length}
-            </div>
-            <p className="text-xs text-muted-foreground">当前页已验证</p>
+            <div className="text-2xl font-bold text-blue-600">{stats.verifiedCount}</div>
+            <p className="text-xs text-muted-foreground">验证通过</p>
           </CardContent>
         </Card>
         <Card>
@@ -225,10 +242,18 @@ export function AppAccountManagement() {
             <Wallet className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {formatAmount(accounts.reduce((sum, a) => sum + (a.balance || 0), 0))}
-            </div>
-            <p className="text-xs text-muted-foreground">当前页总余额</p>
+            <div className="text-2xl font-bold text-yellow-600">₹{stats.totalBalance}</div>
+            <p className="text-xs text-muted-foreground">所有账户余额</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">今日新增</CardTitle>
+            <RefreshCw className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-600">{stats.todayNewCount}</div>
+            <p className="text-xs text-muted-foreground">今日创建账户</p>
           </CardContent>
         </Card>
       </div>

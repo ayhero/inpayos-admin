@@ -121,6 +121,44 @@ class AppAccountService {
       };
     }
   }
+  
+  // 获取应用账户今日统计
+  async getAppAccountTodayStats(): Promise<ApiResponse<AppAccountTodayStats>> {
+    try {
+      console.log('正在获取应用账户统计数据...');
+      
+      const response = await api.post<ApiResponse<AppAccountTodayStats>>('/app-account/today-stats', {});
+      console.log('应用账户统计数据响应:', response);
+      
+      return {
+        ...response.data,
+        success: response.data.code === '0000'
+      };
+    } catch (error: any) {
+      console.error('获取应用账户统计失败:', error);
+      return {
+        code: 'ERROR',
+        msg: error.message || '获取应用账户统计失败',
+        data: {
+          totalCount: 0,
+          activeCount: 0,
+          verifiedCount: 0,
+          totalBalance: '0.00',
+          todayNewCount: 0
+        } as AppAccountTodayStats,
+        success: false
+      };
+    }
+  }
+}
+
+// 应用账户今日统计接口
+export interface AppAccountTodayStats {
+  totalCount: number;      // 总账户数
+  activeCount: number;     // 活跃账户数
+  verifiedCount: number;   // 已验证账户数
+  totalBalance: string;    // 总余额
+  todayNewCount: number;   // 今日新增账户数
 }
 
 export const appAccountService = new AppAccountService();
