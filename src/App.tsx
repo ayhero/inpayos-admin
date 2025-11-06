@@ -10,7 +10,6 @@ import {
   ArrowDownLeft, 
   ArrowUpRight,
   Calculator,
-  Settings, 
   Wallet, 
   LogOut,
   Building2,
@@ -19,7 +18,8 @@ import {
   Users,
   Store,
   FileText,
-  Clock
+  Clock,
+  Smartphone
 } from 'lucide-react';
 
 import { AuthContainer } from './components/AuthContainer';
@@ -41,6 +41,7 @@ import { MerchantAccount } from './components/MerchantAccount';
 import { FleetAccount } from './components/FleetAccount';
 import { MerchantSettlement } from './components/MerchantSettlement';
 import { FleetSettlement } from './components/FleetSettlement';
+import { AppAccountManagement } from './components/AppAccountManagement';
 import TaskManagement from './components/TaskManagement';
 
 export default function App() {
@@ -137,6 +138,12 @@ export default function App() {
       label: 'Cashier',
       icon: Users,
       component: CashierManagement
+    },
+    {
+      id: 'app-account',
+      label: 'App',
+      icon: Smartphone,
+      component: AppAccountManagement
     },
     {
       id: 'fleet-contract',
@@ -278,7 +285,7 @@ export default function App() {
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(7, 12).map((item) => (
+                {menuItems.slice(7, 13).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
@@ -303,7 +310,7 @@ export default function App() {
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(12, 13).map((item) => (
+                {menuItems.slice(13, 14).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
@@ -328,7 +335,7 @@ export default function App() {
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(13, 14).map((item) => (
+                {menuItems.slice(14, 15).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
