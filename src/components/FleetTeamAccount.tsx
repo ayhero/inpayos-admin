@@ -44,7 +44,7 @@ export function FleetTeamAccount() {
 
       const response = await accountService.getAccountList(params);
       if (response.success) {
-        setAccounts(response.data.records);
+        setAccounts(response.data.records || []);
         setPagination(prev => ({
           ...prev,
           total: response.data.count,
