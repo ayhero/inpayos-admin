@@ -6,9 +6,10 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { RefreshCw, Wallet } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { accountService, AccountData, AccountListParams } from '../services/accountService';
 import { toast } from '../utils/toast';
+import { getAccountStatusBadgeConfig } from '../constants/status';
 
 export function FleetAccount() {
   const [fleetId, setFleetId] = useState('');
@@ -75,12 +76,7 @@ export function FleetAccount() {
   };
 
   const getStatusBadge = (status: string) => {
-    const configs: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className: string }> = {
-      '1': { label: '正常', variant: 'default', className: 'bg-green-500' },
-      '0': { label: '停用', variant: 'secondary', className: 'bg-gray-500' },
-      '2': { label: '冻结', variant: 'destructive', className: '' }
-    };
-    const config = configs[status] || { label: '未知', variant: 'outline' as const, className: '' };
+    const config = getAccountStatusBadgeConfig(status);
     return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
   };
 

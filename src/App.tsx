@@ -38,7 +38,7 @@ import { CashierTeamManagement } from './components/CashierTeamManagement';
 import { MerchantContract } from './components/MerchantContract';
 import { FleetContract } from './components/FleetContract';
 import { MerchantAccount } from './components/MerchantAccount';
-import { FleetAccount } from './components/FleetAccount';
+import { AccountManagement } from './components/AccountManagement';
 import { MerchantSettlement } from './components/MerchantSettlement';
 import { FleetSettlement } from './components/FleetSettlement';
 import { AppAccountManagement } from './components/AppAccountManagement';
@@ -155,7 +155,7 @@ export default function App() {
       id: 'fleet-account',
       label: '账户',
       icon: Wallet,
-      component: FleetAccount
+      component: AccountManagement
     },
     {
       id: 'fleet-settlement',

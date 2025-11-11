@@ -25,6 +25,7 @@ export interface AccountData {
 
 // 账户列表请求参数
 export interface AccountListParams {
+  tid?: string; // 车队ID，用于查询车队成员账户
   user_id?: string; // 商户ID或车队ID
   user_type?: string; // 用户类型: 'merchant' 或 'cashier_team'
   ccy?: string; // 币种
