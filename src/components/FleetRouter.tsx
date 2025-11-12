@@ -121,6 +121,27 @@ export function FleetRouter() {
 
   const handleEdit = (router: RouterData) => {
     setSelectedRouter(router);
+    setFormData({
+      tid: router.tid || '',
+      pkg: router.pkg || '',
+      did: router.did || '',
+      trx_type: router.trx_type || '',
+      trx_sub_type: router.trx_sub_type || '',
+      trx_method: router.trx_method || '',
+      trx_mode: router.trx_mode || '',
+      trx_app: router.trx_app || '',
+      ccy: router.ccy || '',
+      country: router.country || '',
+      min_amount: router.min_amount || 0,
+      max_amount: router.max_amount || 0,
+      min_usd_amount: router.min_usd_amount || 0,
+      max_usd_amount: router.max_usd_amount || 0,
+      channel_code: router.channel_code || '',
+      channel_account: router.channel_account || '',
+      channel_group: router.channel_group || '',
+      priority: router.priority || 0,
+      status: router.status || 'inactive',
+    });
     setDialogOpen(true);
   };
 
@@ -153,14 +174,22 @@ export function FleetRouter() {
     setSelectedRouter(null);
     setFormData({
       tid: '',
+      pkg: '',
+      did: '',
       trx_type: '',
+      trx_sub_type: '',
       trx_method: '',
+      trx_mode: '',
+      trx_app: '',
       ccy: '',
+      country: '',
+      min_amount: 0,
+      max_amount: 0,
+      min_usd_amount: 0,
+      max_usd_amount: 0,
       channel_code: '',
       channel_account: '',
       channel_group: '',
-      min_amount: 0,
-      max_amount: 0,
       priority: 0,
       status: 'inactive',
     });
