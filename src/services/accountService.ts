@@ -1,5 +1,20 @@
 import { api, ApiResponse } from './api';
 
+// 用户信息类型定义
+export interface UserData {
+  user_id: string;
+  user_type: string;
+  org_id?: string;
+  avatar?: string;
+  status?: string;
+  online_status?: string;
+  last_login_at?: number;
+  last_active_at?: number;
+  name?: string;
+  phone?: string;
+  email?: string;
+}
+
 // 账户数据类型定义
 export interface AccountData {
   account_id: string;
@@ -19,6 +34,7 @@ export interface AccountData {
   status: string; // 后端返回的是字符串"1"，不是number
   version: number;
   last_active_at: number;
+  user?: UserData; // 用户信息
   created_at: number;
   updated_at: number;
 }

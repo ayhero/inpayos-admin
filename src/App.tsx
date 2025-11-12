@@ -9,7 +9,7 @@ import {
   Home, 
   ArrowDownLeft, 
   ArrowUpRight,
-  Calculator,
+  // Calculator,
   Wallet, 
   LogOut,
   Building2,
@@ -19,7 +19,8 @@ import {
   Store,
   FileText,
   Clock,
-  Smartphone
+  Smartphone,
+  Route
 } from 'lucide-react';
 
 import { AuthContainer } from './components/AuthContainer';
@@ -29,7 +30,7 @@ import { PayoutRecords } from './components/Payout';
 // import { Config } from './components/Config';
 // import { RefundRecords } from './components/RefundRecords';
 // import { RechargeRecords } from './components/RechargeRecords';
-import { SettlementRecords } from './components/SettlementRecords';
+// import { SettlementRecords } from './components/SettlementRecords';
 import { ChangePasswordPage } from './components/ChangePasswordPage';
 import { ToastContainer } from './components/Toast';
 import { CashierManagement } from './components/CashierManagement';
@@ -39,10 +40,12 @@ import { MerchantContract } from './components/MerchantContract';
 import { FleetContract } from './components/FleetContract';
 import { MerchantAccount } from './components/MerchantAccount';
 import { AccountManagement } from './components/AccountManagement';
-import { MerchantSettlement } from './components/MerchantSettlement';
-import { FleetSettlement } from './components/FleetSettlement';
+// import { MerchantSettlement } from './components/MerchantSettlement';
+// import { FleetSettlement } from './components/FleetSettlement';
 import { AppAccountManagement } from './components/AppAccountManagement';
 import TaskManagement from './components/TaskManagement';
+import { MerchantRouter } from './components/MerchantRouter';
+import { FleetRouter } from './components/FleetRouter';
 
 export default function App() {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -122,11 +125,17 @@ export default function App() {
       component: MerchantAccount
     },
     {
-      id: 'merchant-settlement',
-      label: '结算',
-      icon: Calculator,
-      component: MerchantSettlement
+      id: 'merchant-router',
+      label: '路由',
+      icon: Route,
+      component: MerchantRouter
     },
+    // {
+    //   id: 'merchant-settlement',
+    //   label: '结算',
+    //   icon: Calculator,
+    //   component: MerchantSettlement
+    // },
     {
       id: 'cashier-team',
       label: 'CashierTeam',
@@ -158,11 +167,17 @@ export default function App() {
       component: AccountManagement
     },
     {
-      id: 'fleet-settlement',
-      label: '结算',
-      icon: Calculator,
-      component: FleetSettlement
+      id: 'fleet-router',
+      label: '路由',
+      icon: Route,
+      component: FleetRouter
     },
+    // {
+    //   id: 'fleet-settlement',
+    //   label: '结算',
+    //   icon: Calculator,
+    //   component: FleetSettlement
+    // },
     // {
     //   id: 'refund',
     //   label: '退款',
@@ -175,12 +190,12 @@ export default function App() {
     //   icon: Plus,
     //   component: RechargeRecords
     // },
-    {
-      id: 'settlement',
-      label: '结算',
-      icon: Calculator,
-      component: SettlementRecords
-    },
+    // {
+    //   id: 'settlement',
+    //   label: '结算',
+    //   icon: Calculator,
+    //   component: SettlementRecords
+    // },
     {
       id: 'task-management',
       label: '定时任务',
@@ -302,31 +317,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* 账户与设置 */}
-            <div className="px-3 mb-4">
-              {sidebarOpen && (
-                <h4 className="text-xs font-semibold text-muted-foreground px-3 py-2 uppercase tracking-wider">
-                  账户与设置
-                </h4>
-              )}
-              <div className="space-y-1">
-                {menuItems.slice(13, 14).map((item) => (
-                  <div
-                    key={item.id}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
-                      activeMenu === item.id 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'hover:bg-muted'
-                    }`}
-                    onClick={() => setActiveMenu(item.id)}
-                  >
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
-                    {sidebarOpen && <span>{item.label}</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* 系统管理 */}
             <div className="px-3">
               {sidebarOpen && (
@@ -335,7 +325,7 @@ export default function App() {
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(14, 15).map((item) => (
+                {menuItems.slice(13, 14).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${

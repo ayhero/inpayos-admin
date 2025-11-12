@@ -6,9 +6,9 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip';
 import { RefreshCw } from 'lucide-react';
 import { accountService, AccountData, AccountListParams } from '../services/accountService';
-import { toast } from '../utils/toast';
 import { getAccountStatusBadgeConfig } from '../constants/status';
 
 export function MerchantAccount() {
@@ -92,18 +92,8 @@ export function MerchantAccount() {
     return parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
-  const handleViewDetail = async (account: AccountData) => {
-    try {
-      const response = await accountService.getAccountDetail({ account_id: account.account_id });
-      if (response.success) {
-        setSelectedAccount(response.data);
-      } else {
-        toast.error('获取账户详情失败', response.msg);
-      }
-    } catch (error) {
-      console.error('获取账户详情失败:', error);
-      toast.error('获取账户详情失败', '网络错误，请稍后重试');
-    }
+  const handleViewDetail = (account: AccountData) => {
+    setSelectedAccount(account);
   };
 
   return (
@@ -171,8 +161,8 @@ export function MerchantAccount() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>账户ID</TableHead>
-                  <TableHead>商户ID</TableHead>
+                  <TableHead>用户名称</TableHead>
+                  <TableHead>所属组织</TableHead>
                   <TableHead>币种</TableHead>
                   <TableHead>总余额</TableHead>
                   <TableHead>可用余额</TableHead>
@@ -186,8 +176,8 @@ export function MerchantAccount() {
               <TableBody>
                 {accounts.map((account) => (
                   <TableRow key={account.account_id}>
-                    <TableCell className="font-mono text-xs">{account.account_id}</TableCell>
-                    <TableCell className="font-mono text-xs">{account.user_id}</TableCell>
+                    <TableCell>{account.user?.name || '-'}</TableCell>
+                    <TableCell className="font-mono text-sm">{account.user?.org_id || '-'}</TableCell>
                     <TableCell>{account.ccy}</TableCell>
                     <TableCell className="font-mono">{formatAmount(account.balance?.balance)}</TableCell>
                     <TableCell className="font-mono text-green-600">{formatAmount(account.balance?.available_balance)}</TableCell>
@@ -239,72 +229,102 @@ export function MerchantAccount() {
       <Dialog open={!!selectedAccount} onOpenChange={() => setSelectedAccount(null)}>
         <DialogContent className="max-w-[45vw] w-[45vw] min-w-[600px]" style={{width: '45vw', maxWidth: '45vw'}}>
           <DialogHeader>
-            <DialogTitle>账户详情</DialogTitle>
+            <DialogTitle>商户账户详情</DialogTitle>
           </DialogHeader>
           {selectedAccount && (
-            <div className="grid grid-cols-2 gap-4 py-4 max-h-[500px] overflow-y-auto">
-              <div>
-                <label className="text-sm text-muted-foreground">账户ID</label>
-                <p className="text-base font-semibold font-mono mt-1">{selectedAccount.account_id}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">商户ID</label>
-                <p className="text-base font-semibold font-mono mt-1">{selectedAccount.user_id}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">币种</label>
-                <p className="text-base font-semibold mt-1">{selectedAccount.ccy}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">总余额</label>
-                <p className="text-base font-semibold font-mono mt-1">{formatAmount(selectedAccount.balance?.balance)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">可用余额</label>
-                <p className="text-base font-semibold font-mono text-green-600 mt-1">{formatAmount(selectedAccount.balance?.available_balance)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">冻结余额</label>
-                <p className="text-base font-semibold font-mono text-red-600 mt-1">{formatAmount(selectedAccount.balance?.frozen_balance)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">保证金</label>
-                <p className="text-base font-semibold font-mono mt-1">{formatAmount(selectedAccount.balance?.margin_balance)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">可用保证金</label>
-                <p className="text-base font-semibold font-mono text-green-600 mt-1">{formatAmount(selectedAccount.balance?.available_margin_balance)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">冻结保证金</label>
-                <p className="text-base font-semibold font-mono text-red-600 mt-1">{formatAmount(selectedAccount.balance?.frozen_margin_balance)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">状态</label>
-                <p className="mt-1">{getStatusBadge(selectedAccount.status)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">版本</label>
-                <p className="text-base font-semibold mt-1">{selectedAccount.version}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">最后活跃时间</label>
-                <p className="text-base font-semibold mt-1">{formatDateTime(selectedAccount.last_active_at)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">创建时间</label>
-                <p className="text-base font-semibold mt-1">{formatDateTime(selectedAccount.created_at)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">更新时间</label>
-                <p className="text-base font-semibold mt-1">{formatDateTime(selectedAccount.updated_at)}</p>
-              </div>
-              {selectedAccount.balance?.updated_at && (
+            <div className="space-y-6 max-h-[500px] overflow-y-auto">
+              {/* 基本信息 */}
+              <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="text-sm text-muted-foreground">余额更新时间</label>
-                  <p className="text-base font-semibold mt-1">{formatDateTime(selectedAccount.balance.updated_at)}</p>
+                  <label className="text-sm font-medium text-gray-500">账户ID</label>
+                  <p className="mt-1 font-mono text-sm">{selectedAccount.account_id}</p>
                 </div>
-              )}
+                <div>
+                  <label className="text-sm font-medium text-gray-500">商户ID</label>
+                  <p className="mt-1 font-mono text-sm">{selectedAccount.user_id}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">用户名称</label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <p className="mt-1 text-sm cursor-help underline decoration-dotted">{selectedAccount.user?.name || '-'}</p>
+                    </TooltipTrigger>
+                    {selectedAccount.user && (
+                      <TooltipContent side="right" className="max-w-xs">
+                        <div className="space-y-1 text-xs">
+                          <div><span className="text-gray-400">用户ID:</span> {selectedAccount.user.user_id}</div>
+                          <div><span className="text-gray-400">用户类型:</span> {selectedAccount.user.user_type}</div>
+                          {selectedAccount.user.org_id && <div><span className="text-gray-400">所属组织:</span> {selectedAccount.user.org_id}</div>}
+                          {selectedAccount.user.phone && <div><span className="text-gray-400">手机号:</span> {selectedAccount.user.phone}</div>}
+                          {selectedAccount.user.email && <div><span className="text-gray-400">邮箱:</span> {selectedAccount.user.email}</div>}
+                          {selectedAccount.user.status && <div><span className="text-gray-400">状态:</span> {selectedAccount.user.status}</div>}
+                        </div>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">币种</label>
+                  <p className="mt-1 text-sm">{selectedAccount.ccy}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">状态</label>
+                  <p className="mt-1">{getStatusBadge(selectedAccount.status)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">版本</label>
+                  <p className="mt-1 text-sm">{selectedAccount.version}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">创建时间</label>
+                  <p className="mt-1 text-sm">{formatDateTime(selectedAccount.created_at)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">更新时间</label>
+                  <p className="mt-1 text-sm">{formatDateTime(selectedAccount.updated_at)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">最后活跃时间</label>
+                  <p className="mt-1 text-sm">{formatDateTime(selectedAccount.last_active_at)}</p>
+                </div>
+              </div>
+              
+              {/* 余额信息 */}
+              <div className="border rounded-lg p-4">
+                <h3 className="text-lg font-semibold mb-4">余额信息</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">总余额</label>
+                    <p className="mt-1 font-mono text-lg font-semibold">{formatAmount(selectedAccount.balance?.balance)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">可用余额</label>
+                    <p className="mt-1 font-mono text-lg font-semibold text-green-600">{formatAmount(selectedAccount.balance?.available_balance)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">冻结余额</label>
+                    <p className="mt-1 font-mono text-lg font-semibold text-red-600">{formatAmount(selectedAccount.balance?.frozen_balance)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">保证金</label>
+                    <p className="mt-1 font-mono text-lg font-semibold">{formatAmount(selectedAccount.balance?.margin_balance)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">可用保证金</label>
+                    <p className="mt-1 font-mono text-lg font-semibold text-green-600">{formatAmount(selectedAccount.balance?.available_margin_balance)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">冻结保证金</label>
+                    <p className="mt-1 font-mono text-lg font-semibold text-red-600">{formatAmount(selectedAccount.balance?.frozen_margin_balance)}</p>
+                  </div>
+                  {selectedAccount.balance?.updated_at && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">余额更新时间</label>
+                      <p className="mt-1 text-sm">{formatDateTime(selectedAccount.balance.updated_at)}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </DialogContent>
