@@ -108,3 +108,27 @@ switch-github-auth: ## 切换到ayhero GitHub账号
 	@echo ""
 	@echo "📊 当前认证状态:"
 	@GH_TOKEN="" gh auth status
+	
+# 切换到 ayhero@gmail.com 的 GitHub 账户
+gh-switch-ayhero: ## 切换到 ayhero@gmail.com 的 GitHub 账户
+	@echo "🔄 切换到 GitHub 账户 ayhero@gmail.com..."
+	@gh auth switch --hostname github.com --user ayhero
+	@echo "✅ 已切换到 ayhero@gmail.com"
+	@gh auth status
+push: gh-switch-ayhero ## 推送代码到GitHub（自动切换到ayhero账号）
+	@echo "📤 推送代码到GitHub仓库..."
+	@git add .
+	@git status
+	@echo ""
+	@if ! git diff --cached --quiet; then \
+		read -p "请输入提交信息 (按Enter使用默认): " commit_msg; \
+		if [ -z "$$commit_msg" ]; then \
+			commit_msg="Update: $$(date '+%Y-%m-%d %H:%M:%S')"; \
+		fi; \
+		echo "💾 提交信息: $$commit_msg"; \
+		git commit -m "$$commit_msg"; \
+	else \
+		echo "ℹ️  没有新的更改需要提交"; \
+	fi
+	@git push origin main
+	@echo "✅ 代码推送完成!"
