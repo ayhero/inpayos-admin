@@ -468,7 +468,7 @@ export function FleetRouter() {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="!w-[40vw] !max-w-[40vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedRouter ? '编辑路由' : '新增路由'}</DialogTitle>
           </DialogHeader>

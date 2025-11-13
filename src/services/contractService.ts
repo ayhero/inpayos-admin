@@ -26,6 +26,66 @@ export interface ContractSettleConfig {
   min_usd_amount: number;
   max_usd_amount: number;
   strategies: string[];
+  strategy_list?: StrategyDetail[];
+}
+
+// 策略详情
+export interface StrategyDetail {
+  id: number;
+  code: string;
+  sid: string;
+  stype: string;
+  period: number;
+  settle_ccy: string;
+  trx_type: string;
+  trx_mode: string;
+  trx_method: string;
+  country: string;
+  trx_ccy: string;
+  status: string;
+  rules: StrategyRule[];
+  created_at: number;
+  updated_at: number;
+}
+
+// 策略规则
+export interface StrategyRule {
+  period: number;
+  rule_id: string;
+  trx_type: string;
+  trx_mode: string;
+  trx_method: string;
+  country: string;
+  min_amount: string | null;
+  max_amount: string | null;
+  min_fee: string | null;
+  max_fee: string | null;
+  min_rate: string | null;
+  max_rate: string | null;
+  min_usd_fee: string | null;
+  max_usd_fee: string | null;
+  min_usd_rate: string | null;
+  max_usd_rate: string | null;
+  ccy: string;
+  fixed_fee: string;
+  rate: string;
+  fixed_usd_fee: string | null;
+  usd_rate: string | null;
+}
+
+// 用户信息
+export interface UserInfo {
+  user_id: string;
+  user_type: string;
+  org_id: string;
+  avatar: string;
+  status: string;
+  online_status: string;
+  last_login_at: number;
+  last_active_at: number;
+  name: string;
+  phone: string;
+  email: string;
 }
 
 // 合约配置
@@ -41,6 +101,7 @@ export interface Contract {
   id: number;
   contract_id: string;
   ori_contract_id?: string; // 原始合约ID
+  user?: UserInfo; // 用户信息
   sid: string; // 商户ID或车队ID
   stype: string; // 类型: merchant(商户) 或 cashier_team(车队)
   start_at: number; // 生效时间（毫秒时间戳）
