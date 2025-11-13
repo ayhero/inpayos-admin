@@ -162,7 +162,6 @@ export function MerchantAccount() {
               <TableHeader>
                 <TableRow>
                   <TableHead>用户名称</TableHead>
-                  <TableHead>所属组织</TableHead>
                   <TableHead>币种</TableHead>
                   <TableHead>总余额</TableHead>
                   <TableHead>可用余额</TableHead>
@@ -178,7 +177,6 @@ export function MerchantAccount() {
                 {accounts.map((account) => (
                   <TableRow key={account.account_id}>
                     <TableCell>{account.user?.name || '-'}</TableCell>
-                    <TableCell className="font-mono text-sm">{account.user?.org_id || '-'}</TableCell>
                     <TableCell>{account.ccy}</TableCell>
                     <TableCell className="font-mono">{formatAmount(account.balance?.balance)}</TableCell>
                     <TableCell className="font-mono text-green-600">{formatAmount(account.balance?.available_balance)}</TableCell>

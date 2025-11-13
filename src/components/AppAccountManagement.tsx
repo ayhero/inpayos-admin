@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Search, RefreshCw, Smartphone, User, Phone, Wallet } from 'lucide-react';
 import { appAccountService, AppAccount, AppAccountListParams, AppAccountTodayStats } from '../services/appAccountService';
 import { toast } from '../utils/toast';
+import { getAppAccountStatusBadgeConfig, getAppVerifyStatusBadgeConfig } from '../constants/status';
 
 export function AppAccountManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -122,23 +123,12 @@ export function AppAccountManagement() {
   };
 
   const getStatusBadge = (status: string) => {
-    const configs: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className: string }> = {
-      'active': { label: '活跃', variant: 'default', className: 'bg-green-500' },
-      'inactive': { label: '非活跃', variant: 'secondary', className: 'bg-gray-500' },
-      'frozen': { label: '冻结', variant: 'destructive', className: 'bg-orange-500' },
-      'canceled': { label: '已注销', variant: 'destructive', className: '' }
-    };
-    const config = configs[status?.toLowerCase()] || { label: status || '-', variant: 'outline' as const, className: '' };
+    const config = getAppAccountStatusBadgeConfig(status);
     return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
   };
 
   const getVerifyStatusBadge = (status: string) => {
-    const configs: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className: string }> = {
-      'verified': { label: '已验证', variant: 'default', className: 'bg-green-500' },
-      'unverified': { label: '未验证', variant: 'secondary', className: 'bg-yellow-500' },
-      'rejected': { label: '拒绝', variant: 'destructive', className: '' }
-    };
-    const config = configs[status?.toLowerCase()] || { label: status || '-', variant: 'outline' as const, className: '' };
+    const config = getAppVerifyStatusBadgeConfig(status);
     return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
   };
 
@@ -325,12 +315,9 @@ export function AppAccountManagement() {
                 <TableRow>
                   <TableHead>应用类型</TableHead>
                   <TableHead>账户ID</TableHead>
-                  <TableHead>用户ID</TableHead>
-                  <TableHead>手机号</TableHead>
-                  <TableHead>账户名称</TableHead>
+                  <TableHead>用户</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>验证状态</TableHead>
-                  <TableHead>余额</TableHead>
                   <TableHead>出纳员数量</TableHead>
                   <TableHead>创建时间</TableHead>
                   <TableHead>操作</TableHead>
@@ -341,12 +328,14 @@ export function AppAccountManagement() {
                   <TableRow key={`${account.app_type}_${account.account_id}`}>
                     <TableCell>{getAppTypeBadge(account.app_type)}</TableCell>
                     <TableCell className="font-mono text-xs">{account.account_id}</TableCell>
-                    <TableCell className="font-mono text-xs">{account.user_id}</TableCell>
-                    <TableCell>{account.phone}</TableCell>
-                    <TableCell>{account.account_name || '-'}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{account.user?.name || '-'}</span>
+                        <span className="text-xs text-gray-500 font-mono">{account.user_id}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>{getStatusBadge(account.status)}</TableCell>
                     <TableCell>{getVerifyStatusBadge(account.verify_status)}</TableCell>
-                    <TableCell className="text-right">{formatAmount(account.balance)}</TableCell>
                     <TableCell className="text-center">
                       <span className="text-green-600 font-medium">{account.active_cashier_count || 0}</span>
                       <span className="text-gray-500">/{account.total_cashier_count || 0}</span>
@@ -409,12 +398,20 @@ export function AppAccountManagement() {
                 <p className="text-base font-semibold font-mono mt-1">{selectedAccount.account_id}</p>
               </div>
               <div>
+                <label className="text-sm text-muted-foreground">用户名</label>
+                <p className="text-base font-semibold mt-1">{selectedAccount.user?.name || '-'}</p>
+              </div>
+              <div>
                 <label className="text-sm text-muted-foreground">用户ID</label>
                 <p className="text-base font-semibold font-mono mt-1">{selectedAccount.user_id}</p>
               </div>
               <div>
                 <label className="text-sm text-muted-foreground">手机号</label>
                 <p className="text-base font-semibold mt-1">{selectedAccount.phone}</p>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">邮箱</label>
+                <p className="text-base font-semibold mt-1">{selectedAccount.user?.email || '-'}</p>
               </div>
               <div>
                 <label className="text-sm text-muted-foreground">账户名称</label>

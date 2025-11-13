@@ -306,6 +306,7 @@ export function CashierManagement() {
                 <TableHead>APP账号</TableHead>
                 <TableHead>UPI</TableHead>
                 <TableHead>银行卡</TableHead>
+                <TableHead>主账号</TableHead>
                 <TableHead>账户状态</TableHead>
                 <TableHead>在线状态</TableHead>
                 <TableHead>最近登录时间</TableHead>
@@ -315,13 +316,13 @@ export function CashierManagement() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-4">
+                  <TableCell colSpan={9} className="text-center py-4">
                     加载中...
                   </TableCell>
                 </TableRow>
               ) : !cashiers || cashiers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-4 text-muted-foreground">
+                  <TableCell colSpan={9} className="text-center py-4 text-muted-foreground">
                     暂无数据
                   </TableCell>
                 </TableRow>
@@ -330,7 +331,7 @@ export function CashierManagement() {
                   <TableRow key={cashier.account_id}>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-medium">{cashier.cashier?.name || '-'}</span>
+                        <span className="font-medium">{cashier.user?.name || '-'}</span>
                         <span className="text-xs text-gray-500 font-mono">{cashier.user_id}</span>
                       </div>
                     </TableCell>
@@ -350,6 +351,13 @@ export function CashierManagement() {
                         {cashier.bank_code && <span className="text-xs text-gray-500">{cashier.bank_code}</span>}
                         {cashier.card_number && <span className="font-mono text-xs text-gray-500">{cashier.card_number}</span>}
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {cashier.primary && (
+                        <svg className="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      )}
                     </TableCell>
                     <TableCell>{getStatusBadge(cashier.status)}</TableCell>
                     <TableCell>{getOnlineStatusBadge(cashier.online_status)}</TableCell>
@@ -382,11 +390,23 @@ export function CashierManagement() {
                                 </div>
                                 <div>
                                   <label className="text-sm text-muted-foreground">收银员姓名</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.cashier?.name || '-'}</p>
+                                  <p className="text-base font-semibold mt-1">{selectedCashier.user?.name || '-'}</p>
                                 </div>
                                 <div>
                                   <label className="text-sm text-muted-foreground">收银员电话</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.cashier?.phone || '-'}</p>
+                                  <p className="text-base font-semibold mt-1">{selectedCashier.user?.phone || '-'}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">收银员邮箱</label>
+                                  <p className="text-base font-semibold mt-1">{selectedCashier.user?.email || '-'}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">组织ID</label>
+                                  <p className="text-base font-semibold mt-1">{selectedCashier.user?.org_id || '-'}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">账户类型</label>
+                                  <p className="text-base font-semibold mt-1">{selectedCashier.type === 'private' ? '主账号' : '共享账号'}</p>
                                 </div>
                                 <div>
                                   <label className="text-sm text-muted-foreground">APP类型</label>

@@ -188,3 +188,57 @@ export const getAccountStatusBadgeConfig = (status: string): StatusBadgeConfig =
     className: '' 
   };
 };
+
+// 交易类型 Badge 配置
+export const TRX_TYPE_BADGE_CONFIG: Record<string, StatusBadgeConfig> = {
+  'payin': { label: '代收', variant: 'default', className: 'bg-blue-500' },
+  'payout': { label: '代付', variant: 'default', className: 'bg-purple-500' },
+  'cashier_payin': { label: '出纳代收', variant: 'default', className: 'bg-cyan-500' },
+  'cashier_payout': { label: '出纳代付', variant: 'default', className: 'bg-indigo-500' },
+  'cashier_withdraw': { label: '出纳提现', variant: 'default', className: 'bg-orange-500' },
+  'withdraw': { label: '提现', variant: 'default', className: 'bg-yellow-500' },
+  'refund': { label: '退款', variant: 'secondary', className: 'bg-gray-500' },
+  'deposit': { label: '充值', variant: 'default', className: 'bg-green-500' }
+};
+
+// 获取交易类型 Badge 配置
+export const getTrxTypeBadgeConfig = (trxType: string): StatusBadgeConfig => {
+  return TRX_TYPE_BADGE_CONFIG[trxType] || { 
+    label: trxType || '-', 
+    variant: 'outline' as const, 
+    className: '' 
+  };
+};
+
+// App账户状态 Badge 配置
+export const APP_ACCOUNT_STATUS_BADGE_CONFIG: Record<string, StatusBadgeConfig> = {
+  'active': { label: '活跃', variant: 'default', className: 'bg-green-500' },
+  'inactive': { label: '非活跃', variant: 'secondary', className: 'bg-gray-500' },
+  'frozen': { label: '冻结', variant: 'destructive', className: 'bg-orange-500' },
+  'canceled': { label: '已注销', variant: 'destructive', className: '' }
+};
+
+// 获取App账户状态 Badge 配置
+export const getAppAccountStatusBadgeConfig = (status: string): StatusBadgeConfig => {
+  return APP_ACCOUNT_STATUS_BADGE_CONFIG[status?.toLowerCase()] || { 
+    label: status || '-', 
+    variant: 'outline' as const, 
+    className: '' 
+  };
+};
+
+// App账户验证状态 Badge 配置
+export const APP_VERIFY_STATUS_BADGE_CONFIG: Record<string, StatusBadgeConfig> = {
+  'verified': { label: '已验证', variant: 'default', className: 'bg-green-500' },
+  'unverified': { label: '未验证', variant: 'secondary', className: 'bg-yellow-500' },
+  'rejected': { label: '拒绝', variant: 'destructive', className: '' }
+};
+
+// 获取App账户验证状态 Badge 配置
+export const getAppVerifyStatusBadgeConfig = (status: string): StatusBadgeConfig => {
+  return APP_VERIFY_STATUS_BADGE_CONFIG[status?.toLowerCase()] || { 
+    label: status || '-', 
+    variant: 'outline' as const, 
+    className: '' 
+  };
+};

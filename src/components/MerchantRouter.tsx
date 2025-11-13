@@ -30,6 +30,7 @@ import {
   CHANNEL_CODE_OPTIONS,
   STATUS_OPTIONS,
 } from '../constants/business';
+import { getTrxTypeBadgeConfig } from '../constants/status';
 
 export function MerchantRouter() {
   const [routers, setRouters] = useState<RouterData[]>([]);
@@ -343,15 +344,15 @@ export function MerchantRouter() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>商户ID</TableHead>
+                  <TableHead>商户</TableHead>
                   <TableHead>交易类型</TableHead>
                   <TableHead>支付方式</TableHead>
+                  <TableHead>渠道</TableHead>
+                  <TableHead>渠道账户</TableHead>
+                  <TableHead>渠道组</TableHead>
                   <TableHead>货币</TableHead>
-                  <TableHead>通道编码</TableHead>
-                  <TableHead>通道账户</TableHead>
-                  <TableHead>通道组</TableHead>
-                  <TableHead>最小金额</TableHead>
-                  <TableHead>最大金额</TableHead>
+                  <TableHead>最小交易金额</TableHead>
+                  <TableHead>最大交易金额</TableHead>
                   <TableHead>优先级</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>创建时间</TableHead>
@@ -375,12 +376,17 @@ export function MerchantRouter() {
                   routers.map((router) => (
                     <TableRow key={router.id}>
                       <TableCell>{router.mid || '-'}</TableCell>
-                      <TableCell>{getTrxTypeLabel(router.trx_type)}</TableCell>
+                      <TableCell>
+                        {(() => {
+                          const config = getTrxTypeBadgeConfig(router.trx_type || '');
+                          return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
+                        })()}
+                      </TableCell>
                       <TableCell>{getTrxMethodLabel(router.trx_method)}</TableCell>
-                      <TableCell>{getCcyLabel(router.ccy)}</TableCell>
                       <TableCell>{getChannelCodeLabel(router.channel_code)}</TableCell>
                       <TableCell>{router.channel_account || '-'}</TableCell>
                       <TableCell>{router.channel_group || '-'}</TableCell>
+                      <TableCell>{getCcyLabel(router.ccy)}</TableCell>
                       <TableCell>{router.min_amount != null ? router.min_amount.toFixed(2) : '-'}</TableCell>
                       <TableCell>{router.max_amount != null ? router.max_amount.toFixed(2) : '-'}</TableCell>
                       <TableCell>{router.priority || '-'}</TableCell>
@@ -578,14 +584,14 @@ export function MerchantRouter() {
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder="最小金额"
+                  placeholder="最小交易金额"
                   value={formData.min_amount}
                   onChange={(e) => setFormData({ ...formData, min_amount: parseFloat(e.target.value) || 0 })}
                 />
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder="最大金额"
+                  placeholder="最大交易金额"
                   value={formData.max_amount}
                   onChange={(e) => setFormData({ ...formData, max_amount: parseFloat(e.target.value) || 0 })}
                 />
@@ -612,12 +618,12 @@ export function MerchantRouter() {
                   </SelectContent>
                 </Select>
                 <Input
-                  placeholder="账号"
+                  placeholder="渠道账户"
                   value={formData.channel_account}
                   onChange={(e) => setFormData({ ...formData, channel_account: e.target.value })}
                 />
                 <Input
-                  placeholder="账号组"
+                  placeholder="渠道组"
                   value={formData.channel_group}
                   onChange={(e) => setFormData({ ...formData, channel_group: e.target.value })}
                 />

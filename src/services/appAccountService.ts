@@ -1,10 +1,20 @@
 import { api, ApiResponse } from './api';
 
+// 用户信息接口（Cashier）
+export interface CashierUser {
+  user_id: string;          // 用户ID
+  name: string;             // 用户名
+  phone: string;            // 手机号
+  email: string;            // 邮箱
+  status: string;           // 状态
+}
+
 // 应用账户信息接口
 export interface AppAccount {
   app_type: string;           // 应用类型
   account_id: string;         // 账户ID
   user_id: string;           // 用户ID
+  user?: CashierUser;        // 用户信息（新增）
   phone: string;             // 手机号
   account_name: string;      // 账户名称
   status: string;            // 状态 (active, inactive, frozen, canceled)
