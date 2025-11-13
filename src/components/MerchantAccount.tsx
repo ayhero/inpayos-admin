@@ -6,10 +6,10 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip';
 import { RefreshCw } from 'lucide-react';
 import { accountService, AccountData, AccountListParams } from '../services/accountService';
 import { getAccountStatusBadgeConfig } from '../constants/status';
+import { AccountDetail } from './AccountDetail';
 
 export function MerchantAccount() {
   const [merchantId, setMerchantId] = useState('');
@@ -80,7 +80,7 @@ export function MerchantAccount() {
     return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
   };
 
-  const formatDateTime = (timestamp: number) => {
+  const formatDateTime = (timestamp?: number) => {
     if (!timestamp) return '-';
     const date = new Date(timestamp);
     if (isNaN(date.getTime())) return '-';
@@ -169,7 +169,8 @@ export function MerchantAccount() {
                   <TableHead>冻结余额</TableHead>
                   <TableHead>保证金</TableHead>
                   <TableHead>状态</TableHead>
-                  <TableHead>创建时间</TableHead>
+                  <TableHead>更新时间</TableHead>
+                  <TableHead>最后活跃时间</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
               </TableHeader>
@@ -184,7 +185,8 @@ export function MerchantAccount() {
                     <TableCell className="font-mono text-red-600">{formatAmount(account.balance?.frozen_balance)}</TableCell>
                     <TableCell className="font-mono">{formatAmount(account.balance?.margin_balance)}</TableCell>
                     <TableCell>{getStatusBadge(account.status)}</TableCell>
-                    <TableCell>{formatDateTime(account.created_at)}</TableCell>
+                    <TableCell className="text-sm">{formatDateTime(account.updated_at)}</TableCell>
+                    <TableCell className="text-sm">{formatDateTime(account.last_active_at)}</TableCell>
                     <TableCell>
                       <Button variant="ghost" size="sm" onClick={() => handleViewDetail(account)}>
                         查看
@@ -232,100 +234,11 @@ export function MerchantAccount() {
             <DialogTitle>商户账户详情</DialogTitle>
           </DialogHeader>
           {selectedAccount && (
-            <div className="space-y-6 max-h-[500px] overflow-y-auto">
-              {/* 基本信息 */}
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">账户ID</label>
-                  <p className="mt-1 font-mono text-sm">{selectedAccount.account_id}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">商户ID</label>
-                  <p className="mt-1 font-mono text-sm">{selectedAccount.user_id}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">用户名称</label>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <p className="mt-1 text-sm cursor-help underline decoration-dotted">{selectedAccount.user?.name || '-'}</p>
-                    </TooltipTrigger>
-                    {selectedAccount.user && (
-                      <TooltipContent side="right" className="max-w-xs">
-                        <div className="space-y-1 text-xs">
-                          <div><span className="text-gray-400">用户ID:</span> {selectedAccount.user.user_id}</div>
-                          <div><span className="text-gray-400">用户类型:</span> {selectedAccount.user.user_type}</div>
-                          {selectedAccount.user.org_id && <div><span className="text-gray-400">所属组织:</span> {selectedAccount.user.org_id}</div>}
-                          {selectedAccount.user.phone && <div><span className="text-gray-400">手机号:</span> {selectedAccount.user.phone}</div>}
-                          {selectedAccount.user.email && <div><span className="text-gray-400">邮箱:</span> {selectedAccount.user.email}</div>}
-                          {selectedAccount.user.status && <div><span className="text-gray-400">状态:</span> {selectedAccount.user.status}</div>}
-                        </div>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">币种</label>
-                  <p className="mt-1 text-sm">{selectedAccount.ccy}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">状态</label>
-                  <p className="mt-1">{getStatusBadge(selectedAccount.status)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">版本</label>
-                  <p className="mt-1 text-sm">{selectedAccount.version}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">创建时间</label>
-                  <p className="mt-1 text-sm">{formatDateTime(selectedAccount.created_at)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">更新时间</label>
-                  <p className="mt-1 text-sm">{formatDateTime(selectedAccount.updated_at)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">最后活跃时间</label>
-                  <p className="mt-1 text-sm">{formatDateTime(selectedAccount.last_active_at)}</p>
-                </div>
-              </div>
-              
-              {/* 余额信息 */}
-              <div className="border rounded-lg p-4">
-                <h3 className="text-lg font-semibold mb-4">余额信息</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">总余额</label>
-                    <p className="mt-1 font-mono text-lg font-semibold">{formatAmount(selectedAccount.balance?.balance)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">可用余额</label>
-                    <p className="mt-1 font-mono text-lg font-semibold text-green-600">{formatAmount(selectedAccount.balance?.available_balance)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">冻结余额</label>
-                    <p className="mt-1 font-mono text-lg font-semibold text-red-600">{formatAmount(selectedAccount.balance?.frozen_balance)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">保证金</label>
-                    <p className="mt-1 font-mono text-lg font-semibold">{formatAmount(selectedAccount.balance?.margin_balance)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">可用保证金</label>
-                    <p className="mt-1 font-mono text-lg font-semibold text-green-600">{formatAmount(selectedAccount.balance?.available_margin_balance)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">冻结保证金</label>
-                    <p className="mt-1 font-mono text-lg font-semibold text-red-600">{formatAmount(selectedAccount.balance?.frozen_margin_balance)}</p>
-                  </div>
-                  {selectedAccount.balance?.updated_at && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">余额更新时间</label>
-                      <p className="mt-1 text-sm">{formatDateTime(selectedAccount.balance.updated_at)}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <AccountDetail 
+              account={selectedAccount}
+              formatDateTime={formatDateTime}
+              formatAmount={formatAmount}
+            />
           )}
         </DialogContent>
       </Dialog>

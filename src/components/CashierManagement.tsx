@@ -5,10 +5,11 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { Search, Filter, Download, RefreshCw, User } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Search, Download, RefreshCw, User } from 'lucide-react';
 import { cashierService, Cashier, CashierListParams, CashierStats } from '../services/cashierService';
 import { toast } from '../utils/toast';
+import { getAccountStatusBadgeConfig } from '../constants/status';
 
 export function CashierManagement() {
   console.log('CashierManagement component rendering');
@@ -63,9 +64,6 @@ export function CashierManagement() {
         if (searchTerm.includes('@')) {
           // 包含 @ 符号：UPI ID 搜索
           params.upi = searchTerm;
-        } else if (/^\d{10,}$/.test(searchTerm)) {
-          // 10位以上数字：手机号或卡号搜索
-          params.holder_phone = searchTerm;
         } else if (searchTerm.startsWith('C') || searchTerm.startsWith('U')) {
           // C 开头：account_id，U 开头：user_id
           if (searchTerm.startsWith('C')) {
@@ -127,34 +125,15 @@ export function CashierManagement() {
     fetchStats();
   };
 
+  // 账户状态徽章 - 使用通用组件
   const getStatusBadge = (status: string) => {
-    const getStatusConfig = (status: string) => {
-      switch (status?.toLowerCase()) {
-        case 'active':
-        case '1':
-          return { label: '激活', variant: 'default' as const, className: 'bg-green-500' };
-        case 'inactive':
-        case '0':
-          return { label: '未激活', variant: 'secondary' as const, className: 'bg-gray-500' };
-        case 'suspended':
-        case 'frozen':
-        case '2':
-          return { label: '暂停', variant: 'destructive' as const, className: '' };
-        case 'pending':
-        case '3':
-          return { label: '待审核', variant: 'secondary' as const, className: 'bg-yellow-500' };
-        default:
-          return { label: status || '-', variant: 'outline' as const, className: '' };
-      }
-    };
-    
-    const { label, variant, className } = getStatusConfig(status);
+    const { label, variant, className } = getAccountStatusBadgeConfig(status);
     return <Badge variant={variant} className={className}>{label}</Badge>;
   };
 
   // 在线状态徽章
   const getOnlineStatusBadge = (onlineStatus: string) => {
-    const getOnlineConfig = (status: string) => {
+    const getOnlineStatusConfig = (status: string) => {
       switch (status?.toLowerCase()) {
         case 'online':
           return { label: '在线', variant: 'default' as const, className: 'bg-green-500' };
@@ -169,7 +148,24 @@ export function CashierManagement() {
       }
     };
     
-    const { label, variant, className} = getOnlineConfig(onlineStatus);
+    const { label, variant, className} = getOnlineStatusConfig(onlineStatus);
+    return <Badge variant={variant} className={className}>{label}</Badge>;
+  };
+
+  // 代收/代付状态徽章
+  const getTrxStatusBadge = (status: string) => {
+    const getTrxStatusConfig = (status: string) => {
+      switch (status?.toLowerCase()) {
+        case 'active':
+          return { label: '启用', variant: 'default' as const, className: 'bg-green-500' };
+        case 'inactive':
+          return { label: '禁用', variant: 'secondary' as const, className: 'bg-gray-500' };
+        default:
+          return { label: status || '-', variant: 'outline' as const, className: '' };
+      }
+    };
+    
+    const { label, variant, className } = getTrxStatusConfig(status);
     return <Badge variant={variant} className={className}>{label}</Badge>;
   };
 
@@ -268,7 +264,7 @@ export function CashierManagement() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  placeholder="搜索姓名/邮箱/电话..."
+                  placeholder="搜索姓名/UPI/ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -306,45 +302,58 @@ export function CashierManagement() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Account ID</TableHead>
-                <TableHead>User ID</TableHead>
+                <TableHead>收银员</TableHead>
                 <TableHead>APP账号</TableHead>
-                <TableHead>持卡人</TableHead>
-                <TableHead>银行</TableHead>
-                <TableHead>UPI/卡号</TableHead>
-                <TableHead>电话</TableHead>
+                <TableHead>UPI</TableHead>
+                <TableHead>银行卡</TableHead>
                 <TableHead>账户状态</TableHead>
                 <TableHead>在线状态</TableHead>
-                <TableHead>创建时间</TableHead>
+                <TableHead>最近登录时间</TableHead>
                 <TableHead>操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-4">
+                  <TableCell colSpan={8} className="text-center py-4">
                     加载中...
                   </TableCell>
                 </TableRow>
               ) : !cashiers || cashiers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-4 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-4 text-muted-foreground">
                     暂无数据
                   </TableCell>
                 </TableRow>
               ) : (
                 (cashiers || []).map((cashier) => (
                   <TableRow key={cashier.account_id}>
-                    <TableCell className="font-mono text-sm">{cashier.account_id}</TableCell>
-                    <TableCell className="font-mono text-sm">{cashier.user_id}</TableCell>
-                    <TableCell className="font-mono text-sm">{cashier.app_account || '-'}</TableCell>
-                    <TableCell className="font-medium">{cashier.holder_name}</TableCell>
-                    <TableCell>{cashier.bank_name || '-'}</TableCell>
-                    <TableCell className="font-mono text-sm">{cashier.upi || cashier.card_number || '-'}</TableCell>
-                    <TableCell>{cashier.holder_phone}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{cashier.cashier?.name || '-'}</span>
+                        <span className="text-xs text-gray-500 font-mono">{cashier.user_id}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-mono text-sm">{cashier.app_account_id || '-'}</span>
+                        {cashier.app_type && (
+                          <span className="text-xs text-gray-500">({cashier.app_type})</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-mono text-sm">{cashier.upi || '-'}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col text-sm">
+                        {cashier.holder_name && <span className="font-medium">{cashier.holder_name}</span>}
+                        {cashier.bank_name && <span>{cashier.bank_name}</span>}
+                        {cashier.bank_code && <span className="text-xs text-gray-500">{cashier.bank_code}</span>}
+                        {cashier.card_number && <span className="font-mono text-xs text-gray-500">{cashier.card_number}</span>}
+                      </div>
+                    </TableCell>
                     <TableCell>{getStatusBadge(cashier.status)}</TableCell>
                     <TableCell>{getOnlineStatusBadge(cashier.online_status)}</TableCell>
-                    <TableCell>{formatDateTime(cashier.created_at)}</TableCell>
+                    <TableCell>{formatDateTime(cashier.bound_at)}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         <Dialog>
@@ -372,12 +381,20 @@ export function CashierManagement() {
                                   <p className="text-base font-semibold font-mono mt-1">{selectedCashier.user_id}</p>
                                 </div>
                                 <div>
+                                  <label className="text-sm text-muted-foreground">收银员姓名</label>
+                                  <p className="text-base font-semibold mt-1">{selectedCashier.cashier?.name || '-'}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm text-muted-foreground">收银员电话</label>
+                                  <p className="text-base font-semibold mt-1">{selectedCashier.cashier?.phone || '-'}</p>
+                                </div>
+                                <div>
                                   <label className="text-sm text-muted-foreground">APP类型</label>
                                   <p className="text-base font-semibold mt-1">{selectedCashier.app_type}</p>
                                 </div>
                                 <div>
-                                  <label className="text-sm text-muted-foreground">APP账号</label>
-                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.app_account || '-'}</p>
+                                  <label className="text-sm text-muted-foreground">APP账号ID</label>
+                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.app_account_id || '-'}</p>
                                 </div>
                                 <div>
                                   <label className="text-sm text-muted-foreground">UPI ID</label>
@@ -421,11 +438,11 @@ export function CashierManagement() {
                                 </div>
                                 <div>
                                   <label className="text-sm text-muted-foreground">代收状态</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.payin_status || '-'}</p>
+                                  <p className="mt-1">{getTrxStatusBadge(selectedCashier.payin_status)}</p>
                                 </div>
                                 <div>
                                   <label className="text-sm text-muted-foreground">代付状态</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.payout_status || '-'}</p>
+                                  <p className="mt-1">{getTrxStatusBadge(selectedCashier.payout_status)}</p>
                                 </div>
                                 <div>
                                   <label className="text-sm text-muted-foreground">备注</label>

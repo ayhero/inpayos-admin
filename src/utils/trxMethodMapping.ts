@@ -4,7 +4,7 @@
  * 参考后端定义：internal/protocol/const.go
  */
 
-// 交易方式映射表 - 对应后端 TrxMethod 常量
+// 交易方式映射表 - 对应后端 TrxMethod 常量（严格按照后端定义）
 export const trxMethodMap: Record<string, string> = {
   'upi': 'UPI',
   'upi_lite': 'UPI Lite',
@@ -12,17 +12,6 @@ export const trxMethodMap: Record<string, string> = {
   'bank_card': '银行卡',
   'bank_transfer': '银行转账',
   'usdt': 'USDT',
-  // 其他常见支付方式
-  'imps': 'IMPS',
-  'neft': 'NEFT',
-  'rtgs': 'RTGS',
-  'paytm': 'Paytm',
-  'phonepe': 'PhonePe',
-  'googlepay': 'Google Pay',
-  'alipay': '支付宝',
-  'wechat': '微信支付',
-  'card': '银行卡',
-  'cash': '现金',
 };
 
 /**

@@ -14,13 +14,33 @@ export interface CashierTrxConfig {
   support_trx_methods?: string[];
 }
 
+// 收银员信息 (嵌套对象)
+export interface CashierInfo {
+  name: string;                 // 收银员姓名
+  phone: string;                // 手机号
+  email: string;                // 邮箱
+  status: string;               // 状态
+  online_status: string;        // 在线状态
+}
+
+// APP账户信息 (嵌套对象)
+export interface AppAccountInfo {
+  account_id: string;           // APP账户ID
+  status: string;               // 账户状态
+}
+
 // 出纳员账户信息接口 (CashierAccount)
 export interface Cashier {
   account_id: string;           // 收银账户ID (CashierAccountID) - 主键
   user_id: string;              // 收银员用户ID (CashierUserID) - 对应旧的cid
   tid: string;                  // 车队ID (TeamID)
+  
+  // 收银员信息 (嵌套对象)
+  cashier?: CashierInfo;        // 收银员基本信息
+  
   app_type: string;             // 应用类型 (freecharge, paytm, phonepe, gpay)
-  app_account: string;          // 绑定的APP账号ID (AppAccountID)
+  app_account_id: string;       // 绑定的APP账号ID (AppAccountID)
+  app_account?: AppAccountInfo; // APP账户详细信息 (嵌套对象)
   
   // 支付方式信息（UPI和银行卡独立）
   upi: string;                  // UPI ID (如: 9876543001@paytm) - 有值时显示UPI

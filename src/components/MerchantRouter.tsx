@@ -473,19 +473,37 @@ export function MerchantRouter() {
             <DialogTitle>{selectedRouter ? '编辑路由' : '新增路由'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-6 py-4">
-            {/* 商户ID和优先级 */}
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                placeholder="商户ID（留空表示全局配置）"
-                value={formData.mid}
-                onChange={(e) => setFormData({ ...formData, mid: e.target.value })}
-              />
-              <Input
-                type="number"
-                placeholder="优先级"
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) || 0 })}
-              />
+            {/* 第一行：商户ID、优先级、状态 */}
+            <div className="grid grid-cols-12 gap-4 items-center">
+              <div className="col-span-6">
+                <Input
+                  placeholder="商户ID（留空表示全局配置）"
+                  value={formData.mid}
+                  onChange={(e) => setFormData({ ...formData, mid: e.target.value })}
+                />
+              </div>
+              <div className="col-span-3">
+                <Input
+                  type="number"
+                  placeholder="优先级"
+                  value={formData.priority}
+                  onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="col-span-3 flex items-center gap-2">
+                <div className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer"
+                  style={{ backgroundColor: formData.status === 'active' ? '#22c55e' : '#e5e7eb' }}
+                  onClick={() => setFormData({ ...formData, status: formData.status === 'active' ? 'inactive' : 'active' })}
+                >
+                  <span 
+                    className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                    style={{ transform: formData.status === 'active' ? 'translateX(24px)' : 'translateX(4px)' }}
+                  />
+                </div>
+                <span className={`text-sm font-medium ${formData.status === 'active' ? 'text-green-600' : 'text-gray-400'}`}>
+                  {formData.status === 'active' ? '激活' : '禁用'}
+                </span>
+              </div>
             </div>
 
             {/* 支付方式模块 */}
@@ -603,35 +621,6 @@ export function MerchantRouter() {
                   value={formData.channel_group}
                   onChange={(e) => setFormData({ ...formData, channel_group: e.target.value })}
                 />
-              </div>
-            </div>
-
-            {/* 状态模块 */}
-            <div className="border rounded-lg p-4 space-y-3">
-              <h3 className="font-semibold text-sm">状态</h3>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="status"
-                    value="inactive"
-                    checked={formData.status === 'inactive'}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-4 h-4"
-                  />
-                  <span>禁用</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="status"
-                    value="active"
-                    checked={formData.status === 'active'}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-4 h-4"
-                  />
-                  <span>启用</span>
-                </label>
               </div>
             </div>
 

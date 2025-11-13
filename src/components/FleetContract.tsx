@@ -248,8 +248,7 @@ export function FleetContract() {
               <TableHeader>
                 <TableRow>
                   <TableHead>合约ID</TableHead>
-                  <TableHead>车队ID</TableHead>
-                  <TableHead>类型</TableHead>
+                  <TableHead>车队</TableHead>
                   <TableHead>生效时间</TableHead>
                   <TableHead>过期时间</TableHead>
                   <TableHead>状态</TableHead>
@@ -260,8 +259,12 @@ export function FleetContract() {
                 {contracts.map((contract) => (
                   <TableRow key={contract.id}>
                     <TableCell className="font-mono text-xs">{contract.contract_id}</TableCell>
-                    <TableCell className="font-mono text-xs">{contract.sid}</TableCell>
-                    <TableCell>{contract.stype === 'cashier_team' ? '车队' : '商户'}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{contract.user?.name || '-'}</span>
+                        <span className="font-mono text-xs text-gray-500">{contract.sid}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>{formatDateTime(contract.start_at)}</TableCell>
                     <TableCell>{contract.expired_at ? formatDateTime(contract.expired_at) : '永久'}</TableCell>
                     <TableCell>{getStatusBadge(contract.status)}</TableCell>

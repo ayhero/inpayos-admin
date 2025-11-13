@@ -31,7 +31,7 @@ export interface AccountData {
     ccy: string;
     updated_at: number;
   };
-  status: string; // 后端返回的是字符串"1"，不是number
+  status: string; // 状态是字符串，如 "active", "inactive", "frozen" 等
   version: number;
   last_active_at: number;
   user?: UserData; // 用户信息

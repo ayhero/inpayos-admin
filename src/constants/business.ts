@@ -1,43 +1,20 @@
-// 交易类型映射
-export const TRX_TYPE_MAP: { [key: string]: string } = {
-  'payin': '代收',
-  'payout': '代付',
-  'cashier_payin': '出纳代收',
-  'cashier_payout': '出纳代付',
-  'cashier_withdraw': '出纳提现',
-  'refund': '退款',
-  'deposit': '充值',
-  'margin_deposit': '保证金充值',
-  'swap': '余额转保证金',
-  'margin_release': '保证金释放',
-  'transfer': '转账',
-  'dividend': '分红',
-  'fee': '手续费',
-  'adjustment': '余额调整',
-  'chargeback': '退单',
-  'settle': '结算',
-  'freeze': '冻结',
-  'unfreeze': '解冻',
-  'withdraw': '提现',
-};
+import { trxTypeMap, formatTrxType as utilFormatTrxType } from '../utils/trxTypeMapping';
+import { trxMethodMap, formatTrxMethod as utilFormatTrxMethod } from '../utils/trxMethodMapping';
+import { currencyMap, formatCurrency as utilFormatCurrency } from '../utils/currencyMapping';
+
+// 交易类型映射 - 使用统一的mapping工具
+export const TRX_TYPE_MAP = trxTypeMap;
 
 // 交易类型选项（用于下拉框）
-export const TRX_TYPE_OPTIONS = [
-  { value: 'payin', label: '代收' },
-  { value: 'payout', label: '代付' },
-  { value: 'cashier_payin', label: '出纳代收' },
-  { value: 'cashier_payout', label: '出纳代付' },
-  { value: 'cashier_withdraw', label: '出纳提现' },
-  { value: 'refund', label: '退款' },
-  { value: 'deposit', label: '充值' },
-  { value: 'margin_deposit', label: '保证金充值' },
-  { value: 'withdraw', label: '提现' },
-];
+export const TRX_TYPE_OPTIONS = Object.entries(TRX_TYPE_MAP).map(([value, label]) => ({
+  value,
+  label,
+}));
 
 // 商户路由交易类型选项
 export const MERCHANT_TRX_TYPE_OPTIONS = [
-  { value: 'payin', label: '代收' },
-  { value: 'payout', label: '代付' },
+  { value: 'payin', label: TRX_TYPE_MAP['payin'] },
+  { value: 'payout', label: TRX_TYPE_MAP['payout'] },
   { value: 'withdraw', label: '提现' },
 ];
 
@@ -48,15 +25,8 @@ export const FLEET_TRX_TYPE_OPTIONS = [
   { value: 'withdraw', label: '提现' },
 ];
 
-// 交易方法映射（支付方式 - 来源于const.go）
-export const TRX_METHOD_MAP: { [key: string]: string } = {
-  'upi': 'UPI',
-  'upi_lite': 'UPI Lite',
-  'wallet': '钱包',
-  'bank_card': '银行卡',
-  'bank_transfer': '银行转账',
-  'usdt': 'USDT',
-};
+// 交易方法映射（支付方式） - 使用统一的mapping工具
+export const TRX_METHOD_MAP = trxMethodMap;
 
 // 支付方式选项
 export const TRX_METHOD_OPTIONS = [
@@ -67,25 +37,8 @@ export const TRX_METHOD_OPTIONS = [
   }))
 ];
 
-// 货币映射
-export const CCY_MAP: { [key: string]: string } = {
-  'CNY': '人民币',
-  'USD': '美元',
-  'EUR': '欧元',
-  'JPY': '日元',
-  'GBP': '英镑',
-  'HKD': '港币',
-  'PHP': '菲律宾比索',
-  'THB': '泰铢',
-  'VND': '越南盾',
-  'IDR': '印尼盾',
-  'MYR': '马来西亚林吉特',
-  'SGD': '新加坡元',
-  'KRW': '韩元',
-  'INR': '印度卢比',
-  'BRL': '巴西雷亚尔',
-  'USDT': 'USDT',
-};
+// 货币映射 - 使用统一的mapping工具
+export const CCY_MAP = currencyMap;
 
 // 货币选项（带货币符号）
 export const CCY_OPTIONS = [
@@ -146,10 +99,7 @@ export const USER_TYPE_MAP: { [key: string]: string } = {
 };
 
 // 获取交易类型显示名称
-export const getTrxTypeLabel = (trxType?: string): string => {
-  if (!trxType) return '-';
-  return TRX_TYPE_MAP[trxType] || trxType;
-};
+export const getTrxTypeLabel = utilFormatTrxType;
 
 // 获取通道编码显示名称
 export const getChannelCodeLabel = (channelCode?: string): string => {
@@ -170,13 +120,10 @@ export const getUserTypeLabel = (userType?: string): string => {
 };
 
 // 获取交易方法显示名称
-export const getTrxMethodLabel = (trxMethod?: string): string => {
-  if (!trxMethod) return '-';
-  return TRX_METHOD_MAP[trxMethod] || trxMethod;
-};
+export const getTrxMethodLabel = utilFormatTrxMethod;
 
 // 获取货币显示名称
 export const getCcyLabel = (ccy?: string): string => {
   if (!ccy) return '-';
-  return CCY_MAP[ccy] || ccy;
+  return utilFormatCurrency(ccy);
 };

@@ -77,3 +77,13 @@ export function formatAmount(amount: number | string, currencyCode: string): str
   const currency = formatCurrency(currencyCode);
   return `${amount} ${currency}`;
 }
+
+/**
+ * 货币显示组件（用于React）
+ * @param currencyCode 货币代码
+ * @returns 格式化后的货币字符串，格式：中文(货币码)
+ */
+export function CurrencyDisplay(currencyCode?: string): string {
+  if (!currencyCode) return '-';
+  return formatCurrency(currencyCode);
+}
