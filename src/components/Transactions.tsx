@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Search, RefreshCw } from 'lucide-react';
-import { getStatusDisplayName, getStatusColor } from '../constants/status';
+import { getStatusDisplayName, getStatusColor, getTrxTypeBadgeConfig } from '../constants/status';
+import { getTrxMethodLabel } from '../constants/business';
 import { transactionService, TransactionInfo, TransactionType, TransactionQueryParams } from '../services/transactionService';
 import { toast } from '../utils/toast';
 
@@ -232,6 +233,8 @@ export function Transactions() {
                 <TableRow>
                   <TableHead>交易ID</TableHead>
                   <TableHead>请求ID</TableHead>
+                  <TableHead>交易类型</TableHead>
+                  <TableHead>支付方式</TableHead>
                   <TableHead>金额</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>创建时间</TableHead>
@@ -243,6 +246,13 @@ export function Transactions() {
                   <TableRow key={transaction.trxID}>
                     <TableCell className="font-mono text-sm">{transaction.trxID}</TableCell>
                     <TableCell className="font-mono text-sm">{transaction.reqID}</TableCell>
+                    <TableCell>
+                      {(() => {
+                        const config = getTrxTypeBadgeConfig(transaction.trxType || '');
+                        return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
+                      })()}
+                    </TableCell>
+                    <TableCell>{getTrxMethodLabel(transaction.trxMethod)}</TableCell>
                     <TableCell>
                       {transaction.amount} {transaction.ccy}
                       {transaction.usdAmount && transaction.usdAmount !== transaction.amount && (

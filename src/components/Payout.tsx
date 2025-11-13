@@ -15,7 +15,8 @@ import {
   TransactionQueryParams,
   TodayStats 
 } from '../services/transactionService';
-import { getStatusDisplayName, getStatusColor } from '../constants/status';
+import { getStatusDisplayName, getStatusColor, getTrxTypeBadgeConfig } from '../constants/status';
+import { getTrxMethodLabel } from '../constants/business';
 import { toast } from '../utils/toast';
 
 export function PayoutRecords() {
@@ -371,11 +372,11 @@ export function PayoutRecords() {
             <TableHeader>
               <TableRow>
                 <TableHead>交易ID</TableHead>
+                <TableHead>交易类型</TableHead>
                 <TableHead>金额</TableHead>
                 <TableHead>支付方式</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead>创建时间</TableHead>
-                <TableHead>确认时间</TableHead>
                 <TableHead>完成时间</TableHead>
                 <TableHead>操作</TableHead>
               </TableRow>
@@ -385,12 +386,17 @@ export function PayoutRecords() {
                 <TableRow key={record.trxID}>
                   <TableCell className="font-mono text-sm">{record.trxID}</TableCell>
                   <TableCell>
+                    {(() => {
+                      const config = getTrxTypeBadgeConfig(record.trxType || '');
+                      return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
+                    })()}
+                  </TableCell>
+                  <TableCell>
                     {formatCurrencyForModal(record.amount, record.ccy, record.usdAmount)}
                   </TableCell>
-                  <TableCell>{record.trxMethod || '-'}</TableCell>
+                  <TableCell>{getTrxMethodLabel(record.trxMethod)}</TableCell>
                   <TableCell>{getStatusBadge(record.status)}</TableCell>
                   <TableCell>{formatDateTime(record.createdAt)}</TableCell>
-                  <TableCell>{record.confirmedAt ? formatDateTime(record.confirmedAt) : '-'}</TableCell>
                   <TableCell>{record.completedAt ? formatDateTime(record.completedAt) : '-'}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
