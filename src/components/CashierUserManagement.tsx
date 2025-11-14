@@ -297,13 +297,10 @@ export function CashierUserManagement() {
                                       <div><strong>账户ID:</strong> {cashier.primary_account.account_id}</div>
                                     )}
                                     {cashier.primary_account.app_type && (
-                                      <div><strong>应用类型:</strong> {cashier.primary_account.app_type}</div>
+                                      <div><strong>App:</strong> {cashier.primary_account.app_type}</div>
                                     )}
                                     {cashier.primary_account.upi && (
                                       <div><strong>UPI:</strong> {cashier.primary_account.upi}</div>
-                                    )}
-                                    {cashier.primary_account.provider && (
-                                      <div><strong>Provider:</strong> {cashier.primary_account.provider}</div>
                                     )}
                                     {cashier.primary_account.bank_name && (
                                       <div><strong>银行:</strong> {cashier.primary_account.bank_name}</div>
@@ -393,11 +390,11 @@ export function CashierUserManagement() {
       {/* 详情对话框 */}
       {selectedCashier && (
         <Dialog open={!!selectedCashier} onOpenChange={() => setSelectedCashier(null)}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[45vw] w-[45vw] min-w-[600px]" style={{width: '45vw', maxWidth: '45vw'}}>
             <DialogHeader>
               <DialogTitle>Cashier用户详情</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[500px] overflow-y-auto">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">用户ID</div>
@@ -443,6 +440,10 @@ export function CashierUserManagement() {
                   <div className="text-sm font-medium text-muted-foreground">代付状态</div>
                   <div className="mt-1"><StatusBadge status={selectedCashier.payout_status} type="trx" /></div>
                 </div>
+              </div>
+
+              {/* 时间信息 - 单独一行 */}
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">创建时间</div>
                   <div className="mt-1">{formatDateTime(selectedCashier.created_at)}</div>
