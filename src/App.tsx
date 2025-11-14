@@ -33,7 +33,8 @@ import { PayoutRecords } from './components/Payout';
 // import { SettlementRecords } from './components/SettlementRecords';
 import { ChangePasswordPage } from './components/ChangePasswordPage';
 import { ToastContainer } from './components/Toast';
-import { CashierManagement } from './components/CashierManagement';
+import { CashierAccountManagement } from './components/CashierAccountManagement';
+import { CashierUserManagement } from './components/CashierUserManagement';
 import { MerchantManagement } from './components/MerchantManagement';
 import { CashierTeamManagement } from './components/CashierTeamManagement';
 import { MerchantContract } from './components/MerchantContract';
@@ -146,7 +147,13 @@ export default function App() {
       id: 'cashier',
       label: 'Cashier',
       icon: Users,
-      component: CashierManagement
+      component: CashierUserManagement
+    },
+    {
+      id: 'cashier-account',
+      label: 'Cashier账户',
+      icon: Users,
+      component: CashierAccountManagement
     },
     {
       id: 'app-account',
@@ -300,7 +307,7 @@ export default function App() {
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(7, 13).map((item) => (
+                {menuItems.slice(7, 14).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
@@ -325,7 +332,7 @@ export default function App() {
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(13, 14).map((item) => (
+                {menuItems.slice(14, 15).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${

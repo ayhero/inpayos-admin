@@ -11,8 +11,8 @@ import { cashierService, Cashier, CashierListParams, CashierStats } from '../ser
 import { toast } from '../utils/toast';
 import { getAccountStatusBadgeConfig } from '../constants/status';
 
-export function CashierManagement() {
-  console.log('CashierManagement component rendering');
+export function CashierAccountManagement() {
+  console.log('CashierAccountManagement component rendering');
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -194,7 +194,7 @@ export function CashierManagement() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Cashier</h1>
+        <h1 className="text-2xl font-bold">Cashier账户</h1>
         <Button onClick={handleRefresh} className="gap-2" variant="outline">
           <RefreshCw className="h-4 w-4" />
           刷新
