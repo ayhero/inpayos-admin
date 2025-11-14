@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -15,7 +14,7 @@ import {
 import { Search, Download, RefreshCw, User } from 'lucide-react';
 import { cashierUserService, CashierUser, CashierUserListParams, CashierUserStats } from '../services/cashierUserService';
 import { toast } from '../utils/toast';
-import { getAccountStatusBadgeConfig } from '../constants/status';
+import { StatusBadge } from './StatusBadge';
 
 export function CashierUserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -117,46 +116,6 @@ export function CashierUserManagement() {
   const handleRefresh = () => {
     fetchCashiers();
     fetchStats();
-  };
-
-  // 账户状态徽章
-  const getStatusBadge = (status: string) => {
-    const { label, variant, className } = getAccountStatusBadgeConfig(status);
-    return <Badge variant={variant} className={className}>{label}</Badge>;
-  };
-
-  // 在线状态徽章
-  const getOnlineStatusBadge = (onlineStatus: string) => {
-    const getOnlineStatusConfig = (status: string) => {
-      switch (status?.toLowerCase()) {
-        case 'online':
-          return { label: '在线', variant: 'default' as const, className: 'bg-green-500' };
-        case 'offline':
-          return { label: '离线', variant: 'secondary' as const, className: 'bg-gray-500' };
-        default:
-          return { label: status || '-', variant: 'outline' as const, className: '' };
-      }
-    };
-    
-    const { label, variant, className} = getOnlineStatusConfig(onlineStatus);
-    return <Badge variant={variant} className={className}>{label}</Badge>;
-  };
-
-  // 代收/代付状态徽章
-  const getTrxStatusBadge = (status: string) => {
-    const getTrxStatusConfig = (status: string) => {
-      switch (status?.toLowerCase()) {
-        case 'active':
-          return { label: '启用', variant: 'default' as const, className: 'bg-green-500' };
-        case 'inactive':
-          return { label: '禁用', variant: 'secondary' as const, className: 'bg-gray-500' };
-        default:
-          return { label: status || '-', variant: 'outline' as const, className: '' };
-      }
-    };
-    
-    const { label, variant, className } = getTrxStatusConfig(status);
-    return <Badge variant={variant} className={className}>{label}</Badge>;
   };
 
   const formatDateTime = (timestamp: number) => {
@@ -333,23 +292,43 @@ export function CashierUserManagement() {
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-sm">
-                                  <div className="space-y-1 text-xs">
-                                    <div><strong>账户ID:</strong> {cashier.primary_account.account_id}</div>
+                                  <div className="space-y-1.5 text-xs">
+                                    {cashier.primary_account.account_id && (
+                                      <div><strong>账户ID:</strong> {cashier.primary_account.account_id}</div>
+                                    )}
+                                    {cashier.primary_account.app_type && (
+                                      <div><strong>应用类型:</strong> {cashier.primary_account.app_type}</div>
+                                    )}
                                     {cashier.primary_account.upi && (
-                                      <>
-                                        <div><strong>UPI:</strong> {cashier.primary_account.upi}</div>
-                                        <div><strong>Provider:</strong> {cashier.primary_account.provider}</div>
-                                      </>
+                                      <div><strong>UPI:</strong> {cashier.primary_account.upi}</div>
+                                    )}
+                                    {cashier.primary_account.provider && (
+                                      <div><strong>Provider:</strong> {cashier.primary_account.provider}</div>
+                                    )}
+                                    {cashier.primary_account.bank_name && (
+                                      <div><strong>银行:</strong> {cashier.primary_account.bank_name}</div>
                                     )}
                                     {cashier.primary_account.card_number && (
-                                      <>
-                                        <div><strong>银行:</strong> {cashier.primary_account.bank_name}</div>
-                                        <div><strong>卡号:</strong> {cashier.primary_account.card_number}</div>
-                                      </>
+                                      <div><strong>卡号:</strong> {cashier.primary_account.card_number}</div>
                                     )}
-                                    <div><strong>持卡人:</strong> {cashier.primary_account.holder_name}</div>
-                                    <div><strong>手机:</strong> {cashier.primary_account.holder_phone}</div>
-                                    <div><strong>状态:</strong> {cashier.primary_account.status}</div>
+                                    {cashier.primary_account.holder_name && (
+                                      <div><strong>持卡人:</strong> {cashier.primary_account.holder_name}</div>
+                                    )}
+                                    {cashier.primary_account.holder_phone && (
+                                      <div><strong>手机:</strong> {cashier.primary_account.holder_phone}</div>
+                                    )}
+                                    {cashier.primary_account.status && (
+                                      <div className="flex items-center gap-2">
+                                        <strong>账户状态:</strong>
+                                        <StatusBadge status={cashier.primary_account.status} type="account" />
+                                      </div>
+                                    )}
+                                    {cashier.primary_account.online_status && (
+                                      <div className="flex items-center gap-2">
+                                        <strong>在线状态:</strong>
+                                        <StatusBadge status={cashier.primary_account.online_status} type="online" />
+                                      </div>
+                                    )}
                                   </div>
                                 </TooltipContent>
                               </Tooltip>
@@ -360,10 +339,10 @@ export function CashierUserManagement() {
                         </TableCell>
                         <TableCell>{cashier.tid || '-'}</TableCell>
                         <TableCell>{cashier.ccy || '-'}</TableCell>
-                        <TableCell>{getStatusBadge(cashier.status)}</TableCell>
-                        <TableCell>{getOnlineStatusBadge(cashier.online_status)}</TableCell>
-                        <TableCell>{getTrxStatusBadge(cashier.payin_status)}</TableCell>
-                        <TableCell>{getTrxStatusBadge(cashier.payout_status)}</TableCell>
+                        <TableCell><StatusBadge status={cashier.status} type="account" /></TableCell>
+                        <TableCell><StatusBadge status={cashier.online_status} type="online" /></TableCell>
+                        <TableCell><StatusBadge status={cashier.payin_status} type="trx" /></TableCell>
+                        <TableCell><StatusBadge status={cashier.payout_status} type="trx" /></TableCell>
                         <TableCell>{formatDateTime(cashier.created_at)}</TableCell>
                         <TableCell>
                           <Dialog>
@@ -450,19 +429,19 @@ export function CashierUserManagement() {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">状态</div>
-                  <div className="mt-1">{getStatusBadge(selectedCashier.status)}</div>
+                  <div className="mt-1"><StatusBadge status={selectedCashier.status} type="account" /></div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">在线状态</div>
-                  <div className="mt-1">{getOnlineStatusBadge(selectedCashier.online_status)}</div>
+                  <div className="mt-1"><StatusBadge status={selectedCashier.online_status} type="online" /></div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">代收状态</div>
-                  <div className="mt-1">{getTrxStatusBadge(selectedCashier.payin_status)}</div>
+                  <div className="mt-1"><StatusBadge status={selectedCashier.payin_status} type="trx" /></div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">代付状态</div>
-                  <div className="mt-1">{getTrxStatusBadge(selectedCashier.payout_status)}</div>
+                  <div className="mt-1"><StatusBadge status={selectedCashier.payout_status} type="trx" /></div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">创建时间</div>
@@ -533,19 +512,19 @@ export function CashierUserManagement() {
                     </div>
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">账户状态</div>
-                      <div className="mt-1">{getStatusBadge(selectedCashier.primary_account.status)}</div>
+                      <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.status} type="account" /></div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">在线状态</div>
-                      <div className="mt-1">{getOnlineStatusBadge(selectedCashier.primary_account.online_status)}</div>
+                      <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.online_status} type="online" /></div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">代收状态</div>
-                      <div className="mt-1">{getTrxStatusBadge(selectedCashier.primary_account.payin_status)}</div>
+                      <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.payin_status} type="trx" /></div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">代付状态</div>
-                      <div className="mt-1">{getTrxStatusBadge(selectedCashier.primary_account.payout_status)}</div>
+                      <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.payout_status} type="trx" /></div>
                     </div>
                   </div>
                 </div>
