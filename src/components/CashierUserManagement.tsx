@@ -424,6 +424,10 @@ export function CashierUserManagement() {
                   <div className="text-sm font-medium text-muted-foreground">国家</div>
                   <div className="mt-1">{selectedCashier.country || '-'}</div>
                 </div>
+              </div>
+
+              {/* 状态信息 - 两行 */}
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">状态</div>
                   <div className="mt-1"><StatusBadge status={selectedCashier.status} type="account" /></div>
@@ -462,70 +466,77 @@ export function CashierUserManagement() {
               {selectedCashier.primary_account && (
                 <div className="mt-6">
                   <h3 className="text-lg font-semibold mb-4">主账户信息</h3>
-                  <div className="grid grid-cols-2 gap-4 border rounded-lg p-4 bg-muted/50">
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">账户ID</div>
-                      <div className="mt-1 font-mono text-sm">{selectedCashier.primary_account.account_id}</div>
+                  <div className="space-y-4 border rounded-lg p-4 bg-muted/50">
+                    {/* 基本信息 */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">账户ID</div>
+                        <div className="mt-1 font-mono text-sm">{selectedCashier.primary_account.account_id}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">应用类型</div>
+                        <div className="mt-1">{selectedCashier.primary_account.app_type || '-'}</div>
+                      </div>
+                      {selectedCashier.primary_account.upi && (
+                        <>
+                          <div>
+                            <div className="text-sm font-medium text-muted-foreground">UPI ID</div>
+                            <div className="mt-1 font-mono text-sm">{selectedCashier.primary_account.upi}</div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-muted-foreground">UPI Provider</div>
+                            <div className="mt-1">{selectedCashier.primary_account.provider || '-'}</div>
+                          </div>
+                        </>
+                      )}
+                      {selectedCashier.primary_account.card_number && (
+                        <>
+                          <div>
+                            <div className="text-sm font-medium text-muted-foreground">银行名称</div>
+                            <div className="mt-1">{selectedCashier.primary_account.bank_name || '-'}</div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-muted-foreground">银行代码</div>
+                            <div className="mt-1">{selectedCashier.primary_account.bank_code || '-'}</div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-muted-foreground">卡号</div>
+                            <div className="mt-1 font-mono text-sm">{selectedCashier.primary_account.card_number}</div>
+                          </div>
+                        </>
+                      )}
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">持卡人姓名</div>
+                        <div className="mt-1">{selectedCashier.primary_account.holder_name || '-'}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">持卡人手机</div>
+                        <div className="mt-1">{selectedCashier.primary_account.holder_phone || '-'}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">持卡人邮箱</div>
+                        <div className="mt-1">{selectedCashier.primary_account.holder_email || '-'}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">应用类型</div>
-                      <div className="mt-1">{selectedCashier.primary_account.app_type || '-'}</div>
-                    </div>
-                    {selectedCashier.primary_account.upi && (
-                      <>
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">UPI ID</div>
-                          <div className="mt-1 font-mono text-sm">{selectedCashier.primary_account.upi}</div>
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">UPI Provider</div>
-                          <div className="mt-1">{selectedCashier.primary_account.provider || '-'}</div>
-                        </div>
-                      </>
-                    )}
-                    {selectedCashier.primary_account.card_number && (
-                      <>
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">银行名称</div>
-                          <div className="mt-1">{selectedCashier.primary_account.bank_name || '-'}</div>
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">银行代码</div>
-                          <div className="mt-1">{selectedCashier.primary_account.bank_code || '-'}</div>
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">卡号</div>
-                          <div className="mt-1 font-mono text-sm">{selectedCashier.primary_account.card_number}</div>
-                        </div>
-                      </>
-                    )}
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">持卡人姓名</div>
-                      <div className="mt-1">{selectedCashier.primary_account.holder_name || '-'}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">持卡人手机</div>
-                      <div className="mt-1">{selectedCashier.primary_account.holder_phone || '-'}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">持卡人邮箱</div>
-                      <div className="mt-1">{selectedCashier.primary_account.holder_email || '-'}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">账户状态</div>
-                      <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.status} type="account" /></div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">在线状态</div>
-                      <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.online_status} type="online" /></div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">代收状态</div>
-                      <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.payin_status} type="trx" /></div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">代付状态</div>
-                      <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.payout_status} type="trx" /></div>
+                    
+                    {/* 状态信息 */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">账户状态</div>
+                        <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.status} type="account" /></div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">在线状态</div>
+                        <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.online_status} type="online" /></div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">代收状态</div>
+                        <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.payin_status} type="trx" /></div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">代付状态</div>
+                        <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.payout_status} type="trx" /></div>
+                      </div>
                     </div>
                   </div>
                 </div>
