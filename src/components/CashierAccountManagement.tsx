@@ -302,8 +302,7 @@ export function CashierAccountManagement() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>收银员</TableHead>
-                <TableHead>APP账号</TableHead>
+                <TableHead>收银员手机号</TableHead>
                 <TableHead>UPI</TableHead>
                 <TableHead>银行卡</TableHead>
                 <TableHead>主账号</TableHead>
@@ -316,13 +315,13 @@ export function CashierAccountManagement() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-4">
+                  <TableCell colSpan={8} className="text-center py-4">
                     加载中...
                   </TableCell>
                 </TableRow>
               ) : !cashiers || cashiers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-4 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-4 text-muted-foreground">
                     暂无数据
                   </TableCell>
                 </TableRow>
@@ -331,16 +330,8 @@ export function CashierAccountManagement() {
                   <TableRow key={cashier.account_id}>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-medium">{cashier.user?.name || '-'}</span>
+                        <span className="font-medium">{cashier.user?.phone || '-'}</span>
                         <span className="text-xs text-gray-500 font-mono">{cashier.user_id}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-mono text-sm">{cashier.app_account_id || '-'}</span>
-                        {cashier.app_type && (
-                          <span className="text-xs text-gray-500">({cashier.app_type})</span>
-                        )}
                       </div>
                     </TableCell>
                     <TableCell className="font-mono text-sm">{cashier.upi || '-'}</TableCell>

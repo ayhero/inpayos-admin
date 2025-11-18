@@ -407,7 +407,7 @@ export function PayoutRecords() {
                       >
                         详情
                       </Button>
-                      {record.status === TransactionStatus.PENDING && (
+                      {(record.status === TransactionStatus.PENDING || record.status === TransactionStatus.CONFIRMING) && (
                         <Button 
                           variant="default" 
                           size="sm"
