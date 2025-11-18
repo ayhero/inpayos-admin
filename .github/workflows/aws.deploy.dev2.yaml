@@ -101,7 +101,7 @@ jobs:
           docker run -d \
             --name inpayos-admin-dev2 \
             --restart unless-stopped \
-            -p 3302:80 \
+            -p 3301:80 \
             -v /root/inpayos-admin-dev2/logs:/var/log/supervisor \
             --add-host host.docker.internal:host-gateway \
             ghcr.io/ayhero/inpayos-admin:latest
@@ -119,11 +119,11 @@ jobs:
             
             # 检查端口监听
             echo "🔍 Checking port status:"
-            netstat -tlnp | grep ":3302" || echo "Port 3302 may still be binding..."
+            netstat -tlnp | grep ":3301" || echo "Port 3301 may still be binding..."
             
             # 尝试健康检查
             echo "🏥 Health check:"
-            if curl -f http://localhost:3302 2>/dev/null; then
+            if curl -f http://localhost:3301 2>/dev/null; then
               echo "✅ Admin Dev2 frontend health check passed"
             else
               echo "⚠️ Admin Dev2 frontend health check failed (may still be starting)"
