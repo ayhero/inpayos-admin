@@ -6,6 +6,7 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Search, Download } from 'lucide-react';
 import { 
   transactionService, 
@@ -471,104 +472,208 @@ export function PayoutRecords() {
           {detailLoading ? (
             <div className="text-center py-12">加载中...</div>
           ) : selectedRecord ? (
-            <div className="py-4 max-h-[70vh] overflow-y-auto space-y-6">
-              {/* 基本信息 */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3 pb-2 border-b">基本信息</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm text-muted-foreground">交易ID</label>
-                    <p className="text-base font-semibold font-mono mt-1">{selectedRecord.trxID}</p>
+            <div className="py-4 max-h-[70vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-6">
+                {/* 左侧栏 */}
+                <div className="space-y-4">
+              {/* 1. 基本信息模块 */}
+              <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">基本信息</h3>
+                <div className="space-y-4">
+                  {/* 1.1 交易ID、状态 */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm text-muted-foreground">交易ID</label>
+                      <p className="text-base font-semibold font-mono mt-1">{selectedRecord.trxID}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground">状态</label>
+                      <p className="mt-1">{getStatusBadge(selectedRecord.status)}</p>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">交易金额</label>
-                    <p className="text-base font-semibold mt-1">
-                      {formatCurrencyForModal(selectedRecord.amount, selectedRecord.ccy, selectedRecord.usdAmount)}
-                    </p>
+                  
+                  {/* 1.2 交易类型、支付方式、金额 */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm text-muted-foreground">交易类型</label>
+                      <p className="text-base font-semibold mt-1">
+                        {(() => {
+                          const config = getTrxTypeBadgeConfig(selectedRecord.trxType || '');
+                          return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
+                        })()}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground">支付方式</label>
+                      <p className="text-base font-semibold mt-1">{getTrxMethodLabel(selectedRecord.trxMethod)}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground">金额</label>
+                      <p className="text-base font-semibold mt-1">
+                        {formatCurrencyForModal(selectedRecord.amount, selectedRecord.ccy, selectedRecord.usdAmount)}
+                      </p>
+                    </div>
                   </div>
+                  
+                  {/* 1.3 备注 */}
                   <div>
-                    <label className="text-sm text-muted-foreground">支付方式</label>
-                    <p className="text-base font-semibold mt-1">{selectedRecord.trxMethod || '-'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">交易模式</label>
-                    <p className="text-base font-semibold mt-1">{selectedRecord.trxMode || '-'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">交易状态</label>
-                    <p className="text-base font-semibold mt-1">{getStatusBadge(selectedRecord.status)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">响应码</label>
-                    <p className="text-base font-semibold mt-1">{selectedRecord.resCode || '-'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">响应消息</label>
-                    <p className="text-base font-semibold mt-1">{selectedRecord.resMsg || '-'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">失败原因</label>
-                    <p className="text-base font-semibold mt-1">{selectedRecord.reason || '-'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">渠道交易ID</label>
-                    <p className="text-base font-semibold font-mono mt-1">{selectedRecord.channelTrxID || '-'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">手续费</label>
-                    <p className="text-base font-semibold mt-1">
-                      {selectedRecord.feeAmount ? formatCurrency(selectedRecord.feeAmount, selectedRecord.feeCcy || selectedRecord.ccy) : '-'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">创建时间</label>
-                    <p className="text-base font-semibold mt-1">{formatDateTime(selectedRecord.createdAt)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">更新时间</label>
-                    <p className="text-base font-semibold mt-1">{formatDateTime(selectedRecord.updatedAt)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">确认时间</label>
-                    <p className="text-base font-semibold mt-1">
-                      {selectedRecord.confirmedAt ? formatDateTime(selectedRecord.confirmedAt) : '-'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">完成时间</label>
-                    <p className="text-base font-semibold mt-1">
-                      {selectedRecord.completedAt ? formatDateTime(selectedRecord.completedAt) : '-'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">流水号</label>
-                    <p className="text-base font-semibold font-mono mt-1">{selectedRecord.flowNo || '-'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">国家</label>
-                    <p className="text-base font-semibold mt-1">{selectedRecord.country || '-'}</p>
-                  </div>
-                  <div className="col-span-2">
                     <label className="text-sm text-muted-foreground">备注</label>
                     <p className="text-base font-semibold mt-1">{selectedRecord.remark || '-'}</p>
+                  </div>
+                  
+                  {/* 1.3 创建时间、完成时间、过期时间 */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm text-muted-foreground">创建时间</label>
+                      <p className="text-base font-semibold mt-1">{formatDateTime(selectedRecord.createdAt)}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground">完成时间</label>
+                      <p className="text-base font-semibold mt-1">{selectedRecord.completedAt ? formatDateTime(selectedRecord.completedAt) : '-'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground">过期时间</label>
+                      <p className="text-base font-semibold mt-1">{selectedRecord.expiredAt ? formatDateTime(selectedRecord.expiredAt) : '-'}</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* 派单历史 */}
+              {/* 2. 收款信息模块（代付特有） */}
+              {(() => {
+                const acceptedDispatch = selectedRecord.dispatchRecords?.find(d => d.status === 'accepted' || d.status === 'pending');
+                const historyForDispatch = selectedRecord.dispatchHistory?.find(h => h.dispatchId === acceptedDispatch?.dispatchId);
+                const selectedCandidate = historyForDispatch?.candidates?.find(c => c.selected);
+                
+                if (!selectedCandidate) return null;
+                
+                return (
+                  <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">收款信息</h3>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-sm text-muted-foreground">UPI账户</label>
+                        <p className="text-base font-semibold font-mono mt-1">{selectedCandidate.upi || '-'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">App账户ID</label>
+                        <p className="text-base font-semibold font-mono mt-1">{selectedCandidate.cashierAppAccountId || '-'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">账户ID</label>
+                        <p className="text-base font-semibold font-mono mt-1">{selectedCandidate.cashierAccountId || '-'}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 3. 结算信息模块 */}
+              <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">结算信息</h3>
+                <div className="space-y-4">
+                  {/* 3.1 状态、时间 */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm text-muted-foreground">结算状态</label>
+                      <p className="text-base font-semibold mt-1">{selectedRecord.settleStatus || '-'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground">结算ID</label>
+                      <p className="text-base font-semibold font-mono mt-1">{selectedRecord.settleID || '-'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground">结算时间</label>
+                      <p className="text-base font-semibold mt-1">{selectedRecord.settledAt ? formatDateTime(selectedRecord.settledAt) : '-'}</p>
+                    </div>
+                  </div>
+                  
+                  {/* 3.2 币种、金额、费用 */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm text-muted-foreground">结算币种</label>
+                      <p className="text-base font-semibold mt-1">{selectedRecord.ccy}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground">结算金额</label>
+                      <p className="text-base font-semibold mt-1">
+                        {selectedRecord.settleAmount 
+                          ? `${formatCurrency(selectedRecord.settleAmount, selectedRecord.ccy)}${selectedRecord.settleUsdAmount && parseFloat(selectedRecord.settleUsdAmount) > 0 ? ` ($${selectedRecord.settleUsdAmount})` : ''}` 
+                          : '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground">手续费</label>
+                      <p className="text-base font-semibold mt-1">
+                        {selectedRecord.feeAmount ? formatCurrency(selectedRecord.feeAmount, selectedRecord.feeCcy || selectedRecord.ccy) : '-'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. 接单账户模块 */}
+              {selectedRecord.dispatchRecords && selectedRecord.dispatchRecords.length > 0 && (
+                <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">接单账户</h3>
+                  {(() => {
+                    const acceptedDispatch = selectedRecord.dispatchRecords.find(d => d.status === 'accepted' || d.status === 'pending');
+                    if (!acceptedDispatch) return <p className="text-sm text-muted-foreground">暂无接单信息</p>;
+                    
+                    const historyForDispatch = selectedRecord.dispatchHistory?.find(h => h.dispatchId === acceptedDispatch.dispatchId);
+                    const selectedCandidate = historyForDispatch?.candidates?.find(c => c.selected);
+                    
+                    return (
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <label className="text-sm text-muted-foreground">UPI账户</label>
+                          <p className="text-base font-semibold font-mono mt-1">{selectedCandidate?.upi || '-'}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-muted-foreground">用户手机号</label>
+                          {selectedCandidate?.user ? (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <p className="text-base font-semibold mt-1 cursor-help underline decoration-dotted">
+                                    {selectedCandidate.user.phone || '-'}
+                                  </p>
+                                </TooltipTrigger>
+                                <TooltipContent side="right" className="max-w-xs">
+                                  <div className="space-y-1 text-xs">
+                                    <div><span className="text-gray-400">用户ID:</span> <span className="font-mono">{selectedCandidate.user.user_id}</span></div>
+                                    <div><span className="text-gray-400">姓名:</span> {selectedCandidate.user.name || '-'}</div>
+                                    <div><span className="text-gray-400">手机:</span> {selectedCandidate.user.phone || '-'}</div>
+                                    <div><span className="text-gray-400">邮箱:</span> {selectedCandidate.user.email || '-'}</div>
+                                    <div><span className="text-gray-400">组织:</span> {selectedCandidate.user.org_id || '-'}</div>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : (
+                            <p className="text-base font-semibold mt-1">-</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="text-sm text-muted-foreground">接单时间</label>
+                          <p className="text-base font-semibold mt-1">{formatDateTime(acceptedDispatch.dispatchAt)}</p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+                </div>
+                
+                {/* 右侧栏 - 派单历史 */}
+                <div className="bg-indigo-50/50 dark:bg-indigo-950/30 border-2 border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
               <DispatchHistory 
                 dispatchHistory={selectedRecord.dispatchHistory} 
                 formatDateTime={formatDateTime} 
               />
-
-              {selectedRecord.detail && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 pb-2 border-b">详细信息</h3>
-                  <pre className="text-xs text-muted-foreground bg-muted p-3 rounded max-h-48 overflow-y-auto">
-                    {JSON.stringify(JSON.parse(selectedRecord.detail), null, 2)}
-                  </pre>
                 </div>
-              )}
+              </div>
             </div>
           ) : null}
         </DialogContent>

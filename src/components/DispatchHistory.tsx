@@ -1,6 +1,7 @@
 import { Badge } from './ui/badge';
 import { DispatchHistory as DispatchHistoryType } from '../services/transactionService';
-import { OnlineStatusBadge, AccountStatusBadge } from './StatusBadges';
+import { OnlineStatusBadge, AccountStatusBadge, UserStatusBadge } from './StatusBadges';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './ui/tooltip';
 
 interface DispatchHistoryProps {
   dispatchHistory?: DispatchHistoryType[];
@@ -44,8 +45,9 @@ export function DispatchHistory({ dispatchHistory, formatDateTime }: DispatchHis
                     <thead className="bg-muted/50">
                       <tr>
                         <th className="px-2 py-2 text-center font-medium">已选中</th>
+                        <th className="px-2 py-2 text-left font-medium">用户</th>
                         <th className="px-2 py-2 text-left font-medium">UPI</th>
-                        <th className="px-2 py-2 text-left font-medium">账户ID</th>
+                        <th className="px-2 py-2 text-left font-medium">App账户</th>
                         <th className="px-2 py-2 text-center font-medium">在线状态</th>
                         <th className="px-2 py-2 text-center font-medium">账户状态</th>
                         <th className="px-2 py-2 text-center font-medium">分数</th>
@@ -58,6 +60,43 @@ export function DispatchHistory({ dispatchHistory, formatDateTime }: DispatchHis
                           <td className="px-2 py-2 text-center">
                             {candidate.selected ? (
                               <Badge variant="default" className="bg-blue-500 text-xs">✓</Badge>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </td>
+                          <td className="px-2 py-2">
+                            {candidate.user ? (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="cursor-help underline decoration-dotted">
+                                      {candidate.user.phone || candidate.user.name || candidate.cid}
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="max-w-xs">
+                                    <div className="space-y-1 text-xs">
+                                      <div><span className="text-gray-400">用户ID:</span> <span className="font-mono">{candidate.user.user_id}</span></div>
+                                      <div><span className="text-gray-400">类型:</span> {candidate.user.user_type}</div>
+                                      {candidate.user.name && <div><span className="text-gray-400">姓名:</span> {candidate.user.name}</div>}
+                                      {candidate.user.phone && <div><span className="text-gray-400">手机:</span> {candidate.user.phone}</div>}
+                                      {candidate.user.email && <div><span className="text-gray-400">邮箱:</span> {candidate.user.email}</div>}
+                                      {candidate.user.org_id && <div><span className="text-gray-400">组织:</span> {candidate.user.org_id}</div>}
+                                      {candidate.user.status && (
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-gray-400">状态:</span>
+                                          <UserStatusBadge status={candidate.user.status} />
+                                        </div>
+                                      )}
+                                      {candidate.user.online_status && (
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-gray-400">在线状态:</span>
+                                          <OnlineStatusBadge status={candidate.user.online_status} />
+                                        </div>
+                                      )}
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             ) : (
                               <span className="text-muted-foreground">-</span>
                             )}

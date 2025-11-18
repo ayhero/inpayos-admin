@@ -11,6 +11,7 @@ import { getStatusDisplayName, getStatusColor, getTrxTypeBadgeConfig } from '../
 import { getTrxMethodLabel } from '../constants/business';
 import { transactionService, TransactionInfo, TransactionType, TransactionQueryParams } from '../services/transactionService';
 import { toast } from '../utils/toast';
+import { DispatchHistory } from './DispatchHistory';
 
 export function Transactions() {
   const [searchTerm, setSearchTerm] = useState('');

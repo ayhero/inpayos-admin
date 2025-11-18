@@ -1,4 +1,5 @@
 import { ApiResponse, api } from './api';
+import { UserInfo } from './cashierService';
 
 // 交易类型枚举 - 与后端 protocol 保持一致
 export enum TransactionType {
@@ -61,6 +62,7 @@ interface BackendPageResult<T> {
 
 // 派单候选人信息
 interface BackendDispatchCandidate {
+  user?: UserInfo;
   cid: string;
   cashier_account_id: string;
   cashier_app_account_id: string;
@@ -162,6 +164,8 @@ interface BackendTransactionInfo {
   remark?: string;
   settle_status?: string;
   settle_id?: string;
+  settle_amount?: string;
+  settle_usd_amount?: string;
   settled_at?: number; // 毫秒时间戳
   refunded_count?: number;
   refunded_amount?: string;
@@ -177,6 +181,7 @@ interface BackendTransactionInfo {
 
 // 派单候选人信息
 export interface DispatchCandidate {
+  user?: UserInfo;
   cid: string;
   cashierAccountId: string;
   cashierAppAccountId: string;
@@ -276,6 +281,8 @@ export interface TransactionInfo {
   remark?: string;
   settleStatus?: SettleStatus;
   settleID?: string;
+  settleAmount?: string;
+  settleUsdAmount?: string;
   settledAt?: string;
   refundedCount?: number;
   refundedAmount?: string;
@@ -364,6 +371,8 @@ const convertBackendToFrontend = (backend: BackendTransactionInfo): TransactionI
     remark: backend.remark,
     settleStatus: backend.settle_status ? (backend.settle_status as unknown as SettleStatus) : undefined,
     settleID: backend.settle_id,
+    settleAmount: backend.settle_amount,
+    settleUsdAmount: backend.settle_usd_amount,
     settledAt: timestampToISOString(backend.settled_at),
     refundedCount: backend.refunded_count,
     refundedAmount: backend.refunded_amount,
@@ -385,6 +394,7 @@ const convertBackendToFrontend = (backend: BackendTransactionInfo): TransactionI
       errorCode: h.error_code,
       errorMessage: h.error_message,
       candidates: h.candidates?.map(c => ({
+        user: c.user,
         cid: c.cid,
         cashierAccountId: c.cashier_account_id,
         cashierAppAccountId: c.cashier_app_account_id,
