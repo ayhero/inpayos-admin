@@ -59,6 +59,69 @@ interface BackendPageResult<T> {
   count: number;
 }
 
+// 派单候选人信息
+interface BackendDispatchCandidate {
+  cid: string;
+  cashier_account_id: string;
+  cashier_app_account_id: string;
+  upi: string;
+  selected: boolean;
+  fail_reason?: string;
+  fail_code?: string;
+  online_status: string;
+  account_status: string;
+  score: number;
+}
+
+// 派单历史信息
+interface BackendDispatchHistory {
+  history_id: string;
+  dispatch_id: string;
+  trx_id: string;
+  trx_type: string;
+  tid: string;
+  dispatch_round: number;
+  cid: string;
+  cashier_account_id: string;
+  cashier_app_account_id: string;
+  dispatch_at: number;
+  success: boolean;
+  error_code?: string;
+  error_message?: string;
+  candidates: BackendDispatchCandidate[];
+  total_candidates: number;
+  failed_count: number;
+  amount: number;
+  ccy: string;
+  created_at: number;
+  updated_at: number;
+}
+
+// 派单记录信息
+interface BackendDispatchRecord {
+  dispatch_id: string;
+  tid: string;
+  trx_id: string;
+  trx_type: string;
+  cid: string;
+  cashier_app_account_id: string;
+  cashier_account_id: string;
+  dispatch_round: number;
+  dispatch_at: number;
+  amount: number;
+  ccy: string;
+  fee: number;
+  status: string;
+  expired_at?: number;
+  accepted_at?: number;
+  rejected_at?: number;
+  rejected_by?: string;
+  rejected_reason?: string;
+  notify_type?: string;
+  created_at: number;
+  updated_at: number;
+}
+
 // 后端返回的交易信息（使用下划线命名格式）
 interface BackendTransactionInfo {
   id: number;
@@ -108,6 +171,71 @@ interface BackendTransactionInfo {
   mid?: string;
   product_id?: string;
   version?: number;
+  dispatch_history?: BackendDispatchHistory[];
+  dispatch_records?: BackendDispatchRecord[];
+}
+
+// 派单候选人信息
+export interface DispatchCandidate {
+  cid: string;
+  cashierAccountId: string;
+  cashierAppAccountId: string;
+  upi: string;
+  selected: boolean;
+  failReason?: string;
+  failCode?: string;
+  onlineStatus: string;
+  accountStatus: string;
+  score: number;
+}
+
+// 派单历史信息
+export interface DispatchHistory {
+  historyId: string;
+  dispatchId: string;
+  trxId: string;
+  trxType: string;
+  tid: string;
+  dispatchRound: number;
+  cid: string;
+  cashierAccountId: string;
+  cashierAppAccountId: string;
+  dispatchAt: string;
+  success: boolean;
+  errorCode?: string;
+  errorMessage?: string;
+  candidates: DispatchCandidate[];
+  totalCandidates: number;
+  failedCount: number;
+  amount: number;
+  ccy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// 派单记录信息
+export interface DispatchRecord {
+  dispatchId: string;
+  tid: string;
+  trxId: string;
+  trxType: string;
+  cid: string;
+  cashierAppAccountId: string;
+  cashierAccountId: string;
+  dispatchRound: number;
+  dispatchAt: string;
+  amount: number;
+  ccy: string;
+  fee: number;
+  status: string;
+  expiredAt?: string;
+  acceptedAt?: string;
+  rejectedAt?: string;
+  rejectedBy?: string;
+  rejectedReason?: string;
+  notifyType?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // 统一交易信息接口 - 与后端 protocol.TransactionInfo 保持一致
@@ -154,6 +282,8 @@ export interface TransactionInfo {
   refundedUsdAmount?: string;
   lastRefundedAt?: string;
   detail?: string;
+  dispatchHistory?: DispatchHistory[];
+  dispatchRecords?: DispatchRecord[];
 }
 
 // 查询参数接口
@@ -240,6 +370,62 @@ const convertBackendToFrontend = (backend: BackendTransactionInfo): TransactionI
     refundedUsdAmount: backend.refunded_usd_amount,
     lastRefundedAt: timestampToISOString(backend.last_refunded_at),
     detail: backend.detail ? JSON.stringify(backend.detail) : undefined,
+    dispatchHistory: backend.dispatch_history?.map(h => ({
+      historyId: h.history_id,
+      dispatchId: h.dispatch_id,
+      trxId: h.trx_id,
+      trxType: h.trx_type,
+      tid: h.tid,
+      dispatchRound: h.dispatch_round,
+      cid: h.cid,
+      cashierAccountId: h.cashier_account_id,
+      cashierAppAccountId: h.cashier_app_account_id,
+      dispatchAt: timestampToISOString(h.dispatch_at) || '',
+      success: h.success,
+      errorCode: h.error_code,
+      errorMessage: h.error_message,
+      candidates: h.candidates?.map(c => ({
+        cid: c.cid,
+        cashierAccountId: c.cashier_account_id,
+        cashierAppAccountId: c.cashier_app_account_id,
+        upi: c.upi,
+        selected: c.selected,
+        failReason: c.fail_reason,
+        failCode: c.fail_code,
+        onlineStatus: c.online_status,
+        accountStatus: c.account_status,
+        score: c.score
+      })) || [],
+      totalCandidates: h.total_candidates,
+      failedCount: h.failed_count,
+      amount: h.amount,
+      ccy: h.ccy,
+      createdAt: timestampToISOString(h.created_at) || '',
+      updatedAt: timestampToISOString(h.updated_at) || ''
+    })),
+    dispatchRecords: backend.dispatch_records?.map(r => ({
+      dispatchId: r.dispatch_id,
+      tid: r.tid,
+      trxId: r.trx_id,
+      trxType: r.trx_type,
+      cid: r.cid,
+      cashierAppAccountId: r.cashier_app_account_id,
+      cashierAccountId: r.cashier_account_id,
+      dispatchRound: r.dispatch_round,
+      dispatchAt: timestampToISOString(r.dispatch_at) || '',
+      amount: r.amount,
+      ccy: r.ccy,
+      fee: r.fee,
+      status: r.status,
+      expiredAt: timestampToISOString(r.expired_at),
+      acceptedAt: timestampToISOString(r.accepted_at),
+      rejectedAt: timestampToISOString(r.rejected_at),
+      rejectedBy: r.rejected_by,
+      rejectedReason: r.rejected_reason,
+      notifyType: r.notify_type,
+      createdAt: timestampToISOString(r.created_at) || '',
+      updatedAt: timestampToISOString(r.updated_at) || ''
+    }))
   };
 };
 

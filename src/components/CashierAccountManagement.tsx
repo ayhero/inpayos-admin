@@ -16,6 +16,7 @@ export function CashierAccountManagement() {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [primaryFilter, setPrimaryFilter] = useState<string>('all');
   const [selectedCashier, setSelectedCashier] = useState<Cashier | null>(null);
   const [cashiers, setCashiers] = useState<Cashier[]>([]);
   const [stats, setStats] = useState<CashierStats>({
@@ -79,11 +80,20 @@ export function CashierAccountManagement() {
 
       const response = await cashierService.getCashierList(params);
       if (response.success) {
-        setCashiers(response.data.list);
+        let filteredCashiers = response.data.list;
+        
+        // 前端过滤主账号
+        if (primaryFilter === 'primary') {
+          filteredCashiers = filteredCashiers.filter(c => c.primary === true);
+        } else if (primaryFilter === 'non-primary') {
+          filteredCashiers = filteredCashiers.filter(c => !c.primary);
+        }
+        
+        setCashiers(filteredCashiers);
         setPagination(prev => ({
           ...prev,
-          total: response.data.total,
-          totalPages: Math.ceil(response.data.total / prev.size)
+          total: filteredCashiers.length,
+          totalPages: Math.ceil(filteredCashiers.length / prev.size)
         }));
       } else {
         // API调用失败时清空记录和分页信息
@@ -108,13 +118,13 @@ export function CashierAccountManagement() {
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, statusFilter, searchTerm]);
+  }, [pagination.page, statusFilter, primaryFilter, searchTerm]);
 
   useEffect(() => {
     fetchCashiers();
     fetchStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination.page, statusFilter, searchTerm]);
+  }, [pagination.page, statusFilter, primaryFilter, searchTerm]);
 
   const handleSearch = () => {
     // fetchCashiers 会自动触发，因为 searchTerm 是依赖项
@@ -282,6 +292,16 @@ export function CashierAccountManagement() {
                 <SelectItem value="inactive">未激活</SelectItem>
                 <SelectItem value="suspended">暂停</SelectItem>
                 <SelectItem value="pending">待审核</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={primaryFilter} onValueChange={setPrimaryFilter}>
+              <SelectTrigger className="w-full md:w-40">
+                <SelectValue placeholder="账号类型" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部账号</SelectItem>
+                <SelectItem value="primary">主账号</SelectItem>
+                <SelectItem value="non-primary">非主账号</SelectItem>
               </SelectContent>
             </Select>
             <Button onClick={handleSearch} className="gap-2">

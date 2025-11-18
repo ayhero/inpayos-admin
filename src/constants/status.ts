@@ -242,3 +242,19 @@ export const getAppVerifyStatusBadgeConfig = (status: string): StatusBadgeConfig
     className: '' 
   };
 };
+
+// 在线状态 Badge 配置
+export const ONLINE_STATUS_BADGE_CONFIG: Record<string, StatusBadgeConfig> = {
+  'online': { label: '在线', variant: 'default', className: 'bg-green-500' },
+  'offline': { label: '离线', variant: 'secondary', className: 'bg-gray-500' },
+  'busy': { label: '忙碌', variant: 'outline', className: 'bg-yellow-500' }
+};
+
+// 获取在线状态 Badge 配置
+export const getOnlineStatusBadgeConfig = (status: string): StatusBadgeConfig => {
+  return ONLINE_STATUS_BADGE_CONFIG[status?.toLowerCase()] || { 
+    label: status || '-', 
+    variant: 'outline' as const, 
+    className: '' 
+  };
+};
