@@ -247,7 +247,6 @@ export function FleetContract() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>合约ID</TableHead>
                   <TableHead>车队</TableHead>
                   <TableHead>生效时间</TableHead>
                   <TableHead>过期时间</TableHead>
@@ -258,10 +257,9 @@ export function FleetContract() {
               <TableBody>
                 {contracts.map((contract) => (
                   <TableRow key={contract.id}>
-                    <TableCell className="font-mono text-xs">{contract.contract_id}</TableCell>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-medium">{contract.user?.name || '-'}</span>
+                        <span className="font-medium">{contract.user?.name || contract.user?.phone || '-'}</span>
                         <span className="font-mono text-xs text-gray-500">{contract.sid}</span>
                       </div>
                     </TableCell>
