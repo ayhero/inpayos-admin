@@ -47,8 +47,6 @@ export function DispatchHistory({ dispatchHistory, formatDateTime }: DispatchHis
                         <th className="px-2 py-2 text-center font-medium">已选中</th>
                         <th className="px-2 py-2 text-left font-medium">用户</th>
                         <th className="px-2 py-2 text-left font-medium">UPI</th>
-                        <th className="px-2 py-2 text-center font-medium">在线状态</th>
-                        <th className="px-2 py-2 text-center font-medium">账户状态</th>
                         <th className="px-2 py-2 text-center font-medium">分数</th>
                         <th className="px-2 py-2 text-left font-medium">失败原因</th>
                       </tr>
@@ -101,12 +99,6 @@ export function DispatchHistory({ dispatchHistory, formatDateTime }: DispatchHis
                             )}
                           </td>
                           <td className="px-2 py-2 font-mono">{candidate.upi}</td>
-                          <td className="px-2 py-2 text-center">
-                            <OnlineStatusBadge status={candidate.onlineStatus} />
-                          </td>
-                          <td className="px-2 py-2 text-center">
-                            <AccountStatusBadge status={candidate.accountStatus} />
-                          </td>
                           <td className="px-2 py-2 text-center font-semibold">{candidate.score}</td>
                           <td className="px-2 py-2">
                             {candidate.failReason ? (
