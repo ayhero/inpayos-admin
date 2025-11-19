@@ -47,7 +47,6 @@ export function DispatchHistory({ dispatchHistory, formatDateTime }: DispatchHis
                         <th className="px-2 py-2 text-center font-medium">已选中</th>
                         <th className="px-2 py-2 text-left font-medium">用户</th>
                         <th className="px-2 py-2 text-left font-medium">UPI</th>
-                        <th className="px-2 py-2 text-left font-medium">App账户</th>
                         <th className="px-2 py-2 text-center font-medium">在线状态</th>
                         <th className="px-2 py-2 text-center font-medium">账户状态</th>
                         <th className="px-2 py-2 text-center font-medium">分数</th>
@@ -102,7 +101,6 @@ export function DispatchHistory({ dispatchHistory, formatDateTime }: DispatchHis
                             )}
                           </td>
                           <td className="px-2 py-2 font-mono">{candidate.upi}</td>
-                          <td className="px-2 py-2 font-mono text-xs">{candidate.cashierAppAccountId}</td>
                           <td className="px-2 py-2 text-center">
                             <OnlineStatusBadge status={candidate.onlineStatus} />
                           </td>
