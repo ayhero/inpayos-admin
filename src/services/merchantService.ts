@@ -8,6 +8,7 @@ export interface MerchantSecret {
   app_id: string;
   app_name: string;
   secret_key: string;
+  sandbox: boolean;
   status: string;
   expires_at: number;
   created_at: number;
@@ -34,6 +35,26 @@ export interface MerchantAccount {
   updated_at: number;
 }
 
+// 商户路由接口
+export interface MerchantRouter {
+  id: number;
+  mid?: string;
+  trx_type: string;
+  trx_method: string;
+  ccy?: string;
+  country?: string;
+  min_amount?: number;
+  max_amount?: number;
+  channel_code: string;
+  channel_account?: string;
+  channel_group?: string;
+  priority: number;
+  status: string;
+  version: number;
+  created_at: number;
+  updated_at: number;
+}
+
 // 商户信息接口
 export interface Merchant {
   id: number;
@@ -47,6 +68,7 @@ export interface Merchant {
   secrets?: MerchantSecret[];
   accounts?: MerchantAccount[];
   contracts?: Contract[];
+  routers?: MerchantRouter[];
   created_at: number;
   updated_at: number;
 }
@@ -86,6 +108,13 @@ export interface MerchantStats {
   active: number;
   inactive: number;
   suspended: number;
+}
+
+// 创建商户密钥参数
+export interface CreateMerchantSecretParams {
+  mid: string;
+  app_name: string;
+  sandbox: boolean;
 }
 
 class MerchantService {
@@ -180,6 +209,73 @@ class MerchantService {
           suspended: 0
         }
       };
+    }
+  }
+
+  // 创建商户密钥
+  async createMerchantSecret(params: CreateMerchantSecretParams): Promise<ApiResponse<MerchantSecret>> {
+    try {
+      const response = await api.post<MerchantSecret>('/merchant/secret/create', params);
+      return {
+        success: response.code === '0000',
+        code: response.code,
+        msg: response.msg,
+        data: response.data
+      };
+    } catch (error: any) {
+      console.error('创建商户密钥失败:', error);
+      throw error;
+    }
+  }
+
+  // 获取默认合同
+  async getDefaultContract(params: { mid: string }): Promise<ApiResponse<Contract>> {
+    try {
+      const response = await api.post<Contract>('/contract/default', params);
+      return {
+        success: response.code === '0000',
+        code: response.code,
+        msg: response.msg,
+        data: response.data
+      };
+    } catch (error: any) {
+      console.error('获取默认合同失败:', error);
+      throw error;
+    }
+  }
+
+  // 获取商户密钥列表
+  async getMerchantSecrets(params: { mid: string }): Promise<ApiResponse<MerchantSecret[]>> {
+    try {
+      const response = await api.post<MerchantSecret[]>('/merchant/secret/list', params);
+      return {
+        success: response.code === '0000',
+        code: response.code,
+        msg: response.msg,
+        data: response.data || []
+      };
+    } catch (error: any) {
+      console.error('获取商户密钥列表失败:', error);
+      throw error;
+    }
+  }
+
+  // 获取商户合同列表
+  async getMerchantContracts(params: { mid: string }): Promise<ApiResponse<Contract[]>> {
+    try {
+      const response = await api.post<Contract[]>('/contract/user/list', {
+        user_id: params.mid,
+        user_type: 'merchant'
+      });
+      return {
+        success: response.code === '0000',
+        code: response.code,
+        msg: response.msg,
+        data: response.data || []
+      };
+    } catch (error: any) {
+      console.error('获取商户合同列表失败:', error);
+      throw error;
     }
   }
 }

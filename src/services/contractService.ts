@@ -151,6 +151,17 @@ export interface ContractStats {
   pending: number;
 }
 
+// 创建商户合同参数
+export interface CreateMerchantContractParams {
+  user_id: string;
+  user_type: string;
+  start_at: number;
+  expired_at: number;
+  status: string;
+  payin?: ContractConfig;
+  payout?: ContractConfig;
+}
+
 class ContractService {
   // 获取合约列表
   async getContractList(params: ContractListParams): Promise<ApiResponse<PaginatedResponse<Contract>>> {
@@ -247,6 +258,22 @@ class ContractService {
           pending: 0
         }
       };
+    }
+  }
+
+  // 创建商户合同
+  async createMerchantContract(params: CreateMerchantContractParams): Promise<ApiResponse<Contract>> {
+    try {
+      const response = await api.post<Contract>('/contract/create', params);
+      return {
+        success: response.code === '0000',
+        code: response.code,
+        msg: response.msg,
+        data: response.data
+      };
+    } catch (error: any) {
+      console.error('创建商户合同失败:', error);
+      throw error;
     }
   }
 }
