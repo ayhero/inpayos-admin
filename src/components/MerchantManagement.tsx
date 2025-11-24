@@ -6,7 +6,7 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Search, RefreshCw, Building2 } from 'lucide-react';
+import { Search, RefreshCw, Building2, Eye, EyeOff } from 'lucide-react';
 import { merchantService, Merchant, MerchantListParams, MerchantStats } from '../services/merchantService';
 import { toast } from '../utils/toast';
 
@@ -29,6 +29,7 @@ export function MerchantManagement() {
     total: 0,
     totalPages: 0
   });
+  const [visibleSecrets, setVisibleSecrets] = useState<Set<number>>(new Set());
 
   // 获取商户统计
   const fetchStats = useCallback(async () => {
@@ -122,6 +123,7 @@ export function MerchantManagement() {
       const response = await merchantService.getMerchantDetail({ mid: merchant.mid });
       if (response.success) {
         setSelectedMerchant(response.data);
+        setVisibleSecrets(new Set()); // 重置密钥显示状态
       } else {
         toast.error('获取商户详情失败', response.msg);
       }
@@ -129,6 +131,33 @@ export function MerchantManagement() {
       console.error('获取商户详情失败:', error);
       toast.error('获取商户详情失败', '网络错误，请稍后重试');
     }
+  };
+
+  const toggleSecretVisibility = (secretId: number) => {
+    setVisibleSecrets(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(secretId)) {
+        newSet.delete(secretId);
+      } else {
+        newSet.add(secretId);
+      }
+      return newSet;
+    });
+  };
+
+  const maskSecretKey = (secretKey: string) => {
+    if (!secretKey) return '';
+    const parts = secretKey.split('_');
+    if (parts.length >= 2) {
+      // 保留前缀部分，后面的部分用星号替换，星号数量与原始长度一致
+      const prefix = `${parts[0]}_${parts[1]}_`;
+      const remaining = secretKey.substring(prefix.length);
+      return prefix + '*'.repeat(remaining.length);
+    }
+    // 如果不是标准格式，保留前8个字符，其余用星号替换
+    const visiblePart = secretKey.substring(0, 8);
+    const hiddenPart = secretKey.substring(8);
+    return visiblePart + '*'.repeat(hiddenPart.length);
   };
 
   return (
@@ -290,40 +319,157 @@ export function MerchantManagement() {
 
       {/* 商户详情对话框 */}
       <Dialog open={!!selectedMerchant} onOpenChange={() => setSelectedMerchant(null)}>
-        <DialogContent className="max-w-[45vw] w-[45vw] min-w-[600px]" style={{width: '45vw', maxWidth: '45vw'}}>
+        <DialogContent className="max-w-[80vw] w-[80vw] min-w-[800px]" style={{width: '80vw', maxWidth: '80vw'}}>
           <DialogHeader>
             <DialogTitle>商户详情</DialogTitle>
           </DialogHeader>
           {selectedMerchant && (
-            <div className="grid grid-cols-2 gap-4 py-4 max-h-[500px] overflow-y-auto">
+            <div className="space-y-6 py-4 max-h-[70vh] overflow-y-auto">
+              {/* 基本信息 */}
               <div>
-                <label className="text-sm text-muted-foreground">商户ID</label>
-                <p className="text-base font-semibold font-mono mt-1">{selectedMerchant.mid}</p>
+                <h3 className="text-lg font-semibold mb-3">基本信息</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm text-muted-foreground">商户ID</label>
+                    <p className="text-base font-semibold font-mono mt-1">{selectedMerchant.mid}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">商户名称</label>
+                    <p className="text-base font-semibold mt-1">{selectedMerchant.name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">邮箱</label>
+                    <p className="text-base font-semibold mt-1">{selectedMerchant.email}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">状态</label>
+                    <p className="mt-1">{getStatusBadge(selectedMerchant.status)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">2FA</label>
+                    <p className="text-base font-semibold mt-1">{selectedMerchant.has_g2fa ? '已启用' : '未启用'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">创建时间</label>
+                    <p className="text-base font-semibold mt-1">{formatDateTime(selectedMerchant.created_at)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">更新时间</label>
+                    <p className="text-base font-semibold mt-1">{formatDateTime(selectedMerchant.updated_at)}</p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="text-sm text-muted-foreground">商户名称</label>
-                <p className="text-base font-semibold mt-1">{selectedMerchant.name}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">邮箱</label>
-                <p className="text-base font-semibold mt-1">{selectedMerchant.email}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">电话</label>
-                <p className="text-base font-semibold mt-1">{selectedMerchant.phone}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">状态</label>
-                <p className="mt-1">{getStatusBadge(selectedMerchant.status)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">创建时间</label>
-                <p className="text-base font-semibold mt-1">{formatDateTime(selectedMerchant.created_at)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">更新时间</label>
-                <p className="text-base font-semibold mt-1">{formatDateTime(selectedMerchant.updated_at)}</p>
-              </div>
+
+              {/* 密钥列表 */}
+              {selectedMerchant.secrets && selectedMerchant.secrets.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">密钥列表</h3>
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>App ID</TableHead>
+                          <TableHead>App Name</TableHead>
+                          <TableHead>Secret Key</TableHead>
+                          <TableHead>状态</TableHead>
+                          <TableHead>过期时间</TableHead>
+                          <TableHead>创建时间</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedMerchant.secrets.map((secret) => (
+                          <TableRow key={secret.id}>
+                            <TableCell className="font-mono text-xs">{secret.app_id}</TableCell>
+                            <TableCell>{secret.app_name}</TableCell>
+                            <TableCell className="font-mono text-xs">
+                              <div className="flex items-center gap-2">
+                                <span>{visibleSecrets.has(secret.id) ? secret.secret_key : maskSecretKey(secret.secret_key)}</span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 w-6 p-0"
+                                  onClick={() => toggleSecretVisibility(secret.id)}
+                                >
+                                  {visibleSecrets.has(secret.id) ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                </Button>
+                              </div>
+                            </TableCell>
+                            <TableCell>{getStatusBadge(secret.status)}</TableCell>
+                            <TableCell>{secret.expires_at ? formatDateTime(secret.expires_at) : '永不过期'}</TableCell>
+                            <TableCell>{formatDateTime(secret.created_at)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+
+              {/* 账户列表 */}
+              {selectedMerchant.accounts && selectedMerchant.accounts.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">账户列表</h3>
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>币种</TableHead>
+                          <TableHead>总余额</TableHead>
+                          <TableHead>可用余额</TableHead>
+                          <TableHead>冻结余额</TableHead>
+                          <TableHead>保证金</TableHead>
+                          <TableHead>状态</TableHead>
+                          <TableHead>最后更新时间</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedMerchant.accounts.map((account) => (
+                          <TableRow key={account.account_id}>
+                            <TableCell>{account.ccy}</TableCell>
+                            <TableCell className="font-mono">{parseFloat(account.balance || '0').toFixed(2)}</TableCell>
+                            <TableCell className="font-mono text-green-600">{parseFloat(account.available_balance || '0').toFixed(2)}</TableCell>
+                            <TableCell className="font-mono text-red-600">{parseFloat(account.frozen_balance || '0').toFixed(2)}</TableCell>
+                            <TableCell className="font-mono">{parseFloat(account.margin_balance || '0').toFixed(2)}</TableCell>
+                            <TableCell>{getStatusBadge(account.status)}</TableCell>
+                            <TableCell>{formatDateTime(account.updated_at)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+
+              {/* 合同列表 */}
+              {selectedMerchant.contracts && selectedMerchant.contracts.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">合同列表</h3>
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>合同ID</TableHead>
+                          <TableHead>生效时间</TableHead>
+                          <TableHead>过期时间</TableHead>
+                          <TableHead>状态</TableHead>
+                          <TableHead>创建时间</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedMerchant.contracts.map((contract) => (
+                          <TableRow key={contract.id}>
+                            <TableCell className="font-mono text-xs">{contract.contract_id}</TableCell>
+                            <TableCell>{formatDateTime(contract.start_at)}</TableCell>
+                            <TableCell>{contract.expired_at ? formatDateTime(contract.expired_at) : '永不过期'}</TableCell>
+                            <TableCell>{getStatusBadge(contract.status)}</TableCell>
+                            <TableCell>{formatDateTime(contract.created_at)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

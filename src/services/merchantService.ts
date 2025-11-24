@@ -1,4 +1,38 @@
 import { api, ApiResponse } from './api';
+import { Contract } from './contractService';
+
+// 商户密钥接口
+export interface MerchantSecret {
+  id: number;
+  mid: string;
+  app_id: string;
+  app_name: string;
+  secret_key: string;
+  status: string;
+  expires_at: number;
+  created_at: number;
+  updated_at: number;
+}
+
+// 商户账户接口
+export interface MerchantAccount {
+  balance: string;
+  available_balance: string;
+  frozen_balance: string;
+  margin_balance: string;
+  available_margin_balance: string;
+  frozen_margin_balance: string;
+  account_id: string;
+  user_id: string;
+  user_type: string;
+  ccy: string;
+  status: string;
+  version: number;
+  last_active_at: number;
+  user: any;
+  created_at: number;
+  updated_at: number;
+}
 
 // 商户信息接口
 export interface Merchant {
@@ -9,6 +43,10 @@ export interface Merchant {
   email: string;
   phone: string;
   status: string;
+  has_g2fa?: boolean;
+  secrets?: MerchantSecret[];
+  accounts?: MerchantAccount[];
+  contracts?: Contract[];
   created_at: number;
   updated_at: number;
 }

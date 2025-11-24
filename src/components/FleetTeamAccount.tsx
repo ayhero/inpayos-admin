@@ -172,13 +172,13 @@ export function FleetTeamAccount() {
                       <TableCell className="font-mono text-sm">{account.user?.org_id || '-'}</TableCell>
                       <TableCell>{account.ccy}</TableCell>
                       <TableCell className="text-right font-mono">
-                        {formatAmount(account.balance?.balance || '0')}
+                        {formatAmount(account.balance || '0')}
                       </TableCell>
                       <TableCell className="text-right font-mono">
-                        {formatAmount(account.balance?.available_balance || '0')}
+                        {formatAmount(account.available_balance || '0')}
                       </TableCell>
                       <TableCell className="text-right font-mono">
-                        {formatAmount(account.balance?.frozen_balance || '0')}
+                        {formatAmount(account.frozen_balance || '0')}
                       </TableCell>
                       <TableCell>{getStatusBadge(account.status)}</TableCell>
                       <TableCell className="text-sm">

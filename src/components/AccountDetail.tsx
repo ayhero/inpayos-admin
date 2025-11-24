@@ -93,9 +93,9 @@ export function AccountDetail({ account, formatDateTime, formatAmount }: Account
       <div className="border rounded-lg p-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">实时余额</h3>
-          {account.balance?.updated_at && (
+          {account.updated_at && (
             <span className="text-sm text-gray-500">
-              更新于 {formatDateTime(account.balance.updated_at)}
+              更新于 {formatDateTime(account.updated_at)}
             </span>
           )}
         </div>
@@ -103,29 +103,29 @@ export function AccountDetail({ account, formatDateTime, formatAmount }: Account
           {/* 基础余额字段 */}
           <div>
             <label className="text-sm font-medium text-gray-500">总余额</label>
-            <p className="mt-1 font-mono text-lg font-semibold">{formatAmount(account.balance?.balance)}</p>
+            <p className="mt-1 font-mono text-lg font-semibold">{formatAmount(account.balance)}</p>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-500">可用余额</label>
-            <p className="mt-1 font-mono text-lg font-semibold text-green-600">{formatAmount(account.balance?.available_balance)}</p>
+            <p className="mt-1 font-mono text-lg font-semibold text-green-600">{formatAmount(account.available_balance)}</p>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-500">冻结余额</label>
-            <p className="mt-1 font-mono text-lg font-semibold text-red-600">{formatAmount(account.balance?.frozen_balance)}</p>
+            <p className="mt-1 font-mono text-lg font-semibold text-red-600">{formatAmount(account.frozen_balance)}</p>
           </div>
           
           {/* 保证金字段 - 所有账户类型都显示 */}
           <div>
             <label className="text-sm font-medium text-gray-500">保证金</label>
-            <p className="mt-1 font-mono text-lg font-semibold">{formatAmount(account.balance?.margin_balance)}</p>
+            <p className="mt-1 font-mono text-lg font-semibold">{formatAmount(account.margin_balance)}</p>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-500">可用保证金</label>
-            <p className="mt-1 font-mono text-lg font-semibold text-green-600">{formatAmount(account.balance?.available_margin_balance)}</p>
+            <p className="mt-1 font-mono text-lg font-semibold text-green-600">{formatAmount(account.available_margin_balance)}</p>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-500">冻结保证金</label>
-            <p className="mt-1 font-mono text-lg font-semibold text-red-600">{formatAmount(account.balance?.frozen_margin_balance)}</p>
+            <p className="mt-1 font-mono text-lg font-semibold text-red-600">{formatAmount(account.frozen_margin_balance)}</p>
           </div>
         </div>
       </div>

@@ -178,10 +178,10 @@ export function MerchantAccount() {
                   <TableRow key={account.account_id}>
                     <TableCell>{account.user?.name || '-'}</TableCell>
                     <TableCell>{account.ccy}</TableCell>
-                    <TableCell className="font-mono">{formatAmount(account.balance?.balance)}</TableCell>
-                    <TableCell className="font-mono text-green-600">{formatAmount(account.balance?.available_balance)}</TableCell>
-                    <TableCell className="font-mono text-red-600">{formatAmount(account.balance?.frozen_balance)}</TableCell>
-                    <TableCell className="font-mono">{formatAmount(account.balance?.margin_balance)}</TableCell>
+                    <TableCell className="font-mono">{formatAmount(account.balance)}</TableCell>
+                    <TableCell className="font-mono text-green-600">{formatAmount(account.available_balance)}</TableCell>
+                    <TableCell className="font-mono text-red-600">{formatAmount(account.frozen_balance)}</TableCell>
+                    <TableCell className="font-mono">{formatAmount(account.margin_balance)}</TableCell>
                     <TableCell>{getStatusBadge(account.status)}</TableCell>
                     <TableCell className="text-sm">{formatDateTime(account.updated_at)}</TableCell>
                     <TableCell className="text-sm">{formatDateTime(account.last_active_at)}</TableCell>
