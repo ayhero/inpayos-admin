@@ -107,5 +107,24 @@ export const accountService = {
         success: false
       };
     }
+  },
+
+  // 创建账户
+  createAccount: async (params: { user_id: string; user_type: string; ccy: string }): Promise<ApiResponse<AccountData>> => {
+    try {
+      const response = await api.post<AccountData>('/account/create', params);
+      return {
+        ...response,
+        success: response.code === '0000'
+      };
+    } catch (error: any) {
+      console.error('创建账户失败:', error);
+      return {
+        code: 'ERROR',
+        msg: error.message || '创建账户失败',
+        data: {} as AccountData,
+        success: false
+      };
+    }
   }
 };
