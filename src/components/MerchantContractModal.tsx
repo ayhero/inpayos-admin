@@ -61,10 +61,21 @@ export function MerchantContractModal({ open, onOpenChange, merchant }: Merchant
     }
   }, [merchant]);
 
-  // 监听弹窗打开
+  // 监听弹窗打开/关闭
   useEffect(() => {
     if (open && merchant) {
       loadContracts();
+      setIsAdding(false);
+    } else if (!open) {
+      // 关闭弹窗时重置状态
+      setIsAdding(false);
+      setNewContract({
+        start_at: '',
+        expired_at: '',
+        status: 'active',
+        payin: undefined,
+        payout: undefined
+      });
     }
   }, [open, merchant, loadContracts]);
 
@@ -158,20 +169,16 @@ export function MerchantContractModal({ open, onOpenChange, merchant }: Merchant
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-[60vw] w-[60vw] min-w-[700px] max-h-[85vh] overflow-y-auto" style={{width: '60vw', maxWidth: '60vw'}}>
-          <DialogHeader>
-            <DialogTitle>合同管理</DialogTitle>
-            <DialogDescription>
-              <div className="flex items-center gap-2 mt-1">
+        <DialogContent className="max-w-[75vw] w-[75vw] min-w-[900px] max-h-[85vh] overflow-y-auto" style={{width: '75vw', maxWidth: '75vw'}}>
+        <DialogHeader>
+          <DialogTitle>合同管理</DialogTitle>
+          <DialogDescription>
+            <div className="flex items-center justify-between gap-2 mt-1">
+              <div className="flex items-center gap-2">
                 <UserTypeLabel type={merchant?.type || ''} />
                 <span>{merchant?.name}</span>
                 <span className="text-muted-foreground">({merchant?.mid})</span>
               </div>
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="flex justify-end items-center">
               {!isAdding && (
                 <Button size="sm" onClick={handleAddContract}>
                   <Plus className="h-4 w-4 mr-1" />
@@ -179,8 +186,10 @@ export function MerchantContractModal({ open, onOpenChange, merchant }: Merchant
                 </Button>
               )}
             </div>
-
-            {loading ? (
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-4">            {loading ? (
               <div className="text-center py-8 text-muted-foreground">加载中...</div>
             ) : (
               <Table>
@@ -232,14 +241,15 @@ export function MerchantContractModal({ open, onOpenChange, merchant }: Merchant
                         />
                       </TableCell>
                       <TableCell>
-                        <select
-                          value={newContract.status}
-                          onChange={(e) => setNewContract({ ...newContract, status: e.target.value as 'active' | 'inactive' })}
-                          className="w-full px-2 py-1 text-sm border rounded"
-                        >
-                          <option value="active">active</option>
-                          <option value="inactive">inactive</option>
-                        </select>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={newContract.status === 'active'}
+                            onChange={(e) => setNewContract({ ...newContract, status: e.target.checked ? 'active' : 'inactive' })}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm">启用</span>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Button

@@ -1,20 +1,24 @@
-import { trxTypeMap, formatTrxType as utilFormatTrxType } from '../utils/trxTypeMapping';
-import { trxMethodMap, formatTrxMethod as utilFormatTrxMethod } from '../utils/trxMethodMapping';
-import { currencyMap, formatCurrency as utilFormatCurrency } from '../utils/currencyMapping';
+// 直接导出全局的 mapping 工具，避免重复定义
+export { trxTypeMap as TRX_TYPE_MAP, formatTrxType as getTrxTypeLabel } from '../utils/trxTypeMapping';
+export { trxMethodMap as TRX_METHOD_MAP, formatTrxMethod as getTrxMethodLabel } from '../utils/trxMethodMapping';
+export { currencyMap as CCY_MAP, formatCurrency as getCcyLabel } from '../utils/currencyMapping';
+export { countryMap as COUNTRY_MAP, formatCountry as getCountryLabel } from '../utils/countryMapping';
 
-// 交易类型映射 - 使用统一的mapping工具
-export const TRX_TYPE_MAP = trxTypeMap;
+import { trxTypeMap } from '../utils/trxTypeMapping';
+import { trxMethodMap } from '../utils/trxMethodMapping';
+import { currencyMap } from '../utils/currencyMapping';
+import { countryMap } from '../utils/countryMapping';
 
 // 交易类型选项（用于下拉框）
-export const TRX_TYPE_OPTIONS = Object.entries(TRX_TYPE_MAP).map(([value, label]) => ({
+export const TRX_TYPE_OPTIONS = Object.entries(trxTypeMap).map(([value, label]) => ({
   value,
   label,
 }));
 
 // 商户路由交易类型选项
 export const MERCHANT_TRX_TYPE_OPTIONS = [
-  { value: 'payin', label: TRX_TYPE_MAP['payin'] },
-  { value: 'payout', label: TRX_TYPE_MAP['payout'] },
+  { value: 'payin', label: trxTypeMap['payin'] },
+  { value: 'payout', label: trxTypeMap['payout'] },
   { value: 'withdraw', label: '提现' },
 ];
 
@@ -25,29 +29,29 @@ export const FLEET_TRX_TYPE_OPTIONS = [
   { value: 'withdraw', label: '提现' },
 ];
 
-// 交易方法映射（支付方式） - 使用统一的mapping工具
-export const TRX_METHOD_MAP = trxMethodMap;
-
 // 支付方式选项
 export const TRX_METHOD_OPTIONS = [
   { value: 'all', label: '全部' },
-  ...Object.entries(TRX_METHOD_MAP).map(([value, label]) => ({
+  ...Object.entries(trxMethodMap).map(([value, label]) => ({
     value,
     label,
   }))
 ];
 
-// 货币映射 - 使用统一的mapping工具
-export const CCY_MAP = currencyMap;
-
-// 货币选项（带货币符号）
+// 货币选项（使用中文名(代码)格式）
 export const CCY_OPTIONS = [
   { value: 'all', label: '全部' },
-  ...Object.entries(CCY_MAP).map(([value, label]) => ({
+  ...Object.entries(currencyMap).map(([value, label]) => ({
     value,
-    label: `${label} (${value})`,
+    label: `${label}(${value})`,
   }))
 ];
+
+// 国家选项（使用三位国家码，格式：中文名(代码)）
+export const COUNTRY_OPTIONS = Object.entries(countryMap).map(([value, label]) => ({
+  value,
+  label: `${label}(${value})`,
+}));
 
 // 通道编码映射（渠道 - 来源于const.channel.go）
 export const CHANNEL_CODE_MAP: { [key: string]: string } = {
@@ -98,9 +102,6 @@ export const USER_TYPE_MAP: { [key: string]: string } = {
   'cashier_team': '出纳团队',
 };
 
-// 获取交易类型显示名称
-export const getTrxTypeLabel = utilFormatTrxType;
-
 // 获取通道编码显示名称
 export const getChannelCodeLabel = (channelCode?: string): string => {
   if (!channelCode) return '-';
@@ -117,13 +118,4 @@ export const getStatusLabel = (status?: string): string => {
 export const getUserTypeLabel = (userType?: string): string => {
   if (!userType) return '-';
   return USER_TYPE_MAP[userType] || userType;
-};
-
-// 获取交易方法显示名称
-export const getTrxMethodLabel = utilFormatTrxMethod;
-
-// 获取货币显示名称
-export const getCcyLabel = (ccy?: string): string => {
-  if (!ccy) return '-';
-  return utilFormatCurrency(ccy);
 };

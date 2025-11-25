@@ -7,11 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Search, RefreshCw, Building2, Eye, EyeOff, Key, FileText } from 'lucide-react';
+import { Search, RefreshCw, Building2, Eye, EyeOff, Key, FileText, Route } from 'lucide-react';
 import { merchantService, Merchant, MerchantListParams, MerchantStats } from '../services/merchantService';
 import { toast } from '../utils/toast';
 import { MerchantSecretModal } from './MerchantSecretModal';
 import { MerchantContractModal } from './MerchantContractModal';
+import { MerchantRouterModal } from './MerchantRouterModal';
+import { StatusBadge } from './StatusBadge';
+import { getChannelCodeLabel, getCcyLabel, getCountryLabel } from '../constants/business';
 
 export function MerchantManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,6 +43,9 @@ export function MerchantManagement() {
   
   const [showContractsModal, setShowContractsModal] = useState(false);
   const [selectedMerchantForContracts, setSelectedMerchantForContracts] = useState<Merchant | null>(null);
+
+  const [showRoutersModal, setShowRoutersModal] = useState(false);
+  const [selectedMerchantForRouters, setSelectedMerchantForRouters] = useState<Merchant | null>(null);
 
   // 获取商户统计
   const fetchStats = useCallback(async () => {
@@ -110,17 +116,6 @@ export function MerchantManagement() {
     fetchStats();
   };
 
-  const getStatusBadge = (status: string) => {
-    const configs: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className: string }> = {
-      'active': { label: '激活', variant: 'default', className: 'bg-green-500' },
-      'inactive': { label: '未激活', variant: 'secondary', className: 'bg-gray-500' },
-      'suspended': { label: '暂停', variant: 'destructive', className: '' },
-      'pending': { label: '待审核', variant: 'secondary', className: 'bg-yellow-500' }
-    };
-    const config = configs[status?.toLowerCase()] || { label: status || '-', variant: 'outline' as const, className: '' };
-    return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
-  };
-
   const formatDateTime = (timestamp: number) => {
     if (!timestamp) return '-';
     const date = new Date(timestamp);
@@ -180,6 +175,12 @@ export function MerchantManagement() {
   const handleViewContracts = (merchant: Merchant) => {
     setSelectedMerchantForContracts(merchant);
     setShowContractsModal(true);
+  };
+
+  // 处理查看商户路由
+  const handleViewRouters = (merchant: Merchant) => {
+    setSelectedMerchantForRouters(merchant);
+    setShowRoutersModal(true);
   };
 
   return (
@@ -281,8 +282,7 @@ export function MerchantManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>商户ID</TableHead>
-                  <TableHead>商户名称</TableHead>
+                  <TableHead>商户</TableHead>
                   <TableHead>邮箱</TableHead>
                   <TableHead>电话</TableHead>
                   <TableHead>状态</TableHead>
@@ -293,11 +293,13 @@ export function MerchantManagement() {
               <TableBody>
                 {merchants.map((merchant) => (
                   <TableRow key={merchant.id}>
-                    <TableCell className="font-mono text-xs">{merchant.mid}</TableCell>
-                    <TableCell>{merchant.name}</TableCell>
+                    <TableCell>
+                      <div className="font-semibold">{merchant.name}</div>
+                      <div className="font-mono text-xs text-muted-foreground">{merchant.mid}</div>
+                    </TableCell>
                     <TableCell>{merchant.email}</TableCell>
                     <TableCell>{merchant.phone}</TableCell>
-                    <TableCell>{getStatusBadge(merchant.status)}</TableCell>
+                    <TableCell><StatusBadge status={merchant.status} type="account" /></TableCell>
                     <TableCell>{formatDateTime(merchant.created_at)}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
@@ -311,6 +313,10 @@ export function MerchantManagement() {
                         <Button variant="ghost" size="sm" onClick={() => handleViewContracts(merchant)}>
                           <FileText className="h-4 w-4 mr-1" />
                           合同
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleViewRouters(merchant)}>
+                          <Route className="h-4 w-4 mr-1" />
+                          路由
                         </Button>
                       </div>
                     </TableCell>
@@ -375,7 +381,7 @@ export function MerchantManagement() {
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground">状态</label>
-                    <p className="mt-1">{getStatusBadge(selectedMerchant.status)}</p>
+                    <p className="mt-1"><StatusBadge status={selectedMerchant.status} type="account" /></p>
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground">2FA</label>
@@ -430,26 +436,22 @@ export function MerchantManagement() {
                               <TableCell>{secret.app_name}</TableCell>
                               <TableCell className="font-mono text-xs">{secret.app_id}</TableCell>
                               <TableCell className="font-mono text-xs">
-                                <div className="flex items-center gap-2">
-                                  <span className="truncate max-w-[300px]">
-                                    {visibleSecrets.has(secret.id) ? secret.secret_key : maskSecretKey(secret.secret_key)}
-                                  </span>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-6 w-6 p-0 flex-shrink-0"
-                                    onClick={() => toggleSecretVisibility(secret.id)}
-                                  >
-                                    {visibleSecrets.has(secret.id) ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                                  </Button>
-                                </div>
+                                {visibleSecrets.has(secret.id) ? secret.secret_key : maskSecretKey(secret.secret_key)}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="ml-2 h-6 px-2"
+                                  onClick={() => toggleSecretVisibility(secret.id)}
+                                >
+                                  {visibleSecrets.has(secret.id) ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                </Button>
                               </TableCell>
                               <TableCell>
                                 <Badge variant={secret.sandbox ? "outline" : "default"}>
                                   {secret.sandbox ? "沙箱" : "生产"}
                                 </Badge>
                               </TableCell>
-                              <TableCell>{getStatusBadge(secret.status)}</TableCell>
+                              <TableCell><StatusBadge status={secret.status} type="account" /></TableCell>
                               <TableCell>{formatDateTime(secret.created_at)}</TableCell>
                             </TableRow>
                           ))}
@@ -485,7 +487,7 @@ export function MerchantManagement() {
                               <TableCell className="font-mono text-green-600">{parseFloat(account.available_balance || '0').toFixed(2)}</TableCell>
                               <TableCell className="font-mono text-red-600">{parseFloat(account.frozen_balance || '0').toFixed(2)}</TableCell>
                               <TableCell className="font-mono">{parseFloat(account.margin_balance || '0').toFixed(2)}</TableCell>
-                              <TableCell>{getStatusBadge(account.status)}</TableCell>
+                              <TableCell><StatusBadge status={account.status} type="account" /></TableCell>
                               <TableCell>{formatDateTime(account.updated_at)}</TableCell>
                             </TableRow>
                           ))}
@@ -517,7 +519,7 @@ export function MerchantManagement() {
                               <TableCell className="font-mono text-xs">{contract.contract_id}</TableCell>
                               <TableCell>{formatDateTime(contract.start_at)}</TableCell>
                               <TableCell>{contract.expired_at ? formatDateTime(contract.expired_at) : '永不过期'}</TableCell>
-                              <TableCell>{getStatusBadge(contract.status)}</TableCell>
+                              <TableCell><StatusBadge status={contract.status} type="trx" /></TableCell>
                               <TableCell>{formatDateTime(contract.created_at)}</TableCell>
                             </TableRow>
                           ))}
@@ -536,27 +538,20 @@ export function MerchantManagement() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>交易类型</TableHead>
                             <TableHead>路由类型</TableHead>
-                            <TableHead>支付方式</TableHead>
+                            <TableHead>交易类型</TableHead>
+                            <TableHead>渠道</TableHead>
                             <TableHead>币种</TableHead>
                             <TableHead>国家</TableHead>
-                            <TableHead>最小金额</TableHead>
-                            <TableHead>最大金额</TableHead>
-                            <TableHead>通道编码</TableHead>
-                            <TableHead>通道账户</TableHead>
+                            <TableHead>金额范围</TableHead>
                             <TableHead>优先级</TableHead>
                             <TableHead>状态</TableHead>
+                            <TableHead>创建时间</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {selectedMerchant.routers.map((router) => (
                             <TableRow key={router.id}>
-                              <TableCell>
-                                <Badge variant={router.trx_type === 'payin' ? 'default' : 'secondary'}>
-                                  {router.trx_type === 'payin' ? '代收' : '代付'}
-                                </Badge>
-                              </TableCell>
                               <TableCell>
                                 {!router.mid || router.mid === '' ? (
                                   <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
@@ -568,17 +563,24 @@ export function MerchantManagement() {
                                   </Badge>
                                 )}
                               </TableCell>
-                              <TableCell>{router.trx_method?.toUpperCase() || '-'}</TableCell>
-                              <TableCell>{router.ccy || '-'}</TableCell>
-                              <TableCell>{router.country || '-'}</TableCell>
-                              <TableCell className="font-mono">{router.min_amount ? router.min_amount.toFixed(2) : '-'}</TableCell>
-                              <TableCell className="font-mono">{router.max_amount ? router.max_amount.toFixed(2) : '-'}</TableCell>
-                              <TableCell className="font-mono text-xs">{router.channel_code}</TableCell>
-                              <TableCell className="font-mono text-xs">{router.channel_account || '-'}</TableCell>
                               <TableCell>
-                                <Badge variant="outline">{router.priority}</Badge>
+                                <Badge variant={router.trx_type === 'payin' ? 'default' : 'secondary'}>
+                                  {router.trx_type === 'payin' ? '代收' : '代付'}
+                                </Badge>
+                                {router.trx_method && <span className="ml-2 text-muted-foreground">- {router.trx_method.toUpperCase()}</span>}
                               </TableCell>
-                              <TableCell>{getStatusBadge(router.status)}</TableCell>
+                              <TableCell>{getChannelCodeLabel(router.channel_code)}</TableCell>
+                              <TableCell>{getCcyLabel(router.ccy || '')}</TableCell>
+                              <TableCell>{getCountryLabel(router.country || '')}</TableCell>
+                              <TableCell>
+                                {router.min_amount && router.max_amount 
+                                  ? `${router.min_amount} - ${router.max_amount}`
+                                  : '-'
+                                }
+                              </TableCell>
+                              <TableCell>{router.priority || 0}</TableCell>
+                              <TableCell><StatusBadge status={router.status} type="account" /></TableCell>
+                              <TableCell>{formatDateTime(router.created_at)}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -609,6 +611,15 @@ export function MerchantManagement() {
           open={showContractsModal}
           onOpenChange={setShowContractsModal}
           merchant={selectedMerchantForContracts}
+        />
+      )}
+
+      {/* 独立的商户路由管理模块 */}
+      {selectedMerchantForRouters && (
+        <MerchantRouterModal
+          open={showRoutersModal}
+          onOpenChange={setShowRoutersModal}
+          merchant={selectedMerchantForRouters}
         />
       )}
     </div>

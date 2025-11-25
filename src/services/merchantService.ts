@@ -263,7 +263,7 @@ class MerchantService {
   // 获取商户合同列表
   async getMerchantContracts(params: { mid: string }): Promise<ApiResponse<Contract[]>> {
     try {
-      const response = await api.post<Contract[]>('/contract/user/list', {
+      const response = await api.post<Contract[]>('/user/contracts', {
         user_id: params.mid,
         user_type: 'merchant'
       });
@@ -275,6 +275,25 @@ class MerchantService {
       };
     } catch (error: any) {
       console.error('获取商户合同列表失败:', error);
+      throw error;
+    }
+  }
+
+  // 获取商户路由列表
+  async getMerchantRouters(params: { mid: string }): Promise<ApiResponse<MerchantRouter[]>> {
+    try {
+      const response = await api.post<MerchantRouter[]>('/user/routers', {
+        user_id: params.mid,
+        user_type: 'merchant'
+      });
+      return {
+        success: response.code === '0000',
+        code: response.code,
+        msg: response.msg,
+        data: response.data || []
+      };
+    } catch (error: any) {
+      console.error('获取商户路由列表失败:', error);
       throw error;
     }
   }

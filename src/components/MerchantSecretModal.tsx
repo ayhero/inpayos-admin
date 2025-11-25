@@ -133,27 +133,27 @@ export function MerchantSecretModal({ open, onOpenChange, merchant }: MerchantSe
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[60vw] w-[60vw] min-w-[700px] max-h-[85vh] overflow-y-auto" style={{width: '60vw', maxWidth: '60vw'}}>
+      <DialogContent className="max-w-[75vw] w-[75vw] min-w-[900px] max-h-[85vh] overflow-y-auto" style={{width: '75vw', maxWidth: '75vw'}}>
         <DialogHeader>
           <DialogTitle>密钥管理</DialogTitle>
           <DialogDescription>
-            <div className="flex items-center gap-2 mt-1">
-              <UserTypeLabel type={merchant?.type || ''} />
-              <span>{merchant?.name}</span>
-              <span className="text-muted-foreground">({merchant?.mid})</span>
+            <div className="flex items-center justify-between gap-2 mt-1">
+              <div className="flex items-center gap-2">
+                <UserTypeLabel type={merchant?.type || ''} />
+                <span>{merchant?.name}</span>
+                <span className="text-muted-foreground">({merchant?.mid})</span>
+              </div>
+              {!isAddingSecret && (
+                <Button size="sm" onClick={handleAddNewSecret}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  新建
+                </Button>
+              )}
             </div>
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="flex justify-end items-center">
-            {!isAddingSecret && (
-              <Button size="sm" onClick={handleAddNewSecret}>
-                <Plus className="h-4 w-4 mr-1" />
-                新建
-              </Button>
-            )}
-          </div>
 
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">加载中...</div>

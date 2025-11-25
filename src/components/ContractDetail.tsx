@@ -1,11 +1,8 @@
 import { Badge } from './ui/badge';
 import { getStatusDisplayName, getStatusColor } from '../constants/status';
 import { Contract } from '../services/contractService';
-import { formatCountry } from '../utils/countryMapping';
-import { formatCurrency } from '../utils/currencyMapping';
+import { getCountryLabel, getCcyLabel, getTrxTypeLabel, getTrxMethodLabel } from '../constants/business';
 import { isActiveStatus } from '../utils/statusMapping';
-import { formatTrxType } from '../utils/trxTypeMapping';
-import { formatTrxMethod } from '../utils/trxMethodMapping';
 
 interface ContractDetailProps {
   contract: Contract;
@@ -149,9 +146,9 @@ export function ContractDetail({ contract }: ContractDetailProps) {
                 {contract.payin.configs.map((config: any, index: number) => (
                   <div key={index} className="bg-gray-50 p-3 rounded text-sm space-y-1">
                     {config.pkg && <div><span className="text-gray-600">业务包:</span> <span className="font-medium">{config.pkg}</span></div>}
-                    {config.trx_method && <div><span className="text-gray-600">支付方式:</span> <span className="font-medium">{formatTrxMethod(config.trx_method)}</span></div>}
-                    {config.trx_ccy && <div><span className="text-gray-600">币种:</span> <span className="font-medium">{formatCurrency(config.trx_ccy)}</span></div>}
-                    {config.country && <div><span className="text-gray-600">国家:</span> <span className="font-medium">{formatCountry(config.country)}</span></div>}
+                    {config.trx_method && <div><span className="text-gray-600">支付方式:</span> <span className="font-medium">{getTrxMethodLabel(config.trx_method)}</span></div>}
+                    {config.trx_ccy && <div><span className="text-gray-600">币种:</span> <span className="font-medium">{getCcyLabel(config.trx_ccy)}</span></div>}
+                    {config.country && <div><span className="text-gray-600">国家:</span> <span className="font-medium">{getCountryLabel(config.country)}</span></div>}
                     {!!(config.min_amount || config.max_amount) && (
                       <div>
                         <span className="text-gray-600">金额范围:</span>{' '}
@@ -178,9 +175,9 @@ export function ContractDetail({ contract }: ContractDetailProps) {
                     </div>
                     <div className="flex gap-4 flex-wrap">
                       {settle.pkg && <div><span className="text-gray-600">业务包:</span> <span className="font-medium">{settle.pkg}</span></div>}
-                      {settle.trx_method && <div><span className="text-gray-600">支付方式:</span> <span className="font-medium">{formatTrxMethod(settle.trx_method)}</span></div>}
-                      {settle.trx_ccy && <div><span className="text-gray-600">币种:</span> <span className="font-medium">{formatCurrency(settle.trx_ccy)}</span></div>}
-                      {settle.country && <div><span className="text-gray-600">国家:</span> <span className="font-medium">{formatCountry(settle.country)}</span></div>}
+                      {settle.trx_method && <div><span className="text-gray-600">支付方式:</span> <span className="font-medium">{getTrxMethodLabel(settle.trx_method)}</span></div>}
+                      {settle.trx_ccy && <div><span className="text-gray-600">币种:</span> <span className="font-medium">{getCcyLabel(settle.trx_ccy)}</span></div>}
+                      {settle.country && <div><span className="text-gray-600">国家:</span> <span className="font-medium">{getCountryLabel(settle.country)}</span></div>}
                     </div>
                     {!!(settle.min_amount || settle.max_amount) && (
                       <div className="mt-1">
@@ -213,10 +210,10 @@ export function ContractDetail({ contract }: ContractDetailProps) {
                             <tr key={strategyIndex} className="border-t">
                               <td className="px-2 py-2">{strategy.code}</td>
                               <td className="px-2 py-2 font-mono">{strategy.sid}</td>
-                              <td className="px-2 py-2">{formatCurrency(strategy.settle_ccy)}</td>
-                              <td className="px-2 py-2">{formatTrxType(strategy.trx_type)}</td>
-                              <td className="px-2 py-2">{formatTrxMethod(strategy.trx_method)}</td>
-                              <td className="px-2 py-2">{formatCountry(strategy.country)}</td>
+                              <td className="px-2 py-2">{getCcyLabel(strategy.settle_ccy)}</td>
+                              <td className="px-2 py-2">{getTrxTypeLabel(strategy.trx_type)}</td>
+                              <td className="px-2 py-2">{getTrxMethodLabel(strategy.trx_method)}</td>
+                              <td className="px-2 py-2">{getCountryLabel(strategy.country)}</td>
                               <td className="px-2 py-2">{renderStatusSwitch(strategy.status)}</td>
                               <td className="px-2 py-2">
                                 {strategy.rules && strategy.rules.length > 0 ? (
@@ -225,7 +222,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
                                       <div key={ruleIndex} className="text-xs bg-gray-50 p-1 rounded">
                                         <div className="font-medium">{rule.rule_id}</div>
                                         <div className="text-gray-600">
-                                          费率: {rule.rate || '-'}% | 固定费: {rule.fixed_fee || '-'} {formatCurrency(rule.ccy)}
+                                          费率: {rule.rate || '-'}% | 固定费: {rule.fixed_fee || '-'} {getCcyLabel(rule.ccy)}
                                         </div>
                                       </div>
                                     ))}
@@ -260,9 +257,9 @@ export function ContractDetail({ contract }: ContractDetailProps) {
                 {contract.payout.configs.map((config: any, index: number) => (
                   <div key={index} className="bg-gray-50 p-3 rounded text-sm space-y-1">
                     {config.pkg && <div><span className="text-gray-600">业务包:</span> <span className="font-medium">{config.pkg}</span></div>}
-                    {config.trx_method && <div><span className="text-gray-600">支付方式:</span> <span className="font-medium">{formatTrxMethod(config.trx_method)}</span></div>}
-                    {config.trx_ccy && <div><span className="text-gray-600">币种:</span> <span className="font-medium">{formatCurrency(config.trx_ccy)}</span></div>}
-                    {config.country && <div><span className="text-gray-600">国家:</span> <span className="font-medium">{formatCountry(config.country)}</span></div>}
+                    {config.trx_method && <div><span className="text-gray-600">支付方式:</span> <span className="font-medium">{getTrxMethodLabel(config.trx_method)}</span></div>}
+                    {config.trx_ccy && <div><span className="text-gray-600">币种:</span> <span className="font-medium">{getCcyLabel(config.trx_ccy)}</span></div>}
+                    {config.country && <div><span className="text-gray-600">国家:</span> <span className="font-medium">{getCountryLabel(config.country)}</span></div>}
                     {!!(config.min_amount || config.max_amount) && (
                       <div>
                         <span className="text-gray-600">金额范围:</span>{' '}
@@ -289,9 +286,9 @@ export function ContractDetail({ contract }: ContractDetailProps) {
                     </div>
                     <div className="flex gap-4 flex-wrap">
                       {settle.pkg && <div><span className="text-gray-600">业务包:</span> <span className="font-medium">{settle.pkg}</span></div>}
-                      {settle.trx_method && <div><span className="text-gray-600">支付方式:</span> <span className="font-medium">{formatTrxMethod(settle.trx_method)}</span></div>}
-                      {settle.trx_ccy && <div><span className="text-gray-600">币种:</span> <span className="font-medium">{formatCurrency(settle.trx_ccy)}</span></div>}
-                      {settle.country && <div><span className="text-gray-600">国家:</span> <span className="font-medium">{formatCountry(settle.country)}</span></div>}
+                      {settle.trx_method && <div><span className="text-gray-600">支付方式:</span> <span className="font-medium">{getTrxMethodLabel(settle.trx_method)}</span></div>}
+                      {settle.trx_ccy && <div><span className="text-gray-600">币种:</span> <span className="font-medium">{getCcyLabel(settle.trx_ccy)}</span></div>}
+                      {settle.country && <div><span className="text-gray-600">国家:</span> <span className="font-medium">{getCountryLabel(settle.country)}</span></div>}
                     </div>
                     {!!(settle.min_amount || settle.max_amount) && (
                       <div className="mt-1">
@@ -324,10 +321,10 @@ export function ContractDetail({ contract }: ContractDetailProps) {
                             <tr key={strategyIndex} className="border-t">
                               <td className="px-2 py-2">{strategy.code}</td>
                               <td className="px-2 py-2 font-mono">{strategy.sid}</td>
-                              <td className="px-2 py-2">{formatCurrency(strategy.settle_ccy)}</td>
-                              <td className="px-2 py-2">{formatTrxType(strategy.trx_type)}</td>
-                              <td className="px-2 py-2">{formatTrxMethod(strategy.trx_method)}</td>
-                              <td className="px-2 py-2">{formatCountry(strategy.country)}</td>
+                              <td className="px-2 py-2">{getCcyLabel(strategy.settle_ccy)}</td>
+                              <td className="px-2 py-2">{getTrxTypeLabel(strategy.trx_type)}</td>
+                              <td className="px-2 py-2">{getTrxMethodLabel(strategy.trx_method)}</td>
+                              <td className="px-2 py-2">{getCountryLabel(strategy.country)}</td>
                               <td className="px-2 py-2">{renderStatusSwitch(strategy.status)}</td>
                               <td className="px-2 py-2">
                                 {strategy.rules && strategy.rules.length > 0 ? (
@@ -336,7 +333,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
                                       <div key={ruleIndex} className="text-xs bg-gray-50 p-1 rounded">
                                         <div className="font-medium">{rule.rule_id}</div>
                                         <div className="text-gray-600">
-                                          费率: {rule.rate || '-'}% | 固定费: {rule.fixed_fee || '-'} {formatCurrency(rule.ccy)}
+                                          费率: {rule.rate || '-'}% | 固定费: {rule.fixed_fee || '-'} {getCcyLabel(rule.ccy)}
                                         </div>
                                       </div>
                                     ))}
