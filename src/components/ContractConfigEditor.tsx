@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
@@ -14,10 +14,18 @@ interface ContractConfigEditorProps {
 }
 
 export function ContractConfigEditor({ open, onOpenChange, type, config, onSave }: ContractConfigEditorProps) {
-  const [trxType] = useState(type);
+  const [trxType, setTrxType] = useState(type);
   const [status, setStatus] = useState(config?.status || 'active');
   const [settleType, setSettleType] = useState(config?.settle?.[0]?.type || 'T1');
   const [strategies, setStrategies] = useState(config?.settle?.[0]?.strategies?.join(',') || '');
+
+  // 当 type 或 config 变化时，重置表单状态
+  useEffect(() => {
+    setTrxType(type);
+    setStatus(config?.status || 'active');
+    setSettleType(config?.settle?.[0]?.type || 'T1');
+    setStrategies(config?.settle?.[0]?.strategies?.join(',') || '');
+  }, [type, config]);
 
   const handleSave = () => {
     const newConfig: ContractConfig = {

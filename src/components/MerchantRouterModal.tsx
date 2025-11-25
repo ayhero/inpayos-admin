@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Plus, X, Save } from 'lucide-react';
+import { Plus, X, Save, Power, PowerOff } from 'lucide-react';
 import { merchantService, Merchant, MerchantRouter } from '../services/merchantService';
 import { routerService, CreateRouterParams } from '../services/routerService';
 import { toast } from '../utils/toast';
@@ -130,6 +130,42 @@ export function MerchantRouterModal({ open, onOpenChange, merchant }: MerchantRo
     }
   };
 
+  // 启用路由
+  const handleEnableRouter = async (router: MerchantRouter) => {
+    if (!router.id) return;
+    
+    try {
+      const response = await routerService.updateMerchantRouterStatus(router.id, 'active');
+      if (response.success) {
+        toast.success('启用路由成功', '');
+        await loadRouters();
+      } else {
+        toast.error('启用路由失败', response.msg);
+      }
+    } catch (error) {
+      console.error('启用路由失败:', error);
+      toast.error('启用路由失败', '网络错误，请稍后重试');
+    }
+  };
+
+  // 禁用路由
+  const handleDisableRouter = async (router: MerchantRouter) => {
+    if (!router.id) return;
+    
+    try {
+      const response = await routerService.updateMerchantRouterStatus(router.id, 'inactive');
+      if (response.success) {
+        toast.success('禁用路由成功', '');
+        await loadRouters();
+      } else {
+        toast.error('禁用路由失败', response.msg);
+      }
+    } catch (error) {
+      console.error('禁用路由失败:', error);
+      toast.error('禁用路由失败', '网络错误，请稍后重试');
+    }
+  };
+
   // 格式化时间
   const formatDateTime = (timestamp: number) => {
     if (!timestamp) return '-';
@@ -206,12 +242,13 @@ export function MerchantRouterModal({ open, onOpenChange, merchant }: MerchantRo
                   <TableHead>优先级</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>创建时间</TableHead>
+                  <TableHead>操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {merchantRouters.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                       暂无路由数据
                     </TableCell>
                   </TableRow>
@@ -232,6 +269,33 @@ export function MerchantRouterModal({ open, onOpenChange, merchant }: MerchantRo
                       <TableCell>{router.priority || 0}</TableCell>
                       <TableCell><StatusBadge status={router.status} type="account" /></TableCell>
                       <TableCell>{formatDateTime(router.created_at)}</TableCell>
+                      <TableCell>
+                        {router.mid && router.mid !== '' ? (
+                          router.status === 'active' ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDisableRouter(router)}
+                              className="h-7 px-2 text-orange-600 hover:text-orange-700 hover:border-orange-600"
+                            >
+                              <PowerOff className="h-3 w-3 mr-1" />
+                              禁用
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEnableRouter(router)}
+                              className="h-7 px-2 text-green-600 hover:text-green-700 hover:border-green-600"
+                            >
+                              <Power className="h-3 w-3 mr-1" />
+                              启用
+                            </Button>
+                          )
+                        ) : (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))
                 )}

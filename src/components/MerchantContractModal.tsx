@@ -13,6 +13,7 @@ import { ContractConfigEditor } from './ContractConfigEditor';
 
 // 编辑合同时的类型
 interface EditingContract {
+  contract_id_suffix?: string; // 合约ID后缀，用户可选输入
   start_at: string;
   expired_at: string;
   status: string;
@@ -32,6 +33,7 @@ export function MerchantContractModal({ open, onOpenChange, merchant }: Merchant
   const [showConfirm, setShowConfirm] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newContract, setNewContract] = useState<EditingContract>({
+    contract_id_suffix: '',
     start_at: '',
     expired_at: '',
     status: 'active',
@@ -81,11 +83,36 @@ export function MerchantContractModal({ open, onOpenChange, merchant }: Merchant
 
   // 新增合同
   const handleAddContract = () => {
-    const now = new Date();
-    const oneYearLater = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+    // 查找现有合同中生效时间和过期时间的最大值
+    let maxTime = 0;
+    
+    merchantContracts.forEach(contract => {
+      if (contract.start_at > maxTime) {
+        maxTime = contract.start_at;
+      }
+      if (contract.expired_at && contract.expired_at > maxTime) {
+        maxTime = contract.expired_at;
+      }
+    });
+
+    // 取三者最大值：现有合同最大时间、当前时间
+    const now = new Date().getTime();
+    const defaultTimestamp = Math.max(maxTime, now);
+    
+    // 将时间戳转换为本地时间字符串（YYYY-MM-DDTHH:mm:ss 格式）
+    const defaultTime = new Date(defaultTimestamp);
+    const year = defaultTime.getFullYear();
+    const month = String(defaultTime.getMonth() + 1).padStart(2, '0');
+    const day = String(defaultTime.getDate()).padStart(2, '0');
+    const hours = String(defaultTime.getHours()).padStart(2, '0');
+    const minutes = String(defaultTime.getMinutes()).padStart(2, '0');
+    const seconds = String(defaultTime.getSeconds()).padStart(2, '0');
+    const localTimeString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    
     setNewContract({
-      start_at: now.toISOString().slice(0, 16),
-      expired_at: oneYearLater.toISOString().slice(0, 16),
+      contract_id_suffix: '',
+      start_at: localTimeString,
+      expired_at: '',
       status: 'active',
       payin: undefined,
       payout: undefined
@@ -97,6 +124,7 @@ export function MerchantContractModal({ open, onOpenChange, merchant }: Merchant
   const handleCancelAdd = () => {
     setIsAdding(false);
     setNewContract({
+      contract_id_suffix: '',
       start_at: '',
       expired_at: '',
       status: 'active',
@@ -122,8 +150,8 @@ export function MerchantContractModal({ open, onOpenChange, merchant }: Merchant
   // 保存新合同
   const handleSaveContract = () => {
     if (!merchant) return;
-    if (!newContract.start_at || !newContract.expired_at) {
-      toast.error('保存失败', '请填写生效日期和失效日期');
+    if (!newContract.start_at) {
+      toast.error('保存失败', '请填写生效日期');
       return;
     }
     setShowConfirm(true);
@@ -134,15 +162,25 @@ export function MerchantContractModal({ open, onOpenChange, merchant }: Merchant
     if (!merchant) return;
 
     try {
-      const params = {
+      const params: any = {
         user_id: merchant.mid,
         user_type: 'merchant',
         start_at: new Date(newContract.start_at).getTime(),
-        expired_at: new Date(newContract.expired_at).getTime(),
         status: newContract.status,
         payin: newContract.payin,
         payout: newContract.payout
       };
+      
+      // 只有用户输入了合约ID后缀才传递（后端会自动添加CTR_M_前缀）
+      if (newContract.contract_id_suffix && newContract.contract_id_suffix.trim()) {
+        params.contract_id = newContract.contract_id_suffix.trim();
+      }
+      
+      // 只有填写了过期时间才传递
+      if (newContract.expired_at) {
+        params.expired_at = new Date(newContract.expired_at).getTime();
+      }
+      
       const response = await contractService.createMerchantContract(params);
 
       if (response.success) {
@@ -150,7 +188,9 @@ export function MerchantContractModal({ open, onOpenChange, merchant }: Merchant
         handleCancelAdd();
         await loadContracts();
       } else {
-        toast.error('创建合同失败', response.msg);
+        // 错误码4304表示合约ID重复
+        const errorMsg = response.code === '4304' ? '合约ID已存在，请使用其他ID' : response.msg;
+        toast.error('创建合同失败', errorMsg);
       }
     } catch (error) {
       console.error('创建合同失败:', error);
@@ -223,10 +263,22 @@ export function MerchantContractModal({ open, onOpenChange, merchant }: Merchant
                   
                   {isAdding && (
                     <TableRow>
-                      <TableCell className="text-muted-foreground">自动生成</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-muted-foreground font-mono">CTR_M_</span>
+                          <input
+                            type="text"
+                            value={newContract.contract_id_suffix || ''}
+                            onChange={(e) => setNewContract({ ...newContract, contract_id_suffix: e.target.value })}
+                            placeholder={new Date().toISOString().slice(0, 10).replace(/-/g, '')}
+                            className="w-32 px-2 py-1 text-xs font-mono border rounded"
+                          />
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <input
                           type="datetime-local"
+                          step="1"
                           value={newContract.start_at}
                           onChange={(e) => setNewContract({ ...newContract, start_at: e.target.value })}
                           className="w-full px-2 py-1 text-sm border rounded"
@@ -235,6 +287,7 @@ export function MerchantContractModal({ open, onOpenChange, merchant }: Merchant
                       <TableCell>
                         <input
                           type="datetime-local"
+                          step="1"
                           value={newContract.expired_at}
                           onChange={(e) => setNewContract({ ...newContract, expired_at: e.target.value })}
                           className="w-full px-2 py-1 text-sm border rounded"

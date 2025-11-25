@@ -161,7 +161,7 @@ export function MerchantAccount() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>用户名称</TableHead>
+                  <TableHead>用户</TableHead>
                   <TableHead>币种</TableHead>
                   <TableHead>总余额</TableHead>
                   <TableHead>可用余额</TableHead>
@@ -169,7 +169,6 @@ export function MerchantAccount() {
                   <TableHead>保证金</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>更新时间</TableHead>
-                  <TableHead>最后活跃时间</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
               </TableHeader>
@@ -184,7 +183,6 @@ export function MerchantAccount() {
                     <TableCell className="font-mono">{formatAmount(account.margin_balance)}</TableCell>
                     <TableCell>{getStatusBadge(account.status)}</TableCell>
                     <TableCell className="text-sm">{formatDateTime(account.updated_at)}</TableCell>
-                    <TableCell className="text-sm">{formatDateTime(account.last_active_at)}</TableCell>
                     <TableCell>
                       <Button variant="ghost" size="sm" onClick={() => handleViewDetail(account)}>
                         查看
