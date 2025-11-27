@@ -2,6 +2,7 @@
 export const currencyMap: Record<string, string> = {
   'INR': '印度卢比',
   'USD': '美元',
+  'USDT': 'USDT',
   'CNY': '人民币',
   'GBP': '英镑',
   'EUR': '欧元',

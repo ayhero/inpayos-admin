@@ -2,7 +2,7 @@ import { api, ApiResponse } from './api';
 
 export interface MerchantRouter {
   id: number;
-  mid: string; // 商户ID，空表示全局配置
+  user_id: string; // 商户ID，空表示全局配置
   pkg: string;
   did: string;
   trx_type: string;
@@ -27,7 +27,7 @@ export interface MerchantRouter {
 }
 
 export interface MerchantRouterListParams {
-  mid?: string;
+  user_id?: string;
   trx_type?: string;
   channel_code?: string;
   status?: number;
@@ -45,7 +45,7 @@ export interface PaginatedResponse<T> {
 }
 
 export interface CreateMerchantRouterParams {
-  mid?: string;
+  user_id?: string;
   pkg?: string;
   did?: string;
   trx_type: string;
@@ -68,7 +68,7 @@ export interface CreateMerchantRouterParams {
 
 export interface UpdateMerchantRouterParams {
   id: number;
-  mid?: string;
+  user_id?: string;
   pkg?: string;
   did?: string;
   trx_type?: string;

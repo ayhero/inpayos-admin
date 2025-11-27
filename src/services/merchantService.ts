@@ -4,7 +4,7 @@ import { Contract } from './contractService';
 // 商户密钥接口
 export interface MerchantSecret {
   id: number;
-  mid: string;
+  user_id: string;
   app_id: string;
   app_name: string;
   secret_key: string;
@@ -38,7 +38,7 @@ export interface MerchantAccount {
 // 商户路由接口
 export interface MerchantRouter {
   id: number;
-  mid?: string;
+  user_id?: string;
   trx_type: string;
   trx_method: string;
   ccy?: string;
@@ -58,7 +58,7 @@ export interface MerchantRouter {
 // 商户信息接口
 export interface Merchant {
   id: number;
-  mid: string; // 后端返回 mid 而不是 merchant_id
+  user_id: string;
   name: string;
   type: string;
   email: string;
@@ -75,7 +75,7 @@ export interface Merchant {
 
 // 商户列表查询参数
 export interface MerchantListParams {
-  mid?: string; // 后端期望 mid 而不是 merchant_id
+  user_id?: string;
   name?: string;
   email?: string;
   phone?: string;
@@ -99,7 +99,7 @@ export interface PaginatedResponse<T> {
 
 // 商户详情参数
 export interface MerchantDetailParams {
-  mid: string; // 后端期望 mid 而不是 merchant_id
+  user_id: string;
 }
 
 // 商户统计数据
@@ -112,7 +112,7 @@ export interface MerchantStats {
 
 // 创建商户密钥参数
 export interface CreateMerchantSecretParams {
-  mid: string;
+  user_id: string;
   app_name: string;
   sandbox: boolean;
 }
@@ -229,7 +229,7 @@ class MerchantService {
   }
 
   // 获取默认合同
-  async getDefaultContract(params: { mid: string }): Promise<ApiResponse<Contract>> {
+  async getDefaultContract(params: { user_id: string }): Promise<ApiResponse<Contract>> {
     try {
       const response = await api.post<Contract>('/contract/default', params);
       return {
@@ -245,7 +245,7 @@ class MerchantService {
   }
 
   // 获取商户密钥列表
-  async getMerchantSecrets(params: { mid: string }): Promise<ApiResponse<MerchantSecret[]>> {
+  async getMerchantSecrets(params: { user_id: string }): Promise<ApiResponse<MerchantSecret[]>> {
     try {
       const response = await api.post<MerchantSecret[]>('/merchant/secret/list', params);
       return {
@@ -261,11 +261,11 @@ class MerchantService {
   }
 
   // 获取商户合同列表
-  async getMerchantContracts(params: { mid: string }): Promise<ApiResponse<Contract[]>> {
+  async getMerchantContracts(params: { user_id: string; user_type?: string }): Promise<ApiResponse<Contract[]>> {
     try {
       const response = await api.post<Contract[]>('/user/contracts', {
-        user_id: params.mid,
-        user_type: 'merchant'
+        user_id: params.user_id,
+        user_type: params.user_type || 'merchant'
       });
       return {
         success: response.code === '0000',
@@ -280,10 +280,10 @@ class MerchantService {
   }
 
   // 获取商户路由列表
-  async getMerchantRouters(params: { mid: string }): Promise<ApiResponse<MerchantRouter[]>> {
+  async getMerchantRouters(params: { user_id: string }): Promise<ApiResponse<MerchantRouter[]>> {
     try {
       const response = await api.post<MerchantRouter[]>('/user/routers', {
-        user_id: params.mid,
+        user_id: params.user_id,
         user_type: 'merchant'
       });
       return {

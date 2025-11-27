@@ -1,21 +1,28 @@
 import { api, ApiResponse } from './api';
+import { Account, Contract, Router } from './merchantService';
 
-// CashierTeam 信息接口
+// CashierTeam 信息接口 - 现在使用统一的 User 结构
 export interface CashierTeam {
   id: number;
-  tid: string;
+  user_id: string;
+  user_type: string;
   name: string;
   email: string;
   phone: string;
   type: string;
   status: string;
-  created_at: number;
-  updated_at: number;
+  region?: string;
+  avatar?: string;
+  has_g2fa?: boolean;
+  accounts?: Account[];
+  contracts?: Contract[];
+  routers?: Router[];
 }
 
 // CashierTeam 列表查询参数
 export interface CashierTeamListParams {
-  tid?: string;
+  user_id?: string;
+  user_type?: string;
   name?: string;
   email?: string;
   phone?: string;
@@ -39,7 +46,8 @@ export interface PaginatedResponse<T> {
 
 // CashierTeam 详情参数
 export interface CashierTeamDetailParams {
-  tid: string;
+  user_id: string;
+  user_type?: string;
 }
 
 // CashierTeam 统计数据

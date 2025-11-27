@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Badge } from './ui/badge';
-import { Plus, X, Save, Eye, EyeOff } from 'lucide-react';
+import { Plus, X, Save, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { merchantService, Merchant, MerchantSecret } from '../services/merchantService';
 import { toast } from '../utils/toast';
 import { UserTypeLabel } from './UserTypeLabel';
@@ -34,7 +34,7 @@ export function MerchantSecretModal({ open, onOpenChange, merchant }: MerchantSe
     
     setLoading(true);
     try {
-      const response = await merchantService.getMerchantSecrets({ mid: merchant.mid });
+      const response = await merchantService.getMerchantSecrets({ user_id: merchant.user_id });
       if (response.success) {
         setMerchantSecrets(response.data || []);
       } else {
@@ -82,7 +82,7 @@ export function MerchantSecretModal({ open, onOpenChange, merchant }: MerchantSe
 
     try {
       const response = await merchantService.createMerchantSecret({
-        mid: merchant.mid,
+        user_id: merchant.user_id,
         app_name: newSecret.app_name,
         sandbox: newSecret.sandbox
       });
@@ -137,23 +137,25 @@ export function MerchantSecretModal({ open, onOpenChange, merchant }: MerchantSe
         <DialogHeader>
           <DialogTitle>密钥管理</DialogTitle>
           <DialogDescription>
-            <div className="flex items-center justify-between gap-2 mt-1">
-              <div className="flex items-center gap-2">
-                <UserTypeLabel type={merchant?.type || ''} />
-                <span>{merchant?.name}</span>
-                <span className="text-muted-foreground">({merchant?.mid})</span>
-              </div>
-              {!isAddingSecret && (
-                <Button size="sm" onClick={handleAddNewSecret}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  新建
-                </Button>
-              )}
+            <div className="flex items-center gap-2">
+              <UserTypeLabel type={merchant?.type || ''} />
+              <span>{merchant?.name}</span>
+              <span className="text-muted-foreground">({merchant?.user_id})</span>
             </div>
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Button size="sm" onClick={handleAddNewSecret} disabled={isAddingSecret} className="h-9">
+              <Plus className="h-4 w-4 mr-1" />
+              新建
+            </Button>
+            <Button size="sm" variant="outline" onClick={loadSecrets} className="h-9">
+              <RefreshCw className="h-4 w-4 mr-1" />
+              刷新
+            </Button>
+          </div>
 
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">加载中...</div>

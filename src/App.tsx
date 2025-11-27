@@ -139,7 +139,7 @@ export default function App() {
     // },
     {
       id: 'cashier-team',
-      label: 'CashierTeam',
+      label: '车队',
       icon: Users,
       component: CashierTeamManagement
     },

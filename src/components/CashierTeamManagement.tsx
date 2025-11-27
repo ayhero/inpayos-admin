@@ -6,9 +6,15 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Search, RefreshCw, Users } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Search, RefreshCw, Users, Wallet, FileText, Route } from 'lucide-react';
 import { cashierTeamService, CashierTeam, CashierTeamListParams, CashierTeamStats } from '../services/cashierTeamService';
 import { toast } from '../utils/toast';
+import { UserAccountModal } from './UserAccountModal';
+import { UserContractModal } from './UserContractModal';
+import { UserRouterModal } from './UserRouterModal';
+import { StatusBadge } from './StatusBadge';
+import { getChannelCodeLabel, getCcyLabel, getCountryLabel } from '../constants/business';
 
 export function CashierTeamManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,6 +35,16 @@ export function CashierTeamManagement() {
     total: 0,
     totalPages: 0
   });
+
+  // 独立模块弹窗状态
+  const [showAccountsModal, setShowAccountsModal] = useState(false);
+  const [selectedTeamForAccounts, setSelectedTeamForAccounts] = useState<CashierTeam | null>(null);
+
+  const [showContractsModal, setShowContractsModal] = useState(false);
+  const [selectedTeamForContracts, setSelectedTeamForContracts] = useState<CashierTeam | null>(null);
+
+  const [showRoutersModal, setShowRoutersModal] = useState(false);
+  const [selectedTeamForRouters, setSelectedTeamForRouters] = useState<CashierTeam | null>(null);
 
   // 获取CashierTeam统计
   const fetchStats = useCallback(async () => {
@@ -99,17 +115,6 @@ export function CashierTeamManagement() {
     fetchStats();
   };
 
-  const getStatusBadge = (status: string) => {
-    const configs: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className: string }> = {
-      'active': { label: '激活', variant: 'default', className: 'bg-green-500' },
-      'inactive': { label: '未激活', variant: 'secondary', className: 'bg-gray-500' },
-      'suspended': { label: '暂停', variant: 'destructive', className: '' },
-      'pending': { label: '待审核', variant: 'secondary', className: 'bg-yellow-500' }
-    };
-    const config = configs[status?.toLowerCase()] || { label: status || '-', variant: 'outline' as const, className: '' };
-    return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
-  };
-
   const formatDateTime = (timestamp: number) => {
     if (!timestamp) return '-';
     const date = new Date(timestamp);
@@ -119,22 +124,37 @@ export function CashierTeamManagement() {
 
   const handleViewDetail = async (team: CashierTeam) => {
     try {
-      const response = await cashierTeamService.getCashierTeamDetail({ tid: team.tid });
+      const response = await cashierTeamService.getCashierTeamDetail({ user_id: team.user_id });
       if (response.success) {
         setSelectedTeam(response.data);
       } else {
-        toast.error('获取CashierTeam详情失败', response.msg);
+        toast.error('获取车队详情失败', response.msg);
       }
     } catch (error) {
-      console.error('获取CashierTeam详情失败:', error);
-      toast.error('获取CashierTeam详情失败', '网络错误，请稍后重试');
+      console.error('获取车队详情失败:', error);
+      toast.error('获取车队详情失败', '网络错误，请稍后重试');
     }
+  };
+
+  const handleViewAccounts = (team: CashierTeam) => {
+    setSelectedTeamForAccounts(team);
+    setShowAccountsModal(true);
+  };
+
+  const handleViewContracts = (team: CashierTeam) => {
+    setSelectedTeamForContracts(team);
+    setShowContractsModal(true);
+  };
+
+  const handleViewRouters = (team: CashierTeam) => {
+    setSelectedTeamForRouters(team);
+    setShowRoutersModal(true);
   };
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">CashierTeam</h1>
+        <h1 className="text-2xl font-bold">车队</h1>
         <Button onClick={handleRefresh} className="gap-2" variant="outline">
           <RefreshCw className="h-4 w-4" />
           刷新
@@ -197,7 +217,7 @@ export function CashierTeamManagement() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  placeholder="搜索团队名称、邮箱或电话..."
+                  placeholder="搜索车队名称、邮箱或电话..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -230,28 +250,41 @@ export function CashierTeamManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>团队ID</TableHead>
-                  <TableHead>团队名称</TableHead>
+                  <TableHead>名称</TableHead>
                   <TableHead>邮箱</TableHead>
                   <TableHead>电话</TableHead>
                   <TableHead>状态</TableHead>
-                  <TableHead>创建时间</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {teams.map((team) => (
                   <TableRow key={team.id}>
-                    <TableCell className="font-mono text-xs">{team.tid}</TableCell>
-                    <TableCell>{team.name}</TableCell>
+                    <TableCell>
+                      <div className="font-semibold">{team.name}</div>
+                      <div className="font-mono text-xs text-muted-foreground">{team.user_id}</div>
+                    </TableCell>
                     <TableCell>{team.email}</TableCell>
                     <TableCell>{team.phone}</TableCell>
-                    <TableCell>{getStatusBadge(team.status)}</TableCell>
-                    <TableCell>{formatDateTime(team.created_at)}</TableCell>
+                    <TableCell><StatusBadge status={team.status} type="account" /></TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" onClick={() => handleViewDetail(team)}>
-                        查看
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => handleViewDetail(team)}>
+                          查看
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleViewAccounts(team)}>
+                          <Wallet className="h-4 w-4 mr-1" />
+                          账户
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleViewContracts(team)}>
+                          <FileText className="h-4 w-4 mr-1" />
+                          合同
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleViewRouters(team)}>
+                          <Route className="h-4 w-4 mr-1" />
+                          路由
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -290,44 +323,227 @@ export function CashierTeamManagement() {
 
       {/* CashierTeam详情对话框 */}
       <Dialog open={!!selectedTeam} onOpenChange={() => setSelectedTeam(null)}>
-        <DialogContent className="max-w-[45vw] w-[45vw] min-w-[600px]" style={{width: '45vw', maxWidth: '45vw'}}>
+        <DialogContent className="max-w-[60vw] w-[60vw] min-w-[700px] max-h-[90vh]" style={{width: '60vw', maxWidth: '60vw'}}>
           <DialogHeader>
-            <DialogTitle>CashierTeam详情</DialogTitle>
+            <DialogTitle>车队详情</DialogTitle>
           </DialogHeader>
           {selectedTeam && (
-            <div className="grid grid-cols-2 gap-4 py-4 max-h-[500px] overflow-y-auto">
+            <div className="space-y-6 py-4 max-h-[75vh] overflow-y-auto">
+              {/* 基本信息 - 顶部模块 */}
               <div>
-                <label className="text-sm text-muted-foreground">团队ID</label>
-                <p className="text-base font-semibold font-mono mt-1">{selectedTeam.tid}</p>
+                <h3 className="text-lg font-semibold mb-3">基本信息</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm text-muted-foreground">车队ID</label>
+                    <p className="text-base font-semibold font-mono mt-1">{selectedTeam.user_id}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">车队名称</label>
+                    <p className="text-base font-semibold mt-1">{selectedTeam.name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">邮箱</label>
+                    <p className="text-base font-semibold mt-1">{selectedTeam.email}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">电话</label>
+                    <p className="text-base font-semibold mt-1">{selectedTeam.phone}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">状态</label>
+                    <p className="mt-1"><StatusBadge status={selectedTeam.status} type="account" /></p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="text-sm text-muted-foreground">团队名称</label>
-                <p className="text-base font-semibold mt-1">{selectedTeam.name}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">邮箱</label>
-                <p className="text-base font-semibold mt-1">{selectedTeam.email}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">电话</label>
-                <p className="text-base font-semibold mt-1">{selectedTeam.phone}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">状态</label>
-                <p className="mt-1">{getStatusBadge(selectedTeam.status)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">创建时间</label>
-                <p className="text-base font-semibold mt-1">{formatDateTime(selectedTeam.created_at)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">更新时间</label>
-                <p className="text-base font-semibold mt-1">{formatDateTime(selectedTeam.updated_at)}</p>
-              </div>
+
+              {/* Tab 页面 */}
+              <Tabs defaultValue="accounts" className="w-full">
+                <TabsList>
+                  <TabsTrigger value="accounts">
+                    账户 ({selectedTeam.accounts?.length || 0})
+                  </TabsTrigger>
+                  <TabsTrigger value="contracts">
+                    合同 ({selectedTeam.contracts?.length || 0})
+                  </TabsTrigger>
+                  <TabsTrigger value="routers">
+                    路由 ({selectedTeam.routers?.length || 0})
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* 账户列表 Tab */}
+                <TabsContent value="accounts" className="mt-4">
+                  {selectedTeam.accounts && selectedTeam.accounts.length > 0 ? (
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>币种</TableHead>
+                            <TableHead>总余额</TableHead>
+                            <TableHead>可用余额</TableHead>
+                            <TableHead>冻结余额</TableHead>
+                            <TableHead>保证金</TableHead>
+                            <TableHead>状态</TableHead>
+                            <TableHead>最后更新时间</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedTeam.accounts.map((account) => (
+                            <TableRow key={account.account_id}>
+                              <TableCell>{account.ccy}</TableCell>
+                              <TableCell className="font-mono">{parseFloat(account.balance || '0').toFixed(2)}</TableCell>
+                              <TableCell className="font-mono text-green-600">{parseFloat(account.available_balance || '0').toFixed(2)}</TableCell>
+                              <TableCell className="font-mono text-red-600">{parseFloat(account.frozen_balance || '0').toFixed(2)}</TableCell>
+                              <TableCell className="font-mono">{parseFloat(account.margin_balance || '0').toFixed(2)}</TableCell>
+                              <TableCell><StatusBadge status={account.status} type="account" /></TableCell>
+                              <TableCell>{formatDateTime(account.updated_at)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">暂无账户</div>
+                  )}
+                </TabsContent>
+
+                {/* 合同列表 Tab */}
+                <TabsContent value="contracts" className="mt-4">
+                  {selectedTeam.contracts && selectedTeam.contracts.length > 0 ? (
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>合同ID</TableHead>
+                            <TableHead>生效时间</TableHead>
+                            <TableHead>过期时间</TableHead>
+                            <TableHead>状态</TableHead>
+                            <TableHead>创建时间</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedTeam.contracts.map((contract) => (
+                            <TableRow key={contract.id}>
+                              <TableCell className="font-mono text-xs">{contract.contract_id}</TableCell>
+                              <TableCell>{formatDateTime(contract.start_at)}</TableCell>
+                              <TableCell>{contract.expired_at ? formatDateTime(contract.expired_at) : '永不过期'}</TableCell>
+                              <TableCell><StatusBadge status={contract.status} type="trx" /></TableCell>
+                              <TableCell>{formatDateTime(contract.created_at)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">暂无合同</div>
+                  )}
+                </TabsContent>
+
+                {/* 路由列表 Tab */}
+                <TabsContent value="routers" className="mt-4">
+                  {selectedTeam.routers && selectedTeam.routers.length > 0 ? (
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>路由类型</TableHead>
+                            <TableHead>交易类型</TableHead>
+                            <TableHead>渠道</TableHead>
+                            <TableHead>币种</TableHead>
+                            <TableHead>国家</TableHead>
+                            <TableHead>金额范围</TableHead>
+                            <TableHead>优先级</TableHead>
+                            <TableHead>状态</TableHead>
+                            <TableHead>创建时间</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedTeam.routers.map((router) => (
+                            <TableRow key={router.id}>
+                              <TableCell>
+                                {!router.tid || router.tid === '' ? (
+                                  <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
+                                    全局路由
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">
+                                    专属路由
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={router.trx_type === 'payin' ? 'default' : 'secondary'}>
+                                  {router.trx_type === 'payin' ? '代收' : '代付'}
+                                </Badge>
+                                {router.trx_method && <span className="ml-2 text-muted-foreground">- {router.trx_method.toUpperCase()}</span>}
+                              </TableCell>
+                              <TableCell>{getChannelCodeLabel(router.channel_code)}</TableCell>
+                              <TableCell>{getCcyLabel(router.ccy || '')}</TableCell>
+                              <TableCell>{getCountryLabel(router.country || '')}</TableCell>
+                              <TableCell>
+                                {router.min_amount && router.max_amount 
+                                  ? `${router.min_amount} - ${router.max_amount}`
+                                  : '-'
+                                }
+                              </TableCell>
+                              <TableCell>{router.priority || 0}</TableCell>
+                              <TableCell><StatusBadge status={router.status} type="account" /></TableCell>
+                              <TableCell>{formatDateTime(router.created_at)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">暂无路由</div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* 账户管理模态窗 */}
+      {selectedTeamForAccounts && (
+        <UserAccountModal
+          open={showAccountsModal}
+          onOpenChange={(open) => {
+            setShowAccountsModal(open);
+            if (!open) setSelectedTeamForAccounts(null);
+          }}
+          userId={selectedTeamForAccounts.user_id}
+          userName={selectedTeamForAccounts.name}
+          userType="cashier_team"
+        />
+      )}
+
+      {/* 合同管理模态窗 */}
+      {selectedTeamForContracts && (
+        <UserContractModal
+          open={showContractsModal}
+          onOpenChange={(open) => {
+            setShowContractsModal(open);
+            if (!open) setSelectedTeamForContracts(null);
+          }}
+          userId={selectedTeamForContracts.user_id}
+          userName={selectedTeamForContracts.name}
+          userType="cashier_team"
+        />
+      )}
+
+      {/* 路由管理模态窗 */}
+      {selectedTeamForRouters && (
+        <UserRouterModal
+          open={showRoutersModal}
+          onOpenChange={(open) => {
+            setShowRoutersModal(open);
+            if (!open) setSelectedTeamForRouters(null);
+          }}
+          userId={selectedTeamForRouters.user_id}
+          userName={selectedTeamForRouters.name}
+          userType="cashier_team"
+        />
+      )}
     </div>
   );
 }

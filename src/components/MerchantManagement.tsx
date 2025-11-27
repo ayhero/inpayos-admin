@@ -7,16 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Search, RefreshCw, Building2, Eye, EyeOff, Key, FileText, Route, Plus, Save, X } from 'lucide-react';
+import { Search, RefreshCw, Building2, Eye, EyeOff, Key, FileText, Route, Wallet } from 'lucide-react';
 import { merchantService, Merchant, MerchantListParams, MerchantStats } from '../services/merchantService';
-import { accountService } from '../services/accountService';
 import { toast } from '../utils/toast';
 import { MerchantSecretModal } from './MerchantSecretModal';
-import { MerchantContractModal } from './MerchantContractModal';
-import { MerchantRouterModal } from './MerchantRouterModal';
+import { UserAccountModal } from './UserAccountModal';
+import { UserContractModal } from './UserContractModal';
+import { UserRouterModal } from './UserRouterModal';
 import { StatusBadge } from './StatusBadge';
-import { getChannelCodeLabel, getCcyLabel, getCountryLabel, CCY_OPTIONS } from '../constants/business';
-import { ConfirmDialog } from './ui/confirm-dialog';
+import { getChannelCodeLabel, getCcyLabel, getCountryLabel } from '../constants/business';
 
 export function MerchantManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,10 +48,8 @@ export function MerchantManagement() {
   const [showRoutersModal, setShowRoutersModal] = useState(false);
   const [selectedMerchantForRouters, setSelectedMerchantForRouters] = useState<Merchant | null>(null);
 
-  // 账户管理相关状态
-  const [isAddingAccount, setIsAddingAccount] = useState(false);
-  const [newAccount, setNewAccount] = useState<{ccy: string}>({ccy: ''});
-  const [showAccountConfirm, setShowAccountConfirm] = useState(false);
+  const [showAccountsModal, setShowAccountsModal] = useState(false);
+  const [selectedMerchantForAccounts, setSelectedMerchantForAccounts] = useState<Merchant | null>(null);
 
   // 获取商户统计
   const fetchStats = useCallback(async () => {
@@ -132,7 +129,7 @@ export function MerchantManagement() {
 
   const handleViewDetail = async (merchant: Merchant) => {
     try {
-      const response = await merchantService.getMerchantDetail({ mid: merchant.mid });
+      const response = await merchantService.getMerchantDetail({ user_id: merchant.user_id });
       if (response.success) {
         setSelectedMerchant(response.data);
         setVisibleSecrets(new Set());
@@ -190,51 +187,10 @@ export function MerchantManagement() {
     setShowRoutersModal(true);
   };
 
-  // 新增账户
-  const handleAddNewAccount = () => {
-    setIsAddingAccount(true);
-    setNewAccount({ccy: ''});
-  };
-
-  // 取消新增账户
-  const handleCancelNewAccount = () => {
-    setIsAddingAccount(false);
-    setNewAccount({ccy: ''});
-  };
-
-  // 保存新账户
-  const handleSaveNewAccount = () => {
-    if (!selectedMerchant || !newAccount.ccy.trim()) {
-      toast.error('保存失败', '币种不能为空');
-      return;
-    }
-    setShowAccountConfirm(true);
-  };
-
-  // 确认创建账户
-  const confirmCreateAccount = async () => {
-    if (!selectedMerchant) return;
-
-    try {
-      const response = await accountService.createAccount({
-        user_id: selectedMerchant.mid,
-        user_type: 'merchant',
-        ccy: newAccount.ccy
-      });
-
-      if (response.success) {
-        toast.success('创建账户成功', '');
-        setIsAddingAccount(false);
-        setNewAccount({ccy: ''});
-        // 重新加载商户详情
-        await handleViewDetail(selectedMerchant);
-      } else {
-        toast.error('创建账户失败', response.msg);
-      }
-    } catch (error) {
-      console.error('创建账户失败:', error);
-      toast.error('创建账户失败', '网络错误，请稍后重试');
-    }
+  // 处理查看商户账户
+  const handleViewAccounts = (merchant: Merchant) => {
+    setSelectedMerchantForAccounts(merchant);
+    setShowAccountsModal(true);
   };
 
   return (
@@ -349,7 +305,7 @@ export function MerchantManagement() {
                   <TableRow key={merchant.id}>
                     <TableCell>
                       <div className="font-semibold">{merchant.name}</div>
-                      <div className="font-mono text-xs text-muted-foreground">{merchant.mid}</div>
+                      <div className="font-mono text-xs text-muted-foreground">{merchant.user_id}</div>
                     </TableCell>
                     <TableCell>{merchant.email}</TableCell>
                     <TableCell>{merchant.phone}</TableCell>
@@ -359,6 +315,10 @@ export function MerchantManagement() {
                       <div className="flex gap-2">
                         <Button variant="ghost" size="sm" onClick={() => handleViewDetail(merchant)}>
                           查看
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleViewAccounts(merchant)}>
+                          <Wallet className="h-4 w-4 mr-1" />
+                          账户
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleViewSecrets(merchant)}>
                           <Key className="h-4 w-4 mr-1" />
@@ -423,7 +383,7 @@ export function MerchantManagement() {
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="text-sm text-muted-foreground">商户ID</label>
-                    <p className="text-base font-semibold font-mono mt-1">{selectedMerchant.mid}</p>
+                    <p className="text-base font-semibold font-mono mt-1">{selectedMerchant.user_id}</p>
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground">商户名称</label>
@@ -519,18 +479,7 @@ export function MerchantManagement() {
 
                 {/* 账户列表 Tab */}
                 <TabsContent value="accounts" className="mt-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="text-sm text-muted-foreground">
-                      共 {selectedMerchant.accounts?.length || 0} 个账户
-                    </div>
-                    {!isAddingAccount && (
-                      <Button size="sm" onClick={handleAddNewAccount}>
-                        <Plus className="h-4 w-4 mr-1" />
-                        新建
-                      </Button>
-                    )}
-                  </div>
-                  {selectedMerchant.accounts && selectedMerchant.accounts.length > 0 || isAddingAccount ? (
+                  {selectedMerchant.accounts && selectedMerchant.accounts.length > 0 ? (
                     <div className="border rounded-lg overflow-hidden">
                       <Table>
                         <TableHeader>
@@ -545,7 +494,7 @@ export function MerchantManagement() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {selectedMerchant.accounts?.map((account) => (
+                          {selectedMerchant.accounts.map((account) => (
                             <TableRow key={account.account_id}>
                               <TableCell>{account.ccy}</TableCell>
                               <TableCell className="font-mono">{parseFloat(account.balance || '0').toFixed(2)}</TableCell>
@@ -556,45 +505,6 @@ export function MerchantManagement() {
                               <TableCell>{formatDateTime(account.updated_at)}</TableCell>
                             </TableRow>
                           ))}
-                          
-                          {isAddingAccount && (
-                            <TableRow>
-                              <TableCell>
-                                <Select
-                                  value={newAccount.ccy}
-                                  onValueChange={(value) => setNewAccount({...newAccount, ccy: value})}
-                                >
-                                  <SelectTrigger className="w-32">
-                                    <SelectValue placeholder="选择币种" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {CCY_OPTIONS.filter(opt => opt.value !== 'all').map(option => (
-                                      <SelectItem key={option.value} value={option.value}>
-                                        {option.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </TableCell>
-                              <TableCell className="text-muted-foreground">0.00</TableCell>
-                              <TableCell className="text-muted-foreground">0.00</TableCell>
-                              <TableCell className="text-muted-foreground">0.00</TableCell>
-                              <TableCell className="text-muted-foreground">0.00</TableCell>
-                              <TableCell className="text-muted-foreground">-</TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Button size="sm" onClick={handleSaveNewAccount}>
-                                    <Save className="h-3 w-3 mr-1" />
-                                    保存
-                                  </Button>
-                                  <Button size="sm" variant="outline" onClick={handleCancelNewAccount}>
-                                    <X className="h-3 w-3 mr-1" />
-                                    取消
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          )}
                         </TableBody>
                       </Table>
                     </div>
@@ -711,32 +621,36 @@ export function MerchantManagement() {
 
       {/* 独立的商户合同管理模块 */}
       {selectedMerchantForContracts && (
-        <MerchantContractModal
+        <UserContractModal
           open={showContractsModal}
           onOpenChange={setShowContractsModal}
-          merchant={selectedMerchantForContracts}
+          userId={selectedMerchantForContracts.user_id}
+          userName={selectedMerchantForContracts.name}
+          userType="merchant"
         />
       )}
 
       {/* 独立的商户路由管理模块 */}
       {selectedMerchantForRouters && (
-        <MerchantRouterModal
+        <UserRouterModal
           open={showRoutersModal}
           onOpenChange={setShowRoutersModal}
-          merchant={selectedMerchantForRouters}
+          userId={selectedMerchantForRouters.user_id}
+          userName={selectedMerchantForRouters.name}
+          userType="merchant"
         />
       )}
 
-      {/* 创建账户确认对话框 */}
-      <ConfirmDialog
-        open={showAccountConfirm}
-        onOpenChange={setShowAccountConfirm}
-        title="确认创建新账户？"
-        description={`将为商户 ${selectedMerchant?.name} 创建 ${newAccount.ccy} 币种账户`}
-        confirmText="确认创建"
-        cancelText="取消"
-        onConfirm={confirmCreateAccount}
-      />
+      {/* 独立的商户账户管理模块 */}
+      {selectedMerchantForAccounts && (
+        <UserAccountModal
+          open={showAccountsModal}
+          onOpenChange={setShowAccountsModal}
+          userId={selectedMerchantForAccounts.user_id}
+          userName={selectedMerchantForAccounts.name}
+          userType="merchant"
+        />
+      )}
     </div>
   );
 }

@@ -38,13 +38,12 @@ export const TRX_METHOD_OPTIONS = [
   }))
 ];
 
-// 货币选项（使用中文名(代码)格式）
+// 货币选项（使用中文名(代码)格式）- 仅支持 INR、USD、USDT
 export const CCY_OPTIONS = [
   { value: 'all', label: '全部' },
-  ...Object.entries(currencyMap).map(([value, label]) => ({
-    value,
-    label: `${label}(${value})`,
-  }))
+  { value: 'INR', label: `${currencyMap['INR']}(INR)` },
+  { value: 'USD', label: `${currencyMap['USD']}(USD)` },
+  { value: 'USDT', label: 'USDT(USDT)' },
 ];
 
 // 国家选项（使用三位国家码，格式：中文名(代码)）

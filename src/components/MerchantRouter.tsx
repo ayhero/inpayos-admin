@@ -45,7 +45,7 @@ export function MerchantRouter() {
   const [isCreating, setIsCreating] = useState(false);
   const [ccyError, setCcyError] = useState(false);
   const [formData, setFormData] = useState<CreateRouterParams>({
-    mid: '',
+    user_id: '',
     trx_type: '',
     trx_method: '',
     ccy: '',
@@ -59,7 +59,7 @@ export function MerchantRouter() {
   });
   
   const [searchParams, setSearchParams] = useState({
-    mid: '',
+    user_id: '',
     trx_type: '',
     channel_code: '',
     status: ''
@@ -71,7 +71,7 @@ export function MerchantRouter() {
       const params: RouterListParams = {
         page: currentPage,
         size: pageSize,
-        ...(searchParams.mid && { mid: searchParams.mid }),
+        ...(searchParams.user_id && { user_id: searchParams.user_id }),
         ...(searchParams.trx_type && { trx_type: searchParams.trx_type }),
         ...(searchParams.channel_code && { channel_code: searchParams.channel_code }),
         ...(searchParams.status && { status: searchParams.status })
@@ -123,7 +123,7 @@ export function MerchantRouter() {
   const handleEdit = (router: RouterData) => {
     setSelectedRouter(router);
     setFormData({
-      mid: router.mid || '',
+      user_id: router.user_id || '',
       pkg: router.pkg || '',
       did: router.did || '',
       trx_type: router.trx_type || '',
@@ -174,7 +174,7 @@ export function MerchantRouter() {
   const handleAdd = () => {
     setSelectedRouter(null);
     setFormData({
-      mid: '',
+      user_id: '',
       pkg: '',
       did: '',
       trx_type: '',
@@ -257,7 +257,7 @@ export function MerchantRouter() {
 
   const handleReset = () => {
     setSearchParams({
-      mid: '',
+      user_id: '',
       trx_type: '',
       channel_code: '',
       status: ''
@@ -287,8 +287,8 @@ export function MerchantRouter() {
             <div className="flex-1 md:flex-initial md:w-64">
               <Input
                 placeholder="商户ID"
-                value={searchParams.mid}
-                onChange={(e) => setSearchParams({ ...searchParams, mid: e.target.value })}
+                value={searchParams.user_id}
+                onChange={(e) => setSearchParams({ ...searchParams, user_id: e.target.value })}
               />
             </div>
             <Select
@@ -375,7 +375,7 @@ export function MerchantRouter() {
                 ) : (
                   routers.map((router) => (
                     <TableRow key={router.id}>
-                      <TableCell>{router.mid || '-'}</TableCell>
+                      <TableCell>{router.user_id || '-'}</TableCell>
                       <TableCell>
                         {(() => {
                           const config = getTrxTypeBadgeConfig(router.trx_type || '');
@@ -483,9 +483,9 @@ export function MerchantRouter() {
             <div className="grid grid-cols-12 gap-4 items-center">
               <div className="col-span-6">
                 <Input
-                  placeholder="商户ID（留空表示全局配置）"
-                  value={formData.mid}
-                  onChange={(e) => setFormData({ ...formData, mid: e.target.value })}
+                  placeholder="输入商户ID（空表示全局）"
+                  value={formData.user_id}
+                  onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
                 />
               </div>
               <div className="col-span-3">
@@ -655,10 +655,10 @@ export function MerchantRouter() {
             <AlertDialogDescription className="space-y-2 pt-2">
               <p className="text-base text-gray-700">您即将删除以下路由配置，此操作无法撤销：</p>
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-2 text-sm">
-                {routerToDelete?.mid && (
+                {routerToDelete?.user_id && (
                   <div className="flex gap-2">
                     <span className="font-semibold text-gray-700 min-w-[80px]">商户ID:</span>
-                    <span className="text-gray-900">{routerToDelete.mid}</span>
+                    <span className="text-gray-900">{routerToDelete.user_id}</span>
                   </div>
                 )}
                 <div className="flex gap-2">

@@ -3,7 +3,7 @@ import { api, ApiResponse } from './api';
 // 路由数据接口
 export interface RouterData {
   id: number;
-  mid?: string;
+  user_id?: string;
   tid?: string;
   cid?: string;
   pkg?: string;
@@ -31,7 +31,7 @@ export interface RouterData {
 
 // 路由列表查询参数
 export interface RouterListParams {
-  mid?: string;
+  user_id?: string;
   tid?: string;
   cid?: string;
   trx_method?: string;
@@ -44,7 +44,7 @@ export interface RouterListParams {
 
 // 创建路由参数
 export interface CreateRouterParams {
-  mid?: string;
+  user_id?: string;
   tid?: string;
   pkg?: string;
   did?: string;
@@ -69,7 +69,7 @@ export interface CreateRouterParams {
 // 更新路由参数
 export interface UpdateRouterParams {
   id: number;
-  mid?: string;
+  user_id?: string;
   tid?: string;
   pkg?: string;
   did?: string;
