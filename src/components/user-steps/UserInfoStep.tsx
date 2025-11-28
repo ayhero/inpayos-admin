@@ -8,6 +8,25 @@ import { Building2, Mail, Phone, Users } from 'lucide-react';
 import { CCY_OPTIONS } from '../../constants/business';
 import { UserType } from '../CreateUserModal';
 
+// 国家码选项
+const COUNTRY_CODE_OPTIONS = [
+  { value: '+1', label: '+1 (美国/加拿大)' },
+  { value: '+86', label: '+86 (中国)' },
+  { value: '+91', label: '+91 (印度)' },
+  { value: '+65', label: '+65 (新加坡)' },
+  { value: '+60', label: '+60 (马来西亚)' },
+  { value: '+66', label: '+66 (泰国)' },
+  { value: '+84', label: '+84 (越南)' },
+  { value: '+62', label: '+62 (印尼)' },
+  { value: '+63', label: '+63 (菲律宾)' },
+  { value: '+44', label: '+44 (英国)' },
+  { value: '+49', label: '+49 (德国)' },
+  { value: '+33', label: '+33 (法国)' },
+  { value: '+81', label: '+81 (日本)' },
+  { value: '+82', label: '+82 (韩国)' },
+  { value: '+61', label: '+61 (澳大利亚)' }
+];
+
 interface UserInfo {
   name: string;
   email: string;
@@ -120,19 +139,28 @@ export function UserInfoStep({ data, updateData, userType }: UserInfoStepProps) 
             <div className="space-y-2">
               <Label htmlFor="user-phone">手机</Label>
               <div className="grid grid-cols-3 gap-2">
-                <Input
-                  id="user-phone-code"
-                  value={localData.phone_country_code || '+91'}
-                  onChange={(e) => updateField('phone_country_code', e.target.value)}
-                  placeholder="+91"
-                />
+                <Select
+                  value={localData.phone_country_code || undefined}
+                  onValueChange={(value) => updateField('phone_country_code', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择国家码" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTRY_CODE_OPTIONS.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <div className="col-span-2 relative">
                   <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="user-phone"
                     value={localData.phone}
                     onChange={(e) => updateField('phone', e.target.value)}
-                    placeholder="请输入手机号"
+                    placeholder="手机号(可选)"
                     className="pl-10"
                   />
                 </div>

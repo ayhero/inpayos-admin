@@ -260,11 +260,9 @@ export function CashierTeamManagement() {
                   <TableHead>车队名称</TableHead>
                   <TableHead>手机号</TableHead>
                   <TableHead>状态</TableHead>
-                  <TableHead>登录状态</TableHead>
-                  <TableHead>最近登录</TableHead>
                   <TableHead>最近活跃</TableHead>
                   <TableHead>订单统计</TableHead>
-                  <TableHead>Cashier账户</TableHead>
+                  <TableHead>成员</TableHead>
                   <TableHead>余额</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
@@ -285,14 +283,6 @@ export function CashierTeamManagement() {
                       </div>
                     </TableCell>
                     <TableCell><StatusBadge status={team.status} type="account" /></TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-xs">
-                        {team.is_online ? '在线' : '离线'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {team.last_login_at ? formatDateTime(team.last_login_at) : '-'}
-                    </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {team.last_active_at ? formatDateTime(team.last_active_at) : '-'}
                     </TableCell>

@@ -124,7 +124,12 @@ export function PreviewStep({ data }: PreviewStepProps) {
             </div>
             <div>
               <label className="text-sm text-muted-foreground">手机号码</label>
-              <p className="font-semibold">{data.merchantInfo.phone}</p>
+              <p className="font-semibold">
+                {data.merchantInfo.phone_country_code && data.merchantInfo.phone 
+                  ? `${data.merchantInfo.phone_country_code} ${data.merchantInfo.phone}`
+                  : data.merchantInfo.phone || '-'
+                }
+              </p>
             </div>
           </div>
           <div>

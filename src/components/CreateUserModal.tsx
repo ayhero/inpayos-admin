@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent } from './ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/dialog';
 import { ConfirmDialog } from './ui/confirm-dialog';
 import { Button } from './ui/button';
 import { ChevronLeft, ChevronRight, Check, Building2, User, FileText, Route } from 'lucide-react';
@@ -53,7 +53,7 @@ const INITIAL_FORM_DATA: UserFormData = {
     name: '',
     email: '',
     phone: '',
-    phone_country_code: '+91',
+    phone_country_code: '',
     type: 'normal',
     status: true,
     default_ccy: '',
@@ -122,8 +122,24 @@ export function CreateUserModal({ open, onOpenChange, userType, onSuccess }: Cre
   const handleConfirmSubmit = async () => {
     setLoading(true);
     try {
+      // 处理手机号验证，如果手机号或国家码任一为空，则不提交这些字段
+      const submitData = { ...formData };
+      const userInfo = { ...submitData.userInfo };
+      
+      // 检查手机号和国家码是否都有值
+      const hasPhone = userInfo.phone && userInfo.phone.trim() !== '';
+      const hasCountryCode = userInfo.phone_country_code && userInfo.phone_country_code.trim() !== '';
+      
+      if (!hasPhone || !hasCountryCode) {
+        // 如果任一为空，则将这两个字段设为空字符串
+        userInfo.phone = '';
+        userInfo.phone_country_code = '';
+      }
+      
+      submitData.userInfo = userInfo;
+      
       // TODO: 实现提交逻辑，根据 userType 调用不同的 API
-      console.log('提交数据:', { userType, formData });
+      console.log('提交数据:', { userType, formData: submitData });
       
       // 模拟API调用
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -177,6 +193,12 @@ export function CreateUserModal({ open, onOpenChange, userType, onSuccess }: Cre
     <>
       <Dialog open={open} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="max-w-[90vw] w-[90vw] min-w-[1000px] max-h-[90vh] overflow-hidden p-0">
+          <DialogTitle className="sr-only">
+            {userType === 'merchant' ? '新建商户' : '新建车队'}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            {userType === 'merchant' ? '创建新的商户账户和配置' : '创建新的车队账户和配置'}
+          </DialogDescription>
         <div className="flex flex-col h-[80vh] max-h-[800px] min-h-[600px]">
           {/* 顶部：步骤进度 - 不显示"步骤***"说明 */}
           <div className="flex items-center justify-between p-6 border-b bg-muted/30">

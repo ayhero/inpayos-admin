@@ -307,7 +307,7 @@ export function MerchantManagement() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow key="merchant-header">
                   <TableHead>商户</TableHead>
                   <TableHead>邮箱</TableHead>
                   <TableHead>电话</TableHead>
@@ -451,7 +451,7 @@ export function MerchantManagement() {
                     <div className="border rounded-lg overflow-hidden">
                       <Table>
                         <TableHeader>
-                          <TableRow>
+                          <TableRow key="secret-header">
                             <TableHead>App Name</TableHead>
                             <TableHead>App ID</TableHead>
                             <TableHead>Secret Key</TableHead>
@@ -499,7 +499,7 @@ export function MerchantManagement() {
                     <div className="border rounded-lg overflow-hidden">
                       <Table>
                         <TableHeader>
-                          <TableRow>
+                          <TableRow key="account-header">
                             <TableHead>币种</TableHead>
                             <TableHead>总余额</TableHead>
                             <TableHead>可用余额</TableHead>
@@ -535,7 +535,7 @@ export function MerchantManagement() {
                     <div className="border rounded-lg overflow-hidden">
                       <Table>
                         <TableHeader>
-                          <TableRow>
+                          <TableRow key="contract-header">
                             <TableHead>合同ID</TableHead>
                             <TableHead>生效时间</TableHead>
                             <TableHead>过期时间</TableHead>
@@ -567,7 +567,7 @@ export function MerchantManagement() {
                     <div className="border rounded-lg overflow-hidden">
                       <Table>
                         <TableHeader>
-                          <TableRow>
+                          <TableRow key="router-header">
                             <TableHead>路由类型</TableHead>
                             <TableHead>交易类型</TableHead>
                             <TableHead>渠道</TableHead>
