@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Checkbox } from '../ui/checkbox';
-import { FileText, Calendar } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { ContractConfigEditor } from '../ContractConfigEditor';
 import type { ContractConfig } from '../../services/contractService';
@@ -76,18 +76,10 @@ export function ContractStep({ data, onChange }: ContractStepProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <FileText className="h-6 w-6 text-primary" />
-        <h3 className="text-lg font-semibold">合同配置</h3>
-      </div>
-
+    <div className="space-y-6 max-h-full overflow-y-auto">
       {/* 单个合同表单 */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">合同信息</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="contract-suffix">合同ID</Label>

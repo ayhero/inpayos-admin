@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -223,17 +223,11 @@ export function RouterStep({ data, onChange }: RouterStepProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Route className="h-6 w-6 text-primary" />
-        <h3 className="text-lg font-semibold">路由配置</h3>
-      </div>
-
+    <div className="space-y-6 max-h-full overflow-y-auto">
       {/* 路由列表和添加界面 */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">路由列表</CardTitle>
+        <CardContent className="pt-6">
+          <div className="flex justify-end mb-4">
             {!isAdding && (
               <Button onClick={handleAddRouter} variant="outline" size="sm">
                 <Plus className="w-4 h-4 mr-1" />
@@ -241,8 +235,6 @@ export function RouterStep({ data, onChange }: RouterStepProps) {
               </Button>
             )}
           </div>
-        </CardHeader>
-        <CardContent>
           {/* 添加/编辑路由表单 */}
           {isAdding && (
             <div className="mb-6 p-4 border border-blue-200 rounded-lg bg-blue-50">

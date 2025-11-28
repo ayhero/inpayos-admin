@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Separator } from '../ui/separator';
-import { Check, Building2, Wallet, FileText, Route } from 'lucide-react';
+import { Building2, Wallet, FileText, Route } from 'lucide-react';
 import { MerchantFormData } from '../CreateMerchantModal';
 
 interface PreviewStepProps {
@@ -44,9 +44,10 @@ export function PreviewStep({ data }: PreviewStepProps) {
 
   const getMerchantTypeLabel = (type: string) => {
     const types: Record<string, string> = {
-      'merchant': '普通',
+      'normal': '普通',
       'enterprise': '企业',
-      'individual': '个人'
+      'individual': '个人',
+      'premium': '高级'
     };
     return types[type] || type;
   };
@@ -72,11 +73,30 @@ export function PreviewStep({ data }: PreviewStepProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Check className="h-6 w-6 text-primary" />
-        <h3 className="text-lg font-semibold">预览确认</h3>
-      </div>
+    <div className="space-y-6 max-h-full overflow-y-auto">
+      {/* 汇总统计 */}
+      <Card className="border-blue-200 bg-blue-50">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold text-blue-700">1</div>
+              <div className="text-sm text-blue-600">商户</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-blue-700">{data.accounts.length}</div>
+              <div className="text-sm text-blue-600">账户</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-blue-700">{data.contracts.length}</div>
+              <div className="text-sm text-blue-600">合同</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-blue-700">{data.routers.length}</div>
+              <div className="text-sm text-blue-600">路由</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 商户信息预览 */}
       <Card>
@@ -228,30 +248,6 @@ export function PreviewStep({ data }: PreviewStepProps) {
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* 汇总统计 */}
-      <Card className="border-blue-200 bg-blue-50">
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-blue-700">1</div>
-              <div className="text-sm text-blue-600">商户</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-700">{data.accounts.length}</div>
-              <div className="text-sm text-blue-600">账户</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-700">{data.contracts.length}</div>
-              <div className="text-sm text-blue-600">合同</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-700">{data.routers.length}</div>
-              <div className="text-sm text-blue-600">路由</div>
-            </div>
-          </div>
         </CardContent>
       </Card>
 

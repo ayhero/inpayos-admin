@@ -16,7 +16,7 @@ import { UserContractModal } from './UserContractModal';
 import { UserRouterModal } from './UserRouterModal';
 import { StatusBadge } from './StatusBadge';
 import { getChannelCodeLabel, getCcyLabel, getCountryLabel } from '../constants/business';
-import { CreateMerchantModal } from './CreateMerchantModal';
+import { CreateUserModal } from './CreateUserModal';
 
 export function MerchantManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -669,9 +669,10 @@ export function MerchantManagement() {
       )}
 
       {/* 新建商户模态窗 */}
-      <CreateMerchantModal
+      <CreateUserModal
         open={showCreateMerchantModal}
         onOpenChange={setShowCreateMerchantModal}
+        userType="merchant"
         onSuccess={handleCreateMerchantSuccess}
       />
     </div>

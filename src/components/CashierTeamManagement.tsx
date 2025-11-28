@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Search, RefreshCw, Users, Wallet, FileText, Route } from 'lucide-react';
+import { Search, RefreshCw, Users, Wallet, FileText, Route, Plus } from 'lucide-react';
 import { cashierTeamService, CashierTeam, CashierTeamListParams, CashierTeamStats } from '../services/cashierTeamService';
 import { toast } from '../utils/toast';
 import { UserAccountModal } from './UserAccountModal';
@@ -15,6 +15,7 @@ import { UserContractModal } from './UserContractModal';
 import { UserRouterModal } from './UserRouterModal';
 import { StatusBadge } from './StatusBadge';
 import { getChannelCodeLabel, getCcyLabel, getCountryLabel } from '../constants/business';
+import { CreateUserModal } from './CreateUserModal';
 
 export function CashierTeamManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,6 +46,9 @@ export function CashierTeamManagement() {
 
   const [showRoutersModal, setShowRoutersModal] = useState(false);
   const [selectedTeamForRouters, setSelectedTeamForRouters] = useState<CashierTeam | null>(null);
+
+  // 新建车队模态窗状态
+  const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
 
   // 获取CashierTeam统计
   const fetchStats = useCallback(async () => {
@@ -151,14 +155,26 @@ export function CashierTeamManagement() {
     setShowRoutersModal(true);
   };
 
+  // 处理新建车队成功
+  const handleCreateTeamSuccess = () => {
+    fetchTeams();
+    fetchStats();
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">车队</h1>
-        <Button onClick={handleRefresh} className="gap-2" variant="outline">
-          <RefreshCw className="h-4 w-4" />
-          刷新
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowCreateTeamModal(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            新建
+          </Button>
+          <Button onClick={handleRefresh} className="gap-2" variant="outline">
+            <RefreshCw className="h-4 w-4" />
+            刷新
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -572,6 +588,14 @@ export function CashierTeamManagement() {
           userType="cashier_team"
         />
       )}
+
+      {/* 新建车队模态窗 */}
+      <CreateUserModal
+        open={showCreateTeamModal}
+        onOpenChange={setShowCreateTeamModal}
+        userType="cashier_team"
+        onSuccess={handleCreateTeamSuccess}
+      />
     </div>
   );
 }
