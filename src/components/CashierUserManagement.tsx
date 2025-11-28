@@ -143,7 +143,7 @@ export function CashierUserManagement() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Cashier用户</h1>
+        <h1 className="text-2xl font-bold">出纳员用户</h1>
         <Button onClick={handleRefresh} className="gap-2" variant="outline">
           <RefreshCw className="h-4 w-4" />
           刷新
@@ -257,8 +257,7 @@ export function CashierUserManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>用户ID</TableHead>
-                      <TableHead>姓名</TableHead>
+                      <TableHead>用户</TableHead>
                       <TableHead>手机</TableHead>
                       <TableHead>邮箱</TableHead>
                       <TableHead>主账户</TableHead>
@@ -275,8 +274,10 @@ export function CashierUserManagement() {
                   <TableBody>
                     {cashiers.map((cashier) => (
                       <TableRow key={cashier.user_id}>
-                        <TableCell className="font-mono text-xs">{cashier.user_id}</TableCell>
-                        <TableCell>{cashier.name || '-'}</TableCell>
+                        <TableCell>
+                          <div className="font-semibold">{cashier.name || '-'}</div>
+                          <div className="font-mono text-xs text-muted-foreground">({cashier.user_id})</div>
+                        </TableCell>
                         <TableCell>{cashier.phone || '-'}</TableCell>
                         <TableCell>{cashier.email || '-'}</TableCell>
                         <TableCell>

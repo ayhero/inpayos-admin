@@ -20,6 +20,7 @@ export const MERCHANT_TRX_TYPE_OPTIONS = [
   { value: 'payin', label: trxTypeMap['payin'] },
   { value: 'payout', label: trxTypeMap['payout'] },
   { value: 'withdraw', label: '提现' },
+  { value: 'deposit', label: trxTypeMap['deposit'] },
 ];
 
 // 车队路由交易类型选项
@@ -27,6 +28,7 @@ export const FLEET_TRX_TYPE_OPTIONS = [
   { value: 'cashier_payin', label: '代收' },
   { value: 'cashier_payout', label: '代付' },
   { value: 'withdraw', label: '提现' },
+  { value: 'deposit', label: trxTypeMap['deposit'] },
 ];
 
 // 支付方式选项

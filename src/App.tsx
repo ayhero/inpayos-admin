@@ -109,25 +109,25 @@ export default function App() {
     },
     {
       id: 'merchant',
-      label: 'Merchant',
+      label: '商户',
       icon: Store,
       component: MerchantManagement
     },
     {
       id: 'merchant-contract',
-      label: '合约',
+      label: '商户合约',
       icon: FileText,
       component: MerchantContract
     },
     {
       id: 'merchant-account',
-      label: '账户',
+      label: '商户账户',
       icon: Wallet,
       component: MerchantAccount
     },
     {
       id: 'merchant-router',
-      label: '路由',
+      label: '商户路由',
       icon: Route,
       component: MerchantRouter
     },
@@ -139,43 +139,43 @@ export default function App() {
     // },
     {
       id: 'cashier-team',
-      label: '车队',
+      label: '车队管理',
       icon: Users,
       component: CashierTeamManagement
     },
     {
       id: 'cashier',
-      label: 'Cashier',
+      label: '出纳员管理',
       icon: Users,
       component: CashierUserManagement
     },
     {
       id: 'cashier-account',
-      label: 'Cashier账户',
+      label: '出纳员账户',
       icon: Users,
       component: CashierAccountManagement
     },
     {
       id: 'app-account',
-      label: 'App',
+      label: '应用账户',
       icon: Smartphone,
       component: AppAccountManagement
     },
     {
       id: 'fleet-contract',
-      label: '合约',
+      label: '车队合约',
       icon: FileText,
       component: FleetContract
     },
     {
       id: 'fleet-account',
-      label: '账户',
+      label: '车队账户',
       icon: Wallet,
       component: AccountManagement
     },
     {
       id: 'fleet-router',
-      label: '路由',
+      label: '车队路由',
       icon: Route,
       component: FleetRouter
     },

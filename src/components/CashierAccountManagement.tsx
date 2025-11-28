@@ -204,7 +204,7 @@ export function CashierAccountManagement() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Cashier账户</h1>
+        <h1 className="text-2xl font-bold">出纳员账户</h1>
         <Button onClick={handleRefresh} className="gap-2" variant="outline">
           <RefreshCw className="h-4 w-4" />
           刷新

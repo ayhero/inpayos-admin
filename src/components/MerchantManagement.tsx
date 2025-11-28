@@ -206,7 +206,7 @@ export function MerchantManagement() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Merchant</h1>
+        <h1 className="text-2xl font-bold">商户管理</h1>
         <div className="flex gap-2">
           <Button onClick={() => setShowCreateMerchantModal(true)} className="gap-2">
             <Plus className="h-4 w-4" />

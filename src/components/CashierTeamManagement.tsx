@@ -257,13 +257,13 @@ export function CashierTeamManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>车队名称</TableHead>
+                  <TableHead>名称</TableHead>
+                  <TableHead>邮箱</TableHead>
                   <TableHead>手机号</TableHead>
                   <TableHead>状态</TableHead>
-                  <TableHead>最近活跃</TableHead>
                   <TableHead>订单统计</TableHead>
-                  <TableHead>成员</TableHead>
                   <TableHead>余额</TableHead>
+                  <TableHead>成员</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
               </TableHeader>
@@ -275,6 +275,9 @@ export function CashierTeamManagement() {
                       <div className="font-mono text-xs text-muted-foreground">{team.user_id}</div>
                     </TableCell>
                     <TableCell>
+                      <div className="font-mono text-sm">{team.email}</div>
+                    </TableCell>
+                    <TableCell>
                       <div 
                         className="font-mono text-sm cursor-pointer hover:text-blue-600" 
                         title={`用户信息：${team.name} (${team.user_id})\n邮箱：${team.email}\n状态：${team.status}`}
@@ -283,9 +286,6 @@ export function CashierTeamManagement() {
                       </div>
                     </TableCell>
                     <TableCell><StatusBadge status={team.status} type="account" /></TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {team.last_active_at ? formatDateTime(team.last_active_at) : '-'}
-                    </TableCell>
                     <TableCell>
                       <div className="text-xs space-y-1">
                         <div className="flex gap-2">
@@ -299,6 +299,11 @@ export function CashierTeamManagement() {
                       </div>
                     </TableCell>
                     <TableCell>
+                      <div className="font-mono text-sm font-medium">
+                        ₹{team.default_balance || '0.00'}
+                      </div>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex gap-1 flex-wrap">
                         {team.cashier_accounts?.slice(0, 3).map((account, index) => (
                           <Badge key={index} variant="outline" className="text-xs px-1">
@@ -308,11 +313,6 @@ export function CashierTeamManagement() {
                         {team.cashier_accounts && team.cashier_accounts.length > 3 && (
                           <span className="text-muted-foreground text-xs">+{team.cashier_accounts.length - 3}</span>
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-mono text-sm font-medium">
-                        ₹{team.default_balance || '0.00'}
                       </div>
                     </TableCell>
                     <TableCell>

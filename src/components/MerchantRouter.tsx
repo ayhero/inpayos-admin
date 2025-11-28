@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -272,17 +272,17 @@ export function MerchantRouter() {
 
   return (
     <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">商户路由</h1>
+        <Button onClick={handleAdd} className="gap-2">
+          <Plus className="h-4 w-4" />
+          新增路由
+        </Button>
+      </div>
+
+      {/* 筛选和搜索 */}
       <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>商户路由管理</CardTitle>
-            <Button onClick={handleAdd}>
-              <Plus className="h-4 w-4 mr-2" />
-              新增路由
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 md:flex-initial md:w-64">
               <Input
@@ -339,8 +339,12 @@ export function MerchantRouter() {
               重置
             </Button>
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="border rounded-lg overflow-x-auto">
+      {/* 路由列表 */}
+      <div>
+        <div className="p-6">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -350,9 +354,7 @@ export function MerchantRouter() {
                   <TableHead>渠道</TableHead>
                   <TableHead>渠道账户</TableHead>
                   <TableHead>渠道组</TableHead>
-                  <TableHead>货币</TableHead>
-                  <TableHead>最小交易金额</TableHead>
-                  <TableHead>最大交易金额</TableHead>
+                  <TableHead>交易金额</TableHead>
                   <TableHead>优先级</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>创建时间</TableHead>
@@ -362,13 +364,13 @@ export function MerchantRouter() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={13} className="text-center py-8">
+                    <TableCell colSpan={11} className="text-center py-8">
                       加载中...
                     </TableCell>
                   </TableRow>
                 ) : routers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={13} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                       暂无数据
                     </TableCell>
                   </TableRow>
@@ -386,9 +388,36 @@ export function MerchantRouter() {
                       <TableCell>{getChannelCodeLabel(router.channel_code)}</TableCell>
                       <TableCell>{router.channel_account || '-'}</TableCell>
                       <TableCell>{router.channel_group || '-'}</TableCell>
-                      <TableCell>{getCcyLabel(router.ccy)}</TableCell>
-                      <TableCell>{router.min_amount != null ? router.min_amount.toFixed(2) : '-'}</TableCell>
-                      <TableCell>{router.max_amount != null ? router.max_amount.toFixed(2) : '-'}</TableCell>
+                      <TableCell>
+                        {(() => {
+                          const formatAmountRange = (ccy: string, minAmount: number, maxAmount: number) => {
+                            const ccyLabel = ccy ? getCcyLabel(ccy) : '';
+                            
+                            // 如果没有货币代码且没有金额限制，只显示“不限”
+                            if (!ccy && !minAmount && !maxAmount) {
+                              return '不限';
+                            }
+                            
+                            const prefix = ccyLabel && ccyLabel !== '-' ? `${ccyLabel} ` : '';
+                            
+                            if (!minAmount && !maxAmount) {
+                              return `${prefix}不限`;
+                            }
+                            
+                            if (!minAmount || minAmount === 0) {
+                              return `${prefix}0 - ${maxAmount?.toFixed(2) || '0'}`;
+                            }
+                            
+                            if (!maxAmount || maxAmount === 0) {
+                              return `${prefix}${minAmount.toFixed(2)} 起`;
+                            }
+                            
+                            return `${prefix}${minAmount.toFixed(2)} - ${maxAmount.toFixed(2)}`;
+                          };
+                          return formatAmountRange(router.ccy, router.min_amount, router.max_amount);
+                        })()
+                        }
+                      </TableCell>
                       <TableCell>{router.priority || '-'}</TableCell>
                       <TableCell>{getStatusBadge(router.status)}</TableCell>
                       <TableCell>{formatDateTime(router.created_at)}</TableCell>
@@ -440,7 +469,7 @@ export function MerchantRouter() {
                 )}
               </TableBody>
             </Table>
-          </div>
+        </div>
 
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
@@ -470,8 +499,7 @@ export function MerchantRouter() {
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+      </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="!w-[40vw] !max-w-[40vw] max-h-[90vh] overflow-y-auto">

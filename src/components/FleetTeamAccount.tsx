@@ -140,35 +140,32 @@ export function FleetTeamAccount() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>用户名称</TableHead>
-                  <TableHead>所属组织</TableHead>
+                  <TableHead>车队</TableHead>
                   <TableHead>币种</TableHead>
                   <TableHead className="text-right">余额</TableHead>
                   <TableHead className="text-right">可用余额</TableHead>
                   <TableHead className="text-right">冻结余额</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>更新时间</TableHead>
-                  <TableHead>最后活跃时间</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                       加载中...
                     </TableCell>
                   </TableRow>
                 ) : accounts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                       暂无数据
                     </TableCell>
                   </TableRow>
                 ) : (
                   accounts.map((account) => (
                     <TableRow key={account.account_id}>
-                      <TableCell>{account.user?.name || '-'}</TableCell>
                       <TableCell className="font-mono text-sm">{account.user?.org_id || '-'}</TableCell>
                       <TableCell>{account.ccy}</TableCell>
                       <TableCell className="text-right font-mono">
@@ -183,9 +180,6 @@ export function FleetTeamAccount() {
                       <TableCell>{getStatusBadge(account.status)}</TableCell>
                       <TableCell className="text-sm">
                         {new Date(account.updated_at).toLocaleString('zh-CN')}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {new Date(account.last_active_at).toLocaleString('zh-CN')}
                       </TableCell>
                       <TableCell>
                         <Button

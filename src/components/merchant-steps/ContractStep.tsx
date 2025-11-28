@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Badge } from '../ui/badge';
 import { Checkbox } from '../ui/checkbox';
-import { Plus, Trash2, FileText, Calendar, Edit, Save, X } from 'lucide-react';
+import { Plus, Trash2, FileText, Calendar } from 'lucide-react';
 import { toast } from '../../utils/toast';
 
 interface ContractData {
@@ -26,7 +26,6 @@ interface ContractStepProps {
 
 export function ContractStep({ data, onChange }: ContractStepProps) {
   const [localData, setLocalData] = useState<ContractData[]>(data);
-  const [isAdding, setIsAdding] = useState(false);
   
   // 生成默认日期（当前日期和一年后）
   const getDefaultDates = () => {
@@ -54,35 +53,6 @@ export function ContractStep({ data, onChange }: ContractStepProps) {
   const updateData = (newData: ContractData[]) => {
     setLocalData(newData);
     onChange(newData);
-  };
-
-  // 开始新增合同
-  const handleAddContract = () => {
-    // 生成默认合同后缀
-    const defaultSuffix = String(localData.length + 1).padStart(3, '0');
-    
-    setIsAdding(true);
-    setNewContract({
-      contract_id_suffix: defaultSuffix,
-      start_at: defaultDates.startAt,
-      expired_at: defaultDates.endAt,
-      status: 'active',
-      payin_enabled: true,
-      payout_enabled: false
-    });
-  };
-
-  // 取消新增
-  const handleCancelAdd = () => {
-    setIsAdding(false);
-    setNewContract({
-      contract_id_suffix: '',
-      start_at: defaultDates.startAt,
-      expired_at: defaultDates.endAt,
-      status: 'active',
-      payin_enabled: true,
-      payout_enabled: false
-    });
   };
 
   // 保存合同
@@ -121,13 +91,11 @@ export function ContractStep({ data, onChange }: ContractStepProps) {
     updateData(updatedData);
     
     // 重置状态
-    setIsAdding(false);
     toast.success('合同添加成功');
   };
 
   // 保留原有的addContract方法用于向后兼容
   const addContract = handleSaveContract;
-  };
 
   const removeContract = (index: number) => {
     const updatedData = localData.filter((_, i) => i !== index);

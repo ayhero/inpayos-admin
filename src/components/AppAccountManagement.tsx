@@ -304,12 +304,12 @@ export function AppAccountManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>应用类型</TableHead>
-                  <TableHead>用户手机号</TableHead>
-                  <TableHead>账户ID</TableHead>
+                  <TableHead>应用</TableHead>
+                  <TableHead>手机</TableHead>
+                  <TableHead>账户</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>验证状态</TableHead>
-                  <TableHead>出纳员数量</TableHead>
+                  <TableHead>账户数</TableHead>
                   <TableHead>创建时间</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
