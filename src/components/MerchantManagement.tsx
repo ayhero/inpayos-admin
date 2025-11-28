@@ -583,7 +583,7 @@ export function MerchantManagement() {
                           {selectedMerchant.routers.map((router) => (
                             <TableRow key={router.id}>
                               <TableCell>
-                                {!router.mid || router.mid === '' ? (
+                                {!router.user_id || router.user_id === '' ? (
                                   <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
                                     全局路由
                                   </Badge>

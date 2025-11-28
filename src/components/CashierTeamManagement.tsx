@@ -494,7 +494,7 @@ export function CashierTeamManagement() {
                           {selectedTeam.routers.map((router) => (
                             <TableRow key={router.id}>
                               <TableCell>
-                                {!router.tid || router.tid === '' ? (
+                                {!router.user_id || router.user_id === '' ? (
                                   <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
                                     全局路由
                                   </Badge>

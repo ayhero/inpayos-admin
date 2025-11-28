@@ -39,6 +39,8 @@ export interface MerchantAccount {
 export interface MerchantRouter {
   id: number;
   user_id?: string;
+  mid?: string;  // 保留向后兼容
+  tid?: string;  // 保留向后兼容
   trx_type: string;
   trx_method: string;
   ccy?: string;
@@ -54,6 +56,10 @@ export interface MerchantRouter {
   created_at: number;
   updated_at: number;
 }
+
+// 为了兼容性，将 Router 别名导出为 MerchantRouter
+export type Router = MerchantRouter;
+export type Account = MerchantAccount;
 
 // 商户信息接口
 export interface Merchant {
