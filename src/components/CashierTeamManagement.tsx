@@ -316,9 +316,23 @@ export function CashierTeamManagement() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" onClick={() => handleViewDetail(team)}>
-                        查看
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleViewDetail(team)}>
+                          查看
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleViewAccounts(team)}>
+                          <Wallet className="h-3 w-3 mr-1" />
+                          账户
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleViewContracts(team)}>
+                          <FileText className="h-3 w-3 mr-1" />
+                          合同
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleViewRouters(team)}>
+                          <Route className="h-3 w-3 mr-1" />
+                          路由
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
