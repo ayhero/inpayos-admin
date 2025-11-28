@@ -138,7 +138,7 @@ export function MerchantSecretModal({ open, onOpenChange, merchant }: MerchantSe
           <DialogTitle>密钥管理</DialogTitle>
           <DialogDescription>
             <div className="flex items-center gap-2">
-              <UserTypeLabel type={merchant?.type || ''} />
+              <UserTypeLabel type="merchant" />
               <span>{merchant?.name}</span>
               <span className="text-muted-foreground">({merchant?.user_id})</span>
             </div>

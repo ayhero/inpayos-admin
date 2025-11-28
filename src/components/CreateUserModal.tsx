@@ -5,6 +5,9 @@ import { Button } from './ui/button';
 import { ChevronLeft, ChevronRight, Check, Building2, User, FileText, Route } from 'lucide-react';
 import { cn } from '../utils/utils';
 import { UserInfoStep, AccountStep, ContractStep, RouterStep, PreviewStep } from './user-steps/index';
+import { ExecutionProgressDialog, ExecutionItem } from './ExecutionProgressDialog';
+import { UserService } from '../services/userService';
+import { toast } from '../utils/toast';
 
 export type UserType = 'merchant' | 'cashier_team';
 
@@ -78,9 +81,12 @@ interface CreateUserModalProps {
 export function CreateUserModal({ open, onOpenChange, userType, onSuccess }: CreateUserModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<UserFormData>(INITIAL_FORM_DATA);
-  const [loading, setLoading] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [showProgress, setShowProgress] = useState(false);
+  const [executionItems, setExecutionItems] = useState<ExecutionItem[]>([]);
+  const [savedFormData, setSavedFormData] = useState<UserFormData | null>(null);
+  const [createdUserId, setCreatedUserId] = useState<string>('');
 
   const steps = [
     { 
@@ -120,44 +126,350 @@ export function CreateUserModal({ open, onOpenChange, userType, onSuccess }: Cre
   };
 
   const handleConfirmSubmit = async () => {
-    setLoading(true);
-    try {
-      // 处理手机号验证，如果手机号或国家码任一为空，则不提交这些字段
-      const submitData = { ...formData };
-      const userInfo = { ...submitData.userInfo };
-      
-      // 检查手机号和国家码是否都有值
-      const hasPhone = userInfo.phone && userInfo.phone.trim() !== '';
-      const hasCountryCode = userInfo.phone_country_code && userInfo.phone_country_code.trim() !== '';
-      
-      if (!hasPhone || !hasCountryCode) {
-        // 如果任一为空，则将这两个字段设为空字符串
-        userInfo.phone = '';
-        userInfo.phone_country_code = '';
-      }
-      
-      submitData.userInfo = userInfo;
-      
-      // TODO: 实现提交逻辑，根据 userType 调用不同的 API
-      console.log('提交数据:', { userType, formData: submitData });
-      
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      onSuccess?.();
-      onOpenChange(false);
-      setCurrentStep(1);
-      setFormData(INITIAL_FORM_DATA);
-    } catch (error) {
-      console.error('创建失败:', error);
-    } finally {
-      setLoading(false);
+    setShowSubmitConfirm(false);
+    
+    // 处理手机号验证
+    const submitData = { ...formData };
+    const userInfo = { ...submitData.userInfo };
+    const hasPhone = userInfo.phone && userInfo.phone.trim() !== '';
+    const hasCountryCode = userInfo.phone_country_code && userInfo.phone_country_code.trim() !== '';
+    
+    if (!hasPhone || !hasCountryCode) {
+      userInfo.phone = '';
+      userInfo.phone_country_code = '';
     }
+    submitData.userInfo = userInfo;
+    setSavedFormData(submitData);
+
+    // 初始化执行项列表
+    const items: ExecutionItem[] = [
+      {
+        id: 'user',
+        type: 'user',
+        label: `${userType === 'merchant' ? '商户' : '车队'}: ${userInfo.name || userInfo.email}`,
+        status: 'pending',
+        data: submitData.userInfo
+      },
+      ...submitData.accounts.map((acc, idx) => ({
+        id: `account-${idx}`,
+        type: 'account' as const,
+        label: `账户: ${acc.ccy}`,
+        status: 'pending' as const,
+        data: acc
+      })),
+      ...submitData.contracts.map((contract, idx) => ({
+        id: `contract-${idx}`,
+        type: 'contract' as const,
+        label: `合同 ${idx + 1}`,
+        status: 'pending' as const,
+        data: contract
+      })),
+      ...submitData.routers.map((router, idx) => ({
+        id: `router-${idx}`,
+        type: 'router' as const,
+        label: `路由: ${router.trx_type} - ${router.channel_code}`,
+        status: 'pending' as const,
+        data: router
+      }))
+    ];
+
+    setExecutionItems(items);
+    setShowProgress(true);
+
+    // 执行创建流程
+    await executeCreation(submitData, items);
+  };
+
+  const executeCreation = async (submitData: UserFormData, items: ExecutionItem[]) => {
+    const updateItemStatus = (id: string, status: ExecutionItem['status'], error?: string) => {
+      setExecutionItems(prev => prev.map(item => 
+        item.id === id ? { ...item, status, error } : item
+      ));
+    };
+
+    try {
+      // 1. 创建用户
+      updateItemStatus('user', 'running');
+      const userResponse = await UserService.registerUser({
+        user_type: userType,
+        email: submitData.userInfo.email,
+        password: 'Default@123', // 临时密码，实际应该让用户输入或生成
+        nickname: submitData.userInfo.name,
+        type: submitData.userInfo.type,
+        company_name: submitData.userInfo.name,
+        phone: submitData.userInfo.phone,
+        phone_country_code: submitData.userInfo.phone_country_code,
+        region: '',
+        default_ccy: submitData.userInfo.default_ccy,
+        verify_code: '' // 管理员创建不需要验证码
+      });
+
+      if (!userResponse.success) {
+        updateItemStatus('user', 'error', userResponse.msg || '创建用户失败');
+        return;
+      }
+
+      const userId = userResponse.data?.user_id;
+      if (!userId) {
+        updateItemStatus('user', 'error', '未获取到用户ID');
+        return;
+      }
+
+      updateItemStatus('user', 'success');
+      setCreatedUserId(userId);
+
+      // 2. 创建账户
+      for (let i = 0; i < submitData.accounts.length; i++) {
+        const acc = submitData.accounts[i];
+        const itemId = `account-${i}`;
+        
+        updateItemStatus(itemId, 'running');
+        const accResponse = await UserService.createAccount({
+          user_id: userId,
+          user_type: userType,
+          ccy: acc.ccy
+        });
+
+        if (!accResponse.success) {
+          updateItemStatus(itemId, 'error', accResponse.msg || '创建账户失败');
+        } else {
+          updateItemStatus(itemId, 'success');
+        }
+      }
+
+      // 3. 创建合同
+      for (let i = 0; i < submitData.contracts.length; i++) {
+        const contract = submitData.contracts[i];
+        const itemId = `contract-${i}`;
+        
+        updateItemStatus(itemId, 'running');
+        const contractResponse = await UserService.createContract({
+          user_id: userId,
+          user_type: userType,
+          contract_id: contract.contract_id,
+          start_at: new Date(contract.start_at).getTime(),
+          expired_at: contract.expired_at ? new Date(contract.expired_at).getTime() : undefined,
+          status: contract.status ? 'active' : 'inactive',
+          payin: contract.payin,
+          payout: contract.payout
+        });
+
+        if (!contractResponse.success) {
+          updateItemStatus(itemId, 'error', contractResponse.msg || '创建合同失败');
+        } else {
+          updateItemStatus(itemId, 'success');
+        }
+      }
+
+      // 4. 创建路由
+      for (let i = 0; i < submitData.routers.length; i++) {
+        const router = submitData.routers[i];
+        const itemId = `router-${i}`;
+        
+        updateItemStatus(itemId, 'running');
+        const routerResponse = await UserService.createRouter({
+          user_id: userId,
+          user_type: userType,
+          trx_type: router.trx_type,
+          trx_method: router.trx_method,
+          ccy: router.ccy,
+          country: router.country,
+          min_amount: router.min_amount,
+          max_amount: router.max_amount,
+          channel_code: router.channel_code,
+          priority: router.priority,
+          status: router.status
+        });
+
+        if (!routerResponse.success) {
+          updateItemStatus(itemId, 'error', routerResponse.msg || '创建路由失败');
+        } else {
+          updateItemStatus(itemId, 'success');
+        }
+      }
+
+      // 所有创建完成
+      const hasErrors = items.some(item => {
+        const current = executionItems.find(ei => ei.id === item.id);
+        return current?.status === 'error';
+      });
+
+      if (!hasErrors) {
+        toast.success('创建成功', '所有配置已成功创建');
+        onSuccess?.();
+      } else {
+        toast.warning('部分创建失败', '请查看详情');
+      }
+
+    } catch (error: any) {
+      console.error('创建过程出错:', error);
+      toast.error('创建失败', error.message || '未知错误');
+    }
+  };
+
+  const handleRetry = async (item: ExecutionItem) => {
+    const updateItemStatus = (id: string, status: ExecutionItem['status'], error?: string) => {
+      setExecutionItems(prev => prev.map(item => 
+        item.id === id ? { ...item, status, error } : item
+      ));
+    };
+
+    try {
+      updateItemStatus(item.id, 'running');
+      
+      // 根据项目类型执行相应的重试逻辑
+      if (item.type === 'user') {
+        const userInfo = item.data;
+        const userResponse = await UserService.registerUser({
+          user_type: userType,
+          email: userInfo.email,
+          password: 'Default@123',
+          nickname: userInfo.name,
+          type: userInfo.type,
+          company_name: userInfo.name,
+          phone: userInfo.phone,
+          phone_country_code: userInfo.phone_country_code,
+          region: '',
+          default_ccy: userInfo.default_ccy,
+          verify_code: ''
+        });
+
+        if (!userResponse.success) {
+          updateItemStatus(item.id, 'error', userResponse.msg || '创建用户失败');
+          return;
+        }
+
+        const userId = userResponse.data?.user_id;
+        if (userId) {
+          setCreatedUserId(userId);
+          updateItemStatus(item.id, 'success');
+          toast.success('重试成功', '用户创建成功');
+        } else {
+          updateItemStatus(item.id, 'error', '未获取到用户ID');
+        }
+      } else if (item.type === 'account') {
+        if (!createdUserId) {
+          updateItemStatus(item.id, 'error', '用户未创建，无法创建账户');
+          return;
+        }
+
+        const accResponse = await UserService.createAccount({
+          user_id: createdUserId,
+          user_type: userType,
+          ccy: item.data.ccy
+        });
+
+        if (!accResponse.success) {
+          updateItemStatus(item.id, 'error', accResponse.msg || '创建账户失败');
+        } else {
+          updateItemStatus(item.id, 'success');
+          toast.success('重试成功', '账户创建成功');
+        }
+      } else if (item.type === 'contract') {
+        if (!createdUserId) {
+          updateItemStatus(item.id, 'error', '用户未创建，无法创建合同');
+          return;
+        }
+
+        const contract = item.data;
+        const contractResponse = await UserService.createContract({
+          user_id: createdUserId,
+          user_type: userType,
+          contract_id: contract.contract_id,
+          start_at: new Date(contract.start_at).getTime(),
+          expired_at: contract.expired_at ? new Date(contract.expired_at).getTime() : undefined,
+          status: contract.status ? 'active' : 'inactive',
+          payin: contract.payin,
+          payout: contract.payout
+        });
+
+        if (!contractResponse.success) {
+          updateItemStatus(item.id, 'error', contractResponse.msg || '创建合同失败');
+        } else {
+          updateItemStatus(item.id, 'success');
+          toast.success('重试成功', '合同创建成功');
+        }
+      } else if (item.type === 'router') {
+        if (!createdUserId) {
+          updateItemStatus(item.id, 'error', '用户未创建，无法创建路由');
+          return;
+        }
+
+        const router = item.data;
+        const routerResponse = await UserService.createRouter({
+          user_id: createdUserId,
+          user_type: userType,
+          trx_type: router.trx_type,
+          trx_method: router.trx_method,
+          ccy: router.ccy,
+          country: router.country,
+          min_amount: router.min_amount,
+          max_amount: router.max_amount,
+          channel_code: router.channel_code,
+          priority: router.priority,
+          status: router.status
+        });
+
+        if (!routerResponse.success) {
+          updateItemStatus(item.id, 'error', routerResponse.msg || '创建路由失败');
+        } else {
+          updateItemStatus(item.id, 'success');
+          toast.success('重试成功', '路由创建成功');
+        }
+      }
+    } catch (error: any) {
+      console.error('重试失败:', error);
+      updateItemStatus(item.id, 'error', error.message || '重试失败');
+      toast.error('重试失败', error.message || '未知错误');
+    }
+  };
+
+  // 批量按顺序重试所有失败项
+  const handleRetryAll = async (failedItems: ExecutionItem[]) => {
+    // 按照类型顺序排序：user -> account -> contract -> router
+    const typeOrder = { 'user': 1, 'account': 2, 'contract': 3, 'router': 4 };
+    const sortedItems = [...failedItems].sort((a, b) => 
+      typeOrder[a.type as keyof typeof typeOrder] - typeOrder[b.type as keyof typeof typeOrder]
+    );
+
+    let hasError = false;
+    for (const item of sortedItems) {
+      // 如果是依赖项且前置项失败，则跳过
+      if (item.type !== 'user' && !createdUserId) {
+        continue;
+      }
+
+      await handleRetry(item);
+      
+      // 检查重试后的状态
+      const currentItem = executionItems.find(i => i.id === item.id);
+      if (currentItem?.status === 'error') {
+        hasError = true;
+        // 如果是用户创建失败，后续项都不用重试了
+        if (item.type === 'user') {
+          break;
+        }
+      }
+    }
+
+    if (hasError) {
+      toast.warning('批量重试完成', '部分项目仍然失败');
+    } else {
+      toast.success('批量重试成功', '所有失败项已重试成功');
+    }
+  };
+
+  const handleProgressClose = () => {
+    setShowProgress(false);
+    onOpenChange(false);
+    resetForm();
   };
 
   const resetForm = () => {
     setCurrentStep(1);
     setFormData(INITIAL_FORM_DATA);
+    setSavedFormData(null);
+    setCreatedUserId('');
   };
 
   const handleClose = () => {
@@ -273,8 +585,8 @@ export function CreateUserModal({ open, onOpenChange, userType, onSuccess }: Cre
                 取消
               </Button>
               {isLastStep ? (
-                <Button onClick={handleSubmit} disabled={loading} className="flex items-center gap-2">
-                  {loading ? '提交中...' : '提交'}
+                <Button onClick={handleSubmit} className="flex items-center gap-2">
+                  提交
                 </Button>
               ) : (
                 <Button onClick={handleNext} className="flex items-center gap-2">
@@ -308,6 +620,17 @@ export function CreateUserModal({ open, onOpenChange, userType, onSuccess }: Cre
       cancelText="继续编辑"
       onConfirm={handleConfirmClose}
       variant="destructive"
+    />
+
+    {/* 执行进度对话框 */}
+    <ExecutionProgressDialog
+      open={showProgress}
+      onOpenChange={handleProgressClose}
+      items={executionItems}
+      title={`创建${userType === 'merchant' ? '商户' : '车队'}进度`}
+      autoCloseDelay={6000}
+      onRetry={handleRetry}
+      onRetryAll={handleRetryAll}
     />
   </>
   );

@@ -45,7 +45,8 @@ export function FleetRouter() {
   const [isCreating, setIsCreating] = useState(false);
   const [ccyError, setCcyError] = useState(false);
   const [formData, setFormData] = useState<CreateRouterParams>({
-    tid: '',
+    user_id: '',
+    user_type: 'cashier_team',
     trx_type: '',
     trx_method: '',
     ccy: '',
@@ -174,7 +175,8 @@ export function FleetRouter() {
   const handleAdd = () => {
     setSelectedRouter(null);
     setFormData({
-      tid: '',
+      user_id: '',
+      user_type: 'cashier_team',
       pkg: '',
       did: '',
       trx_type: '',

@@ -33,6 +33,7 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
   const [routerToDelete, setRouterToDelete] = useState<number | null>(null);
   const [newRouter, setNewRouter] = useState<CreateRouterParams>({
     user_id: '',
+    user_type: 'merchant',
     trx_type: 'payin',
     trx_method: '',
     ccy: 'INR',
@@ -75,6 +76,7 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
     setIsAddingRouter(true);
     setNewRouter({
       user_id: userId,
+      user_type: userType,
       trx_type: 'payin',
       trx_method: '',
       ccy: 'INR',
@@ -90,6 +92,7 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
     setIsAddingRouter(false);
     setNewRouter({
       user_id: '',
+      user_type: 'merchant',
       trx_type: 'payin',
       trx_method: '',
       ccy: 'INR',
@@ -111,7 +114,9 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
 
   const confirmSaveRouter = async () => {
     try {
-      const response = await routerService.createMerchantRouter(newRouter);
+      const response = userType === 'merchant' 
+        ? await routerService.createMerchantRouter(newRouter)
+        : await routerService.createFleetRouter(newRouter);
       if (response.success) {
         toast.success('新增路由成功');
         setIsAddingRouter(false);

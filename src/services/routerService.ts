@@ -44,8 +44,8 @@ export interface RouterListParams {
 
 // 创建路由参数
 export interface CreateRouterParams {
-  user_id?: string;
-  tid?: string;
+  user_id?: string; // 用户ID（商户ID或车队ID）
+  user_type?: string; // 用户类型：merchant 或 cashier_team
   pkg?: string;
   did?: string;
   trx_type: string;

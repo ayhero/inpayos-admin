@@ -46,6 +46,7 @@ export function MerchantRouter() {
   const [ccyError, setCcyError] = useState(false);
   const [formData, setFormData] = useState<CreateRouterParams>({
     user_id: '',
+    user_type: 'merchant',
     trx_type: '',
     trx_method: '',
     ccy: '',
@@ -175,6 +176,7 @@ export function MerchantRouter() {
     setSelectedRouter(null);
     setFormData({
       user_id: '',
+      user_type: 'merchant',
       pkg: '',
       did: '',
       trx_type: '',
