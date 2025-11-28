@@ -246,10 +246,7 @@ export function CashierUserManagement() {
 
       {/* 出纳员用户列表 */}
       <Card>
-        <CardHeader>
-          <CardTitle>出纳员用户列表</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {loading ? (
             <div className="text-center py-8">加载中...</div>
           ) : cashiers.length === 0 ? (
