@@ -4,6 +4,8 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { Checkbox } from './ui/checkbox';
+import { Label } from './ui/label';
 import { Plus, X, Save, Power, PowerOff, RefreshCw } from 'lucide-react';
 import { merchantService, MerchantRouter } from '../services/merchantService';
 import { routerService, CreateRouterParams } from '../services/routerService';
@@ -185,7 +187,7 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[90vw] w-[90vw] min-w-[900px] max-h-[90vh]">
+      <DialogContent className="max-w-none w-[1200px] max-h-[90vh] overflow-hidden" style={{width: '1200px', maxWidth: '1200px'}}>
         <DialogHeader>
           <DialogTitle>路由管理</DialogTitle>
           <DialogDescription>
@@ -209,8 +211,8 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
             </Button>
           </div>
 
-          <div className="overflow-auto max-h-[60vh]">
-            <Table>
+          <div className="overflow-x-auto max-h-[60vh]">
+            <Table className="w-full">
               <TableHeader>
                 <TableRow>
                   <TableHead>路由类型</TableHead>
@@ -227,16 +229,16 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
               </TableHeader>
               <TableBody>
                 {isAddingRouter && (
-                  <TableRow className="bg-blue-50">
+                  <TableRow>
                     <TableCell>
                       <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">
                         专属路由
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1">
                         <Select value={newRouter.trx_type} onValueChange={(value) => setNewRouter({...newRouter, trx_type: value})}>
-                          <SelectTrigger className="w-24">
+                          <SelectTrigger className="w-20">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -246,8 +248,8 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
                           </SelectContent>
                         </Select>
                         <Select value={newRouter.trx_method} onValueChange={(value) => setNewRouter({...newRouter, trx_method: value})}>
-                          <SelectTrigger className="w-28">
-                            <SelectValue placeholder="支付方式" />
+                          <SelectTrigger className="w-20">
+                            <SelectValue placeholder="UPI" />
                           </SelectTrigger>
                           <SelectContent>
                             {TRX_METHOD_OPTIONS.map(option => (
@@ -259,7 +261,7 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
                     </TableCell>
                     <TableCell>
                       <Select value={newRouter.channel_code} onValueChange={(value) => setNewRouter({...newRouter, channel_code: value})}>
-                        <SelectTrigger className="w-32">
+                        <SelectTrigger className="w-28">
                           <SelectValue placeholder="选择渠道" />
                         </SelectTrigger>
                         <SelectContent>
@@ -294,18 +296,18 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
                       </Select>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-1 items-center">
+                      <div className="flex gap-1 items-center whitespace-nowrap">
                         <Input
                           type="number"
-                          className="w-20"
+                          className="w-16"
                           placeholder="最小"
                           value={newRouter.min_amount || ''}
                           onChange={(e) => setNewRouter({...newRouter, min_amount: parseInt(e.target.value) || undefined})}
                         />
-                        <span>-</span>
+                        <span className="text-xs">-</span>
                         <Input
                           type="number"
-                          className="w-20"
+                          className="w-16"
                           placeholder="最大"
                           value={newRouter.max_amount || ''}
                           onChange={(e) => setNewRouter({...newRouter, max_amount: parseInt(e.target.value) || undefined})}
@@ -315,29 +317,30 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
                     <TableCell>
                       <Input
                         type="number"
-                        className="w-20"
+                        className="w-16"
                         value={newRouter.priority}
                         onChange={(e) => setNewRouter({...newRouter, priority: parseInt(e.target.value) || 100})}
                       />
                     </TableCell>
                     <TableCell>
-                      <Select value={newRouter.status} onValueChange={(value) => setNewRouter({...newRouter, status: value})}>
-                        <SelectTrigger className="w-24">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">激活</SelectItem>
-                          <SelectItem value="inactive">停用</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center">
+                        <Checkbox
+                          id="new-router-status"
+                          checked={newRouter.status === 'active'}
+                          onCheckedChange={(checked) => setNewRouter({...newRouter, status: checked ? 'active' : 'inactive'})}
+                        />
+                        <Label htmlFor="new-router-status" className="ml-2 text-xs cursor-pointer">
+                          激活
+                        </Label>
+                      </div>
                     </TableCell>
                     <TableCell className="text-xs">-</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" onClick={handleSaveNewRouter}>
+                        <Button size="sm" variant="ghost" onClick={handleSaveNewRouter} title="保存">
                           <Save className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={handleCancelNewRouter}>
+                        <Button size="sm" variant="ghost" onClick={handleCancelNewRouter} title="取消">
                           <X className="h-4 w-4" />
                         </Button>
                       </div>

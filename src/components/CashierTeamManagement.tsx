@@ -170,7 +170,7 @@ export function CashierTeamManagement() {
       )}
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">总数</CardTitle>
@@ -196,15 +196,6 @@ export function CashierTeamManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-gray-600">{stats.inactive}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">暂停</CardTitle>
-            <Users className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.suspended}</div>
           </CardContent>
         </Card>
       </div>
@@ -250,10 +241,15 @@ export function CashierTeamManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>名称</TableHead>
-                  <TableHead>邮箱</TableHead>
-                  <TableHead>电话</TableHead>
+                  <TableHead>车队名称</TableHead>
+                  <TableHead>手机号</TableHead>
                   <TableHead>状态</TableHead>
+                  <TableHead>登录状态</TableHead>
+                  <TableHead>最近登录</TableHead>
+                  <TableHead>最近活跃</TableHead>
+                  <TableHead>订单统计</TableHead>
+                  <TableHead>Cashier账户</TableHead>
+                  <TableHead>余额</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
               </TableHeader>
@@ -264,27 +260,59 @@ export function CashierTeamManagement() {
                       <div className="font-semibold">{team.name}</div>
                       <div className="font-mono text-xs text-muted-foreground">{team.user_id}</div>
                     </TableCell>
-                    <TableCell>{team.email}</TableCell>
-                    <TableCell>{team.phone}</TableCell>
+                    <TableCell>
+                      <div 
+                        className="font-mono text-sm cursor-pointer hover:text-blue-600" 
+                        title={`用户信息：${team.name} (${team.user_id})\n邮箱：${team.email}\n状态：${team.status}`}
+                      >
+                        {team.phone}
+                      </div>
+                    </TableCell>
                     <TableCell><StatusBadge status={team.status} type="account" /></TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleViewDetail(team)}>
-                          查看
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleViewAccounts(team)}>
-                          <Wallet className="h-4 w-4 mr-1" />
-                          账户
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleViewContracts(team)}>
-                          <FileText className="h-4 w-4 mr-1" />
-                          合同
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleViewRouters(team)}>
-                          <Route className="h-4 w-4 mr-1" />
-                          路由
-                        </Button>
+                      <Badge variant="outline" className="text-xs">
+                        {team.is_online ? '在线' : '离线'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {team.last_login_at ? formatDateTime(team.last_login_at) : '-'}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {team.last_active_at ? formatDateTime(team.last_active_at) : '-'}
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-xs space-y-1">
+                        <div className="flex gap-2">
+                          <span className="text-blue-600">代收: {team.payin_stats?.total || 0}</span>
+                          <span className="text-orange-600">代付: {team.payout_stats?.total || 0}</span>
+                        </div>
+                        <div className="flex gap-1 text-xs">
+                          <Badge variant="secondary" className="text-xs px-1">成功: {team.payin_stats?.success || 0}</Badge>
+                          <Badge variant="destructive" className="text-xs px-1">失败: {team.payin_stats?.failed || 0}</Badge>
+                        </div>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1 flex-wrap">
+                        {team.cashier_accounts?.slice(0, 3).map((account, index) => (
+                          <Badge key={index} variant="outline" className="text-xs px-1">
+                            {account.app_type?.toUpperCase()}
+                          </Badge>
+                        )) || <span className="text-muted-foreground text-xs">暂无</span>}
+                        {team.cashier_accounts && team.cashier_accounts.length > 3 && (
+                          <span className="text-muted-foreground text-xs">+{team.cashier_accounts.length - 3}</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-mono text-sm font-medium">
+                        ₹{team.default_balance || '0.00'}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewDetail(team)}>
+                        查看
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

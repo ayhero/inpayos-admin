@@ -151,8 +151,6 @@ export function UserAccountModal({ open, onOpenChange, userId, userName, userTyp
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>账户ID</TableHead>
-                  <TableHead>{userType === 'merchant' ? '商户ID' : '车队ID'}</TableHead>
                   <TableHead>币种</TableHead>
                   <TableHead>总余额</TableHead>
                   <TableHead>可用余额</TableHead>
@@ -166,9 +164,7 @@ export function UserAccountModal({ open, onOpenChange, userId, userName, userTyp
               </TableHeader>
               <TableBody>
                 {isAddingAccount && (
-                  <TableRow className="bg-blue-50">
-                    <TableCell className="font-mono text-xs">新增</TableCell>
-                    <TableCell className="font-mono text-xs">{userId}</TableCell>
+                  <TableRow>
                     <TableCell>
                       <Select value={newAccount.ccy} onValueChange={(value) => setNewAccount({ccy: value})}>
                         <SelectTrigger className="w-32">
@@ -205,8 +201,6 @@ export function UserAccountModal({ open, onOpenChange, userId, userName, userTyp
 
                 {accounts.map((account) => (
                   <TableRow key={account.account_id}>
-                    <TableCell className="font-mono text-xs">{account.account_id}</TableCell>
-                    <TableCell className="font-mono text-xs">{account.user_id}</TableCell>
                     <TableCell>{account.ccy}</TableCell>
                     <TableCell className="font-mono">{parseFloat(account.balance?.balance || '0').toFixed(2)}</TableCell>
                     <TableCell className="font-mono text-green-600">{parseFloat(account.balance?.available_balance || '0').toFixed(2)}</TableCell>
@@ -220,7 +214,7 @@ export function UserAccountModal({ open, onOpenChange, userId, userName, userTyp
 
                 {!loading && !isAddingAccount && accounts.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                       暂无账户数据
                     </TableCell>
                   </TableRow>

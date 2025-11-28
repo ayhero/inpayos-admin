@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Search, RefreshCw, Building2, Eye, EyeOff, Key, FileText, Route, Wallet } from 'lucide-react';
+import { Search, RefreshCw, Building2, Eye, EyeOff, Key, FileText, Route, Wallet, Plus } from 'lucide-react';
 import { merchantService, Merchant, MerchantListParams, MerchantStats } from '../services/merchantService';
 import { toast } from '../utils/toast';
 import { MerchantSecretModal } from './MerchantSecretModal';
@@ -16,6 +16,7 @@ import { UserContractModal } from './UserContractModal';
 import { UserRouterModal } from './UserRouterModal';
 import { StatusBadge } from './StatusBadge';
 import { getChannelCodeLabel, getCcyLabel, getCountryLabel } from '../constants/business';
+import { CreateMerchantModal } from './CreateMerchantModal';
 
 export function MerchantManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,6 +51,9 @@ export function MerchantManagement() {
 
   const [showAccountsModal, setShowAccountsModal] = useState(false);
   const [selectedMerchantForAccounts, setSelectedMerchantForAccounts] = useState<Merchant | null>(null);
+
+  // 新建商户模态窗状态
+  const [showCreateMerchantModal, setShowCreateMerchantModal] = useState(false);
 
   // 获取商户统计
   const fetchStats = useCallback(async () => {
@@ -193,14 +197,26 @@ export function MerchantManagement() {
     setShowAccountsModal(true);
   };
 
+  // 处理新建商户成功
+  const handleCreateMerchantSuccess = () => {
+    fetchMerchants();
+    fetchStats();
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Merchant</h1>
-        <Button onClick={handleRefresh} className="gap-2" variant="outline">
-          <RefreshCw className="h-4 w-4" />
-          刷新
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowCreateMerchantModal(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            新建
+          </Button>
+          <Button onClick={handleRefresh} className="gap-2" variant="outline">
+            <RefreshCw className="h-4 w-4" />
+            刷新
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -651,6 +667,13 @@ export function MerchantManagement() {
           userType="merchant"
         />
       )}
+
+      {/* 新建商户模态窗 */}
+      <CreateMerchantModal
+        open={showCreateMerchantModal}
+        onOpenChange={setShowCreateMerchantModal}
+        onSuccess={handleCreateMerchantSuccess}
+      />
     </div>
   );
 }

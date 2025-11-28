@@ -191,7 +191,7 @@ export function MerchantSecretModal({ open, onOpenChange, merchant }: MerchantSe
                         {secret.sandbox ? "沙箱" : "生产"}
                       </Badge>
                     </TableCell>
-                    <TableCell>{formatDateTime(secret.created_at)}</TableCell>
+                    <TableCell className="text-xs">{formatDateTime(secret.created_at)}</TableCell>
                   </TableRow>
                 ))}
                 
@@ -221,14 +221,12 @@ export function MerchantSecretModal({ open, onOpenChange, merchant }: MerchantSe
                       </Select>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={handleSaveNewSecret}>
-                          <Save className="h-3 w-3 mr-1" />
-                          保存
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="ghost" onClick={handleSaveNewSecret}>
+                          <Save className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="outline" onClick={handleCancelNewSecret}>
-                          <X className="h-3 w-3 mr-1" />
-                          取消
+                        <Button size="sm" variant="ghost" onClick={handleCancelNewSecret}>
+                          <X className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>

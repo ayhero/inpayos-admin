@@ -195,7 +195,7 @@ export function AppAccountManagement() {
       )}
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">总账户数</CardTitle>
@@ -226,16 +226,7 @@ export function AppAccountManagement() {
             <p className="text-xs text-muted-foreground">验证通过</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">总余额</CardTitle>
-            <Wallet className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">₹{stats.totalBalance}</div>
-            <p className="text-xs text-muted-foreground">所有账户余额</p>
-          </CardContent>
-        </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">今日新增</CardTitle>
@@ -314,8 +305,8 @@ export function AppAccountManagement() {
               <TableHeader>
                 <TableRow>
                   <TableHead>应用类型</TableHead>
+                  <TableHead>用户手机号</TableHead>
                   <TableHead>账户ID</TableHead>
-                  <TableHead>用户</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>验证状态</TableHead>
                   <TableHead>出纳员数量</TableHead>
@@ -327,11 +318,17 @@ export function AppAccountManagement() {
                 {accounts.map((account) => (
                   <TableRow key={`${account.app_type}_${account.account_id}`}>
                     <TableCell>{getAppTypeBadge(account.app_type)}</TableCell>
-                    <TableCell className="font-mono text-xs">{account.account_id}</TableCell>
                     <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{account.user?.name || '-'}</span>
-                        <span className="text-xs text-gray-500 font-mono">{account.user_id}</span>
+                      <div 
+                        className="font-mono text-sm cursor-pointer hover:text-blue-600" 
+                        title={`用户信息：${account.user?.name || '未知'} (${account.user_id})\n邮箱：${account.user?.email || '未知'}\n账户ID：${account.account_id}`}
+                      >
+                        {account.user?.phone || account.phone || '-'}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-mono text-xs break-all">
+                        {account.account_id}
                       </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(account.status)}</TableCell>
