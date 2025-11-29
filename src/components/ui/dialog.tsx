@@ -52,7 +52,7 @@ function DialogContent({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content>) {
   return (
-    <DialogPortal data-slot="dialog-portal">
+    <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
@@ -110,14 +110,19 @@ function DialogTitle({
 
 function DialogDescription({
   className,
+  children,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Description>) {
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("text-muted-foreground text-sm", className)}
+      asChild
       {...props}
-    />
+    >
+      <div className={cn("text-muted-foreground text-sm", className)}>
+        {children}
+      </div>
+    </DialogPrimitive.Description>
   );
 }
 

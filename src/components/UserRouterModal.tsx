@@ -11,7 +11,6 @@ import { merchantService, MerchantRouter } from '../services/merchantService';
 import { routerService, CreateRouterParams } from '../services/routerService';
 import { toast } from '../utils/toast';
 import { UserTypeLabel } from './UserTypeLabel';
-import { StatusBadge } from './StatusBadge';
 import { Badge } from './ui/badge';
 import { ConfirmDialog } from './ui/confirm-dialog';
 import { MERCHANT_TRX_TYPE_OPTIONS, TRX_METHOD_OPTIONS, CCY_OPTIONS, COUNTRY_OPTIONS, CHANNEL_CODE_OPTIONS, getCcyLabel, getCountryLabel, getChannelCodeLabel } from '../constants/business';
@@ -49,7 +48,7 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
     
     setLoading(true);
     try {
-      const response = await merchantService.getMerchantRouters({ user_id: userId });
+      const response = await merchantService.getMerchantRouters({ user_id: userId, user_type: userType });
       if (response.success) {
         setRouters(response.data || []);
       } else {
@@ -61,7 +60,7 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, userType]);
 
   // 监听弹窗打开
   useEffect(() => {
@@ -223,9 +222,8 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
                   <TableHead>路由类型</TableHead>
                   <TableHead>交易类型</TableHead>
                   <TableHead>渠道</TableHead>
-                  <TableHead>币种</TableHead>
+                  <TableHead>交易金额</TableHead>
                   <TableHead>国家</TableHead>
-                  <TableHead>金额范围</TableHead>
                   <TableHead>优先级</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>创建时间</TableHead>
@@ -377,16 +375,26 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
                         {router.trx_method && <span className="ml-2 text-muted-foreground">- {router.trx_method.toUpperCase()}</span>}
                       </TableCell>
                       <TableCell>{getChannelCodeLabel(router.channel_code)}</TableCell>
-                      <TableCell>{getCcyLabel(router.ccy || '')}</TableCell>
-                      <TableCell>{getCountryLabel(router.country || '')}</TableCell>
                       <TableCell>
-                        {router.min_amount && router.max_amount 
-                          ? `${router.min_amount} - ${router.max_amount}`
-                          : '-'
-                        }
+                        <div>
+                          <div>{getCcyLabel(router.ccy || '')}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {router.min_amount && router.max_amount 
+                              ? `${router.min_amount} - ${router.max_amount}`
+                              : '-'
+                            }
+                          </div>
+                        </div>
                       </TableCell>
+                      <TableCell>{getCountryLabel(router.country || '')}</TableCell>
                       <TableCell>{router.priority || 0}</TableCell>
-                      <TableCell><StatusBadge status={router.status} type="account" /></TableCell>
+                      <TableCell>
+                        {router.status === 'active' ? (
+                          <Badge variant="default" className="bg-green-500">启用</Badge>
+                        ) : (
+                          <Badge variant="secondary" className="bg-gray-500">禁用</Badge>
+                        )}
+                      </TableCell>
                       <TableCell className="text-xs">{formatDateTime(router.created_at)}</TableCell>
                       <TableCell>
                         {isExclusiveRouter && (

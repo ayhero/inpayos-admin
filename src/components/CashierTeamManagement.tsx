@@ -7,12 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Search, RefreshCw, Users, Wallet, FileText, Route, Plus } from 'lucide-react';
+import { Search, RefreshCw, Users, Wallet, FileText, Route, Plus, GitBranch } from 'lucide-react';
 import { cashierTeamService, CashierTeam, CashierTeamListParams, CashierTeamStats } from '../services/cashierTeamService';
 import { toast } from '../utils/toast';
 import { UserAccountModal } from './UserAccountModal';
 import { UserContractModal } from './UserContractModal';
 import { UserRouterModal } from './UserRouterModal';
+import { DispatchRouterModal } from './DispatchRouterModal';
 import { StatusBadge } from './StatusBadge';
 import { getChannelCodeLabel, getCcyLabel, getCountryLabel } from '../constants/business';
 import { CreateUserModal } from './CreateUserModal';
@@ -46,6 +47,10 @@ export function CashierTeamManagement() {
 
   const [showRoutersModal, setShowRoutersModal] = useState(false);
   const [selectedTeamForRouters, setSelectedTeamForRouters] = useState<CashierTeam | null>(null);
+
+  // 派单路由模态窗状态
+  const [showDispatchRoutersModal, setShowDispatchRoutersModal] = useState(false);
+  const [selectedTeamForDispatchRouters, setSelectedTeamForDispatchRouters] = useState<CashierTeam | null>(null);
 
   // 新建车队模态窗状态
   const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
@@ -153,6 +158,11 @@ export function CashierTeamManagement() {
   const handleViewRouters = (team: CashierTeam) => {
     setSelectedTeamForRouters(team);
     setShowRoutersModal(true);
+  };
+
+  const handleViewDispatchRouters = (team: CashierTeam) => {
+    setSelectedTeamForDispatchRouters(team);
+    setShowDispatchRoutersModal(true);
   };
 
   // 处理新建车队成功
@@ -331,6 +341,10 @@ export function CashierTeamManagement() {
                         <Button variant="ghost" size="sm" onClick={() => handleViewRouters(team)}>
                           <Route className="h-3 w-3 mr-1" />
                           路由
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleViewDispatchRouters(team)}>
+                          <GitBranch className="h-3 w-3 mr-1" />
+                          派单
                         </Button>
                       </div>
                     </TableCell>
@@ -589,6 +603,20 @@ export function CashierTeamManagement() {
           }}
           userId={selectedTeamForRouters.user_id}
           userName={selectedTeamForRouters.name}
+          userType="cashier_team"
+        />
+      )}
+
+      {/* 派单路由管理模态窗 */}
+      {selectedTeamForDispatchRouters && (
+        <DispatchRouterModal
+          open={showDispatchRoutersModal}
+          onOpenChange={(open) => {
+            setShowDispatchRoutersModal(open);
+            if (!open) setSelectedTeamForDispatchRouters(null);
+          }}
+          userId={selectedTeamForDispatchRouters.user_id}
+          userName={selectedTeamForDispatchRouters.name}
           userType="cashier_team"
         />
       )}

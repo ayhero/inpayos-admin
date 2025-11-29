@@ -1,6 +1,9 @@
 import { api, ApiResponse } from './api';
 import { Contract } from './contractService';
 
+// 重新导出 Contract 供其他模块使用
+export type { Contract };
+
 // 商户密钥接口
 export interface MerchantSecret {
   id: number;
@@ -286,11 +289,11 @@ class MerchantService {
   }
 
   // 获取商户路由列表
-  async getMerchantRouters(params: { user_id: string }): Promise<ApiResponse<MerchantRouter[]>> {
+  async getMerchantRouters(params: { user_id: string; user_type?: string }): Promise<ApiResponse<MerchantRouter[]>> {
     try {
       const response = await api.post<MerchantRouter[]>('/user/routers', {
         user_id: params.user_id,
-        user_type: 'merchant'
+        user_type: params.user_type || 'merchant'
       });
       return {
         success: response.code === '0000',
