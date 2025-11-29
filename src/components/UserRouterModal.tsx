@@ -14,6 +14,7 @@ import { UserTypeLabel } from './UserTypeLabel';
 import { Badge } from './ui/badge';
 import { ConfirmDialog } from './ui/confirm-dialog';
 import { MERCHANT_TRX_TYPE_OPTIONS, TRX_METHOD_OPTIONS, CCY_OPTIONS, COUNTRY_OPTIONS, CHANNEL_CODE_OPTIONS, getCcyLabel, getCountryLabel, getChannelCodeLabel } from '../constants/business';
+import { getTrxTypeBadgeConfig } from '../constants/status';
 
 interface UserRouterModalProps {
   open: boolean;
@@ -369,9 +370,10 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={router.trx_type === 'payin' ? 'default' : 'secondary'}>
-                          {router.trx_type === 'payin' ? '代收' : '代付'}
-                        </Badge>
+                        {(() => {
+                          const config = getTrxTypeBadgeConfig(router.trx_type || '');
+                          return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
+                        })()}
                         {router.trx_method && <span className="ml-2 text-muted-foreground">- {router.trx_method.toUpperCase()}</span>}
                       </TableCell>
                       <TableCell>{getChannelCodeLabel(router.channel_code)}</TableCell>
