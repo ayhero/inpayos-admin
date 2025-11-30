@@ -47,6 +47,7 @@ import { AppAccountManagement } from './components/AppAccountManagement';
 import TaskManagement from './components/TaskManagement';
 import { MerchantRouter } from './components/MerchantRouter';
 import { FleetRouter } from './components/FleetRouter';
+import { DispatchStrategyManagement } from './components/DispatchStrategyManagement';
 
 export default function App() {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -178,6 +179,12 @@ export default function App() {
       label: '车队路由',
       icon: Route,
       component: FleetRouter
+    },
+    {
+      id: 'dispatch-strategy',
+      label: '派单策略',
+      icon: Route,
+      component: DispatchStrategyManagement
     },
     // {
     //   id: 'fleet-settlement',

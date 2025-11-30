@@ -278,7 +278,7 @@ export function FleetRouter() {
         <h1 className="text-2xl font-bold">车队路由</h1>
         <Button onClick={handleAdd} className="gap-2">
           <Plus className="h-4 w-4" />
-          新增路由
+          新增
         </Button>
       </div>
 

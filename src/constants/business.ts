@@ -31,6 +31,13 @@ export const FLEET_TRX_TYPE_OPTIONS = [
   { value: 'deposit', label: trxTypeMap['deposit'] },
 ];
 
+// 收银员交易类型选项（派单路由）
+export const CASHIER_TRX_TYPE_OPTIONS = [
+  { value: 'cashier_payin', label: '代收' },
+  { value: 'cashier_payout', label: '代付' },
+  { value: 'cashier_withdraw', label: '提现' },
+];
+
 // 支付方式选项
 export const TRX_METHOD_OPTIONS = [
   { value: 'all', label: '全部' },

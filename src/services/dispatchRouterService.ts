@@ -86,6 +86,29 @@ export interface GetDispatchRoutersParams {
   user_type: string;
 }
 
+// 保存派单路由参数
+export interface SaveDispatchRouterParams {
+  id?: number;
+  user_id: string;
+  user_type: string;
+  strategy_code: string;
+  trx_type: string;
+  trx_mode?: string;
+  trx_method: string;
+  trx_ccy: string;
+  country: string;
+  min_amount?: number;
+  max_amount?: number;
+  min_usd_amount?: number;
+  max_usd_amount?: number;
+  start_at?: number;
+  expired_at?: number;
+  daily_start_time?: number;
+  daily_end_time?: number;
+  status: string;
+  priority: number;
+}
+
 class DispatchRouterService {
   /**
    * 获取用户的派单路由列表（包含策略详情）
@@ -101,6 +124,78 @@ class DispatchRouterService {
       };
     } catch (error: any) {
       console.error('获取派单路由列表失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 创建派单路由
+   */
+  async createDispatchRouter(params: SaveDispatchRouterParams): Promise<ApiResponse<any>> {
+    try {
+      const response = await api.post('/user/dispatch/router/create', params);
+      return {
+        success: response.code === '0000',
+        code: response.code,
+        msg: response.msg,
+        data: response.data
+      };
+    } catch (error: any) {
+      console.error('创建派单路由失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 更新派单路由
+   */
+  async updateDispatchRouter(params: SaveDispatchRouterParams): Promise<ApiResponse<any>> {
+    try {
+      const response = await api.post('/user/dispatch/router/update', params);
+      return {
+        success: response.code === '0000',
+        code: response.code,
+        msg: response.msg,
+        data: response.data
+      };
+    } catch (error: any) {
+      console.error('更新派单路由失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 删除派单路由
+   */
+  async deleteDispatchRouter(id: number): Promise<ApiResponse<any>> {
+    try {
+      const response = await api.post('/user/dispatch/router/delete', { id });
+      return {
+        success: response.code === '0000',
+        code: response.code,
+        msg: response.msg,
+        data: response.data
+      };
+    } catch (error: any) {
+      console.error('删除派单路由失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 更新派单路由状态
+   */
+  async updateDispatchRouterStatus(id: number, status: string): Promise<ApiResponse<any>> {
+    try {
+      const response = await api.post('/user/dispatch/router/status', { id, status });
+      return {
+        success: response.code === '0000',
+        code: response.code,
+        msg: response.msg,
+        data: response.data
+      };
+    } catch (error: any) {
+      console.error('更新派单路由状态失败:', error);
       throw error;
     }
   }

@@ -430,6 +430,9 @@ export function CashierTeamManagement() {
                   <TabsTrigger value="routers">
                     路由 ({selectedTeam.routers?.length || 0})
                   </TabsTrigger>
+                  <TabsTrigger value="dispatch-routers">
+                    派单路由 ({selectedTeam.dispatch_routers?.length || 0})
+                  </TabsTrigger>
                 </TabsList>
 
                 {/* 账户列表 Tab */}
@@ -549,7 +552,7 @@ export function CashierTeamManagement() {
                               </TableCell>
                               <TableCell>{router.priority || 0}</TableCell>
                               <TableCell><StatusBadge status={router.status} type="account" /></TableCell>
-                              <TableCell>{formatDateTime(router.created_at)}</TableCell>
+                              <TableCell>{formatDateTime(router.updated_at)}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -557,6 +560,72 @@ export function CashierTeamManagement() {
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">暂无路由</div>
+                  )}
+                </TabsContent>
+
+                {/* 派单路由列表 Tab */}
+                <TabsContent value="dispatch-routers" className="mt-4">
+                  {selectedTeam.dispatch_routers && selectedTeam.dispatch_routers.length > 0 ? (
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>路由类型</TableHead>
+                            <TableHead>策略名称</TableHead>
+                            <TableHead>交易类型</TableHead>
+                            <TableHead>币种</TableHead>
+                            <TableHead>国家</TableHead>
+                            <TableHead>金额范围</TableHead>
+                            <TableHead>优先级</TableHead>
+                            <TableHead>状态</TableHead>
+                            <TableHead>生效时间</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedTeam.dispatch_routers.map((router) => (
+                            <TableRow key={router.id}>
+                              <TableCell>
+                                {router.user_id ? (
+                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">
+                                    专属路由
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
+                                    全局路由
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>{router.strategy?.name || '-'}</TableCell>
+                              <TableCell>
+                                <Badge variant={router.trx_type === 'payin' ? 'default' : 'secondary'}>
+                                  {router.trx_type === 'payin' ? '代收' : '代付'}
+                                </Badge>
+                                {router.trx_method && <span className="ml-2 text-muted-foreground">- {router.trx_method.toUpperCase()}</span>}
+                              </TableCell>
+                              <TableCell>{getCcyLabel(router.trx_ccy || '')}</TableCell>
+                              <TableCell>{getCountryLabel(router.country || '')}</TableCell>
+                              <TableCell>
+                                {router.min_amount && router.max_amount 
+                                  ? `${router.min_amount} - ${router.max_amount}`
+                                  : '-'
+                                }
+                              </TableCell>
+                              <TableCell>{router.priority || 0}</TableCell>
+                              <TableCell className="text-xs">
+                                {router.status === 'active' ? (
+                                  <Badge variant="default" className="bg-green-500">启用</Badge>
+                                ) : (
+                                  <Badge variant="secondary" className="bg-gray-500">禁用</Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>{formatDateTime(router.start_at)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">暂无派单路由</div>
                   )}
                 </TabsContent>
               </Tabs>

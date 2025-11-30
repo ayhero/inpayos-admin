@@ -1,13 +1,34 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Fragment } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Checkbox } from './ui/checkbox';
 import { Badge } from './ui/badge';
-import { RefreshCw, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { RefreshCw, AlertCircle, ChevronDown, ChevronUp, Plus, Edit, Trash2, Power, PowerOff, Check, X } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { dispatchRouterService, DispatchRouter } from '../services/dispatchRouterService';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog';
+import { dispatchRouterService, DispatchRouter, SaveDispatchRouterParams } from '../services/dispatchRouterService';
+import { dispatchStrategyService, DispatchStrategy } from '../services/dispatchStrategyService';
 import { toast } from '../utils/toast';
 import { UserTypeLabel } from './UserTypeLabel';
-import { getCcyLabel, getCountryLabel } from '../constants/business';
+import { 
+  getCcyLabel, 
+  getCountryLabel,
+  CASHIER_TRX_TYPE_OPTIONS,
+  TRX_METHOD_OPTIONS,
+  CCY_OPTIONS,
+  COUNTRY_OPTIONS,
+} from '../constants/business';
 
 interface DispatchRouterModalProps {
   open: boolean;
@@ -21,6 +42,11 @@ export function DispatchRouterModal({ open, onOpenChange, userId, userName, user
   const [routers, setRouters] = useState<DispatchRouter[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [routerToDelete, setRouterToDelete] = useState<DispatchRouter | null>(null);
+  const [strategies, setStrategies] = useState<DispatchStrategy[]>([]);
+  const [editFormData, setEditFormData] = useState<SaveDispatchRouterParams | null>(null);
 
   // 加载派单路由列表
   const loadDispatchRouters = useCallback(async () => {
@@ -55,6 +81,200 @@ export function DispatchRouterModal({ open, onOpenChange, userId, userName, user
   // 切换展开/收起
   const toggleExpand = (id: number) => {
     setExpandedId(expandedId === id ? null : id);
+  };
+
+  // 新增路由
+  const handleAdd = () => {
+    // 添加一个新的编辑行
+    const newRouter: Partial<DispatchRouter> = {
+      id: -Date.now(), // 使用负数临时ID
+      code: '',
+      user_id: userId,
+      user_type: userType,
+      strategy_code: '',
+      trx_type: '',
+      trx_method: '',
+      trx_ccy: '',
+      country: '',
+      status: 'active',
+      priority: 0,
+      daily_start_time: 0,
+      daily_end_time: 0,
+      start_at: 0,
+      expired_at: 0,
+      created_at: Date.now(),
+      updated_at: Date.now(),
+    };
+    
+    setRouters([newRouter as DispatchRouter, ...routers]);
+    setEditingId(newRouter.id!);
+    setEditFormData({
+      user_id: userId,
+      user_type: userType,
+      strategy_code: '',
+      trx_type: '',
+      trx_method: '',
+      trx_ccy: '',
+      country: '',
+      status: 'active',
+      priority: 0,
+    });
+    loadStrategies();
+  };
+
+  // 编辑路由
+  const handleEdit = (router: DispatchRouter, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingId(router.id);
+    setEditFormData({
+      id: router.id > 0 ? router.id : undefined,
+      user_id: userId,
+      user_type: userType,
+      strategy_code: router.strategy_code || '',
+      trx_type: router.trx_type || '',
+      trx_mode: router.trx_mode,
+      trx_method: router.trx_method || '',
+      trx_ccy: router.trx_ccy || '',
+      country: router.country || '',
+      min_amount: router.min_amount ? parseFloat(String(router.min_amount)) : undefined,
+      max_amount: router.max_amount ? parseFloat(String(router.max_amount)) : undefined,
+      min_usd_amount: router.min_usd_amount ? parseFloat(String(router.min_usd_amount)) : undefined,
+      max_usd_amount: router.max_usd_amount ? parseFloat(String(router.max_usd_amount)) : undefined,
+      start_at: router.start_at,
+      expired_at: router.expired_at,
+      daily_start_time: router.daily_start_time,
+      daily_end_time: router.daily_end_time,
+      status: router.status || 'active',
+      priority: router.priority || 0,
+    });
+    loadStrategies();
+  };
+
+  // 取消编辑
+  const handleCancelEdit = (routerId: number) => {
+    if (routerId < 0) {
+      // 如果是新增的行，删除它
+      setRouters(routers.filter(r => r.id !== routerId));
+    }
+    setEditingId(null);
+    setEditFormData(null);
+  };
+
+  // 保存编辑
+  const handleSaveEdit = async (routerId: number) => {
+    if (!editFormData) return;
+
+    // 验证必填字段
+    if (!editFormData.strategy_code) {
+      toast.error('请选择派单策略');
+      return;
+    }
+    if (!editFormData.trx_type) {
+      toast.error('请选择交易类型');
+      return;
+    }
+    if (!editFormData.trx_ccy) {
+      toast.error('请选择币种');
+      return;
+    }
+
+    try {
+      const isNew = routerId < 0;
+      const response = isNew
+        ? await dispatchRouterService.createDispatchRouter(editFormData)
+        : await dispatchRouterService.updateDispatchRouter(editFormData);
+
+      if (response.success) {
+        toast.success(isNew ? '创建派单路由成功' : '更新派单路由成功');
+        setEditingId(null);
+        setEditFormData(null);
+        loadDispatchRouters();
+      } else {
+        toast.error(response.msg || (isNew ? '创建派单路由失败' : '更新派单路由失败'));
+      }
+    } catch (error) {
+      const isNew = routerId < 0;
+      console.error('保存派单路由失败:', error);
+      toast.error(isNew ? '创建派单路由失败' : '更新派单路由失败');
+    }
+  };
+
+  // 加载策略列表
+  const loadStrategies = async () => {
+    try {
+      const response = await dispatchStrategyService.listStrategies({
+        page: 1,
+        size: 100,
+        status: 'active',
+      });
+      if (response.success && response.data) {
+        setStrategies(response.data.records || []);
+      }
+    } catch (error) {
+      console.error('加载策略列表失败:', error);
+    }
+  };
+
+  // 删除路由
+  const handleDelete = (router: DispatchRouter, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRouterToDelete(router);
+    setDeleteDialogOpen(true);
+  };
+
+  // 确认删除
+  const confirmDelete = async () => {
+    if (!routerToDelete) return;
+    
+    try {
+      const response = await dispatchRouterService.deleteDispatchRouter(routerToDelete.id);
+      if (response.success) {
+        toast.success('删除派单路由成功');
+        loadDispatchRouters();
+      } else {
+        toast.error(response.msg || '删除派单路由失败');
+      }
+    } catch (error) {
+      console.error('删除派单路由失败:', error);
+      toast.error('删除派单路由失败');
+    } finally {
+      setDeleteDialogOpen(false);
+      setRouterToDelete(null);
+    }
+  };
+
+  // 启用路由
+  const handleEnable = async (router: DispatchRouter, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const response = await dispatchRouterService.updateDispatchRouterStatus(router.id, 'active');
+      if (response.success) {
+        toast.success('启用派单路由成功');
+        loadDispatchRouters();
+      } else {
+        toast.error(response.msg || '启用派单路由失败');
+      }
+    } catch (error) {
+      console.error('启用派单路由失败:', error);
+      toast.error('启用派单路由失败');
+    }
+  };
+
+  // 禁用路由
+  const handleDisable = async (router: DispatchRouter, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const response = await dispatchRouterService.updateDispatchRouterStatus(router.id, 'inactive');
+      if (response.success) {
+        toast.success('禁用派单路由成功');
+        loadDispatchRouters();
+      } else {
+        toast.error(response.msg || '禁用派单路由失败');
+      }
+    } catch (error) {
+      console.error('禁用派单路由失败:', error);
+      toast.error('禁用派单路由失败');
+    }
   };
 
   // 格式化时间
@@ -151,6 +371,7 @@ export function DispatchRouterModal({ open, onOpenChange, userId, userName, user
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-none w-[1400px] max-h-[90vh] overflow-hidden" style={{width: '1400px', maxWidth: '1400px'}}>
         <DialogHeader>
@@ -164,15 +385,17 @@ export function DispatchRouterModal({ open, onOpenChange, userId, userName, user
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+          <div className="space-y-4">
           <div className="flex items-center gap-2">
+            <Button size="sm" onClick={handleAdd} className="h-9">
+              <Plus className="h-4 w-4 mr-1" />
+              新增
+            </Button>
             <Button size="sm" variant="outline" onClick={loadDispatchRouters} disabled={loading} className="h-9">
               <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
               刷新
             </Button>
-          </div>
-
-          {/* 路由列表 */}
+          </div>          {/* 路由列表 */}
           {loading ? (
             <div className="text-center py-12">
               <RefreshCw className="h-8 w-8 animate-spin mx-auto text-gray-400" />
@@ -190,6 +413,7 @@ export function DispatchRouterModal({ open, onOpenChange, userId, userName, user
                   <TableRow>
                     <TableHead className="w-[50px]"></TableHead>
                     <TableHead>路由编码</TableHead>
+                    <TableHead>路由类型</TableHead>
                     <TableHead>支付方式</TableHead>
                     <TableHead>国家</TableHead>
                     <TableHead>交易金额</TableHead>
@@ -198,16 +422,190 @@ export function DispatchRouterModal({ open, onOpenChange, userId, userName, user
                     <TableHead>策略编码</TableHead>
                     <TableHead>优先级</TableHead>
                     <TableHead>状态</TableHead>
-                    <TableHead>创建时间/生效时间</TableHead>
+                    <TableHead>创建时间</TableHead>
+                    <TableHead>生效时间</TableHead>
+                    <TableHead className="w-[200px]">操作</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {routers.map((router) => (
-                    <>
+                  {routers.map((router) => {
+                    const isEditing = editingId === router.id;
+                    const isNew = router.id < 0;
+                    
+                    return (
+                    <Fragment key={router.id}>
+                      {isEditing ? (
+                        // 编辑模式行
+                        <TableRow className="bg-blue-50">
+                          <TableCell colSpan={14}>
+                            <div className="p-4 space-y-4">
+                              <div className="grid grid-cols-3 gap-4">
+                                {/* 策略选择 */}
+                                <div>
+                                  <label className="text-xs font-medium mb-1 block">派单策略 *</label>
+                                  <Select
+                                    value={editFormData?.strategy_code || ''}
+                                    onValueChange={(value) => setEditFormData({...editFormData!, strategy_code: value})}
+                                  >
+                                    <SelectTrigger className="h-8">
+                                      <SelectValue placeholder="选择策略" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {strategies.map((s) => (
+                                        <SelectItem key={s.code} value={s.code}>
+                                          {s.name} ({s.code})
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                {/* 交易类型 */}
+                                <div>
+                                  <label className="text-xs font-medium mb-1 block">交易类型 *</label>
+                                  <Select
+                                    value={editFormData?.trx_type || ''}
+                                    onValueChange={(value) => setEditFormData({...editFormData!, trx_type: value})}
+                                  >
+                                    <SelectTrigger className="h-8">
+                                      <SelectValue placeholder="选择类型" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {CASHIER_TRX_TYPE_OPTIONS.map((opt) => (
+                                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                {/* 支付方式 */}
+                                <div>
+                                  <label className="text-xs font-medium mb-1 block">支付方式</label>
+                                  <Select
+                                    value={editFormData?.trx_method || ''}
+                                    onValueChange={(value) => setEditFormData({...editFormData!, trx_method: value})}
+                                  >
+                                    <SelectTrigger className="h-8">
+                                      <SelectValue placeholder="选择方式" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {TRX_METHOD_OPTIONS.filter(o => o.value !== 'all').map((opt) => (
+                                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                {/* 国家 */}
+                                <div>
+                                  <label className="text-xs font-medium mb-1 block">国家</label>
+                                  <Select
+                                    value={editFormData?.country || ''}
+                                    onValueChange={(value) => setEditFormData({...editFormData!, country: value})}
+                                  >
+                                    <SelectTrigger className="h-8">
+                                      <SelectValue placeholder="选择国家" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {COUNTRY_OPTIONS.map((opt) => (
+                                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                {/* 优先级 */}
+                                <div>
+                                  <label className="text-xs font-medium mb-1 block">优先级</label>
+                                  <Input
+                                    type="number"
+                                    className="h-8"
+                                    value={editFormData?.priority || 0}
+                                    onChange={(e) => setEditFormData({...editFormData!, priority: Number(e.target.value)})}
+                                  />
+                                </div>
+
+                                {/* 状态复选框 */}
+                                <div className="flex items-center space-x-2 pt-6">
+                                  <Checkbox
+                                    id="status-checkbox"
+                                    checked={editFormData?.status === 'active'}
+                                    onCheckedChange={(checked) => setEditFormData({...editFormData!, status: checked ? 'active' : 'inactive'})}
+                                  />
+                                  <label
+                                    htmlFor="status-checkbox"
+                                    className="text-xs font-medium cursor-pointer"
+                                  >
+                                    启用
+                                  </label>
+                                </div>
+
+                                {/* 币种、最小金额、最大金额同行 - 占满3列 */}
+                                <div className="col-span-3 grid grid-cols-3 gap-4">
+                                  {/* 币种 */}
+                                  <div>
+                                    <label className="text-xs font-medium mb-1 block">币种 *</label>
+                                    <Select
+                                      value={editFormData?.trx_ccy || ''}
+                                      onValueChange={(value) => setEditFormData({...editFormData!, trx_ccy: value})}
+                                    >
+                                      <SelectTrigger className="h-8">
+                                        <SelectValue placeholder="选择币种" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {CCY_OPTIONS.filter(o => o.value !== 'all').map((opt) => (
+                                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+
+                                  {/* 最小金额 */}
+                                  <div>
+                                    <label className="text-xs font-medium mb-1 block">最小金额</label>
+                                    <Input
+                                      type="number"
+                                      className="h-8"
+                                      placeholder="最小金额"
+                                      value={editFormData?.min_amount || ''}
+                                      onChange={(e) => setEditFormData({...editFormData!, min_amount: e.target.value ? Number(e.target.value) : undefined})}
+                                    />
+                                  </div>
+
+                                  {/* 最大金额 */}
+                                  <div>
+                                    <label className="text-xs font-medium mb-1 block">最大金额</label>
+                                    <Input
+                                      type="number"
+                                      className="h-8"
+                                      placeholder="最大金额"
+                                      value={editFormData?.max_amount || ''}
+                                      onChange={(e) => setEditFormData({...editFormData!, max_amount: e.target.value ? Number(e.target.value) : undefined})}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* 操作按钮 */}
+                              <div className="flex items-center gap-2">
+                                <Button size="sm" onClick={() => handleSaveEdit(router.id)} className="h-8">
+                                  <Check className="h-4 w-4 mr-1" />
+                                  保存
+                                </Button>
+                                <Button size="sm" variant="outline" onClick={() => handleCancelEdit(router.id)} className="h-8">
+                                  <X className="h-4 w-4 mr-1" />
+                                  取消
+                                </Button>
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        // 正常显示模式行
+                        <>
                       <TableRow 
-                        key={router.id} 
                         className="cursor-pointer hover:bg-gray-50"
-                        onClick={() => toggleExpand(router.id)}
+                        onClick={() => !isNew && toggleExpand(router.id)}
                       >
                         <TableCell>
                           {expandedId === router.id ? (
@@ -217,6 +615,13 @@ export function DispatchRouterModal({ open, onOpenChange, userId, userName, user
                           )}
                         </TableCell>
                         <TableCell className="font-medium font-mono text-xs">{router.code}</TableCell>
+                        <TableCell>
+                          {router.user_id ? (
+                            <Badge variant="default" className="bg-blue-500">专属</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-gray-600">全局</Badge>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Badge variant={router.trx_type === 'cashier_payin' ? 'default' : 'secondary'} className="text-xs">
@@ -265,17 +670,60 @@ export function DispatchRouterModal({ open, onOpenChange, userId, userName, user
                           )}
                         </TableCell>
                         <TableCell className="text-xs">
-                          <div>{formatDateTime(router.created_at)}</div>
-                          {router.start_at && router.start_at > 0 && (
-                            <div className="text-muted-foreground">{formatDateTime(router.start_at)}</div>
-                          )}
+                          {formatDateTime(router.created_at)}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {router.start_at && router.start_at > 0 ? formatDateTime(router.start_at) : '-'}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => handleEdit(router, e)}
+                              className="h-7 px-2"
+                              title="编辑"
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            {router.status === 'active' ? (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={(e) => handleDisable(router, e)}
+                                className="h-7 px-2"
+                                title="禁用"
+                              >
+                                <PowerOff className="h-3 w-3" />
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={(e) => handleEnable(router, e)}
+                                className="h-7 px-2"
+                                title="启用"
+                              >
+                                <Power className="h-3 w-3" />
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => handleDelete(router, e)}
+                              className="h-7 px-2 text-red-600 hover:text-red-700"
+                              title="删除"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                       
                       {/* 展开的详情行 */}
                       {expandedId === router.id && (
                         <TableRow key={`${router.id}-detail`} className="bg-gray-50">
-                          <TableCell colSpan={11} className="p-0">
+                          <TableCell colSpan={12} className="p-0">
                             <div className="p-6 space-y-4">
                               {/* 路由详细信息 */}
                               <div>
@@ -385,8 +833,10 @@ export function DispatchRouterModal({ open, onOpenChange, userId, userName, user
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
-                  ))}
+                      </>
+                    )}
+                    </Fragment>
+                  )})}
                 </TableBody>
               </Table>
             </div>
@@ -394,5 +844,30 @@ export function DispatchRouterModal({ open, onOpenChange, userId, userName, user
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* 删除确认对话框 */}
+    <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>确认删除</AlertDialogTitle>
+          <AlertDialogDescription>
+            您确定要删除这个派单路由吗？此操作无法撤销。
+            {routerToDelete && (
+              <div className="mt-2 text-sm">
+                <div>路由编码: <span className="font-mono">{routerToDelete.code}</span></div>
+                <div>策略编码: <span className="font-mono">{routerToDelete.strategy_code}</span></div>
+              </div>
+            )}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+            删除
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 import { api, ApiResponse } from './api';
 import { Account, Contract, Router } from './merchantService';
+import { DispatchRouter } from './dispatchRouterService';
 
 // CashierTeam 信息接口 - 现在使用统一的 User 结构
 export interface CashierTeam {
@@ -17,6 +18,7 @@ export interface CashierTeam {
   accounts?: Account[];
   contracts?: Contract[];
   routers?: Router[];
+  dispatch_routers?: DispatchRouter[];
 }
 
 // CashierTeam 列表查询参数
