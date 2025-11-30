@@ -175,6 +175,19 @@ interface BackendTransactionInfo {
   mid?: string;
   product_id?: string;
   version?: number;
+  // 代付收款账户信息（用户提供）
+  upi?: string;
+  bank_code?: string;
+  bank_name?: string;
+  card_number?: string;
+  holder_name?: string;
+  holder_phone?: string;
+  holder_email?: string;
+  // Cashier信息
+  cid?: string;
+  cashier?: UserInfo;
+  cashier_account_id?: string;
+  cashier_app_account_id?: string;
   dispatch_history?: BackendDispatchHistory[];
   dispatch_records?: BackendDispatchRecord[];
 }
@@ -289,6 +302,19 @@ export interface TransactionInfo {
   refundedUsdAmount?: string;
   lastRefundedAt?: string;
   detail?: string;
+  // 代付收款账户信息（用户提供）
+  upi?: string;
+  bankCode?: string;
+  bankName?: string;
+  cardNumber?: string;
+  holderName?: string;
+  holderPhone?: string;
+  holderEmail?: string;
+  // Cashier信息
+  cid?: string;
+  cashier?: UserInfo;
+  cashierAccountId?: string;
+  cashierAppAccountId?: string;
   dispatchHistory?: DispatchHistory[];
   dispatchRecords?: DispatchRecord[];
 }
@@ -379,6 +405,19 @@ const convertBackendToFrontend = (backend: BackendTransactionInfo): TransactionI
     refundedUsdAmount: backend.refunded_usd_amount,
     lastRefundedAt: timestampToISOString(backend.last_refunded_at),
     detail: backend.detail ? JSON.stringify(backend.detail) : undefined,
+    // 代付收款账户信息
+    upi: backend.upi,
+    bankCode: backend.bank_code,
+    bankName: backend.bank_name,
+    cardNumber: backend.card_number,
+    holderName: backend.holder_name,
+    holderPhone: backend.holder_phone,
+    holderEmail: backend.holder_email,
+    // Cashier信息
+    cid: backend.cid,
+    cashier: backend.cashier,
+    cashierAccountId: backend.cashier_account_id,
+    cashierAppAccountId: backend.cashier_app_account_id,
     dispatchHistory: backend.dispatch_history?.map(h => ({
       historyId: h.history_id,
       dispatchId: h.dispatch_id,

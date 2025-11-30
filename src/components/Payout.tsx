@@ -539,36 +539,116 @@ export function PayoutRecords() {
                 </div>
               </div>
 
-              {/* 2. 收款信息模块（代付特有） */}
-              {(() => {
-                const acceptedDispatch = selectedRecord.dispatchRecords?.find(d => d.status === 'accepted' || d.status === 'pending');
-                const historyForDispatch = selectedRecord.dispatchHistory?.find(h => h.dispatchId === acceptedDispatch?.dispatchId);
-                const selectedCandidate = historyForDispatch?.candidates?.find(c => c.selected);
-                
-                if (!selectedCandidate) return null;
-                
-                return (
-                  <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">收款信息</h3>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <label className="text-sm text-muted-foreground">UPI账户</label>
-                        <p className="text-base font-semibold font-mono mt-1">{selectedCandidate.upi || '-'}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm text-muted-foreground">App账户ID</label>
-                        <p className="text-base font-semibold font-mono mt-1">{selectedCandidate.cashierAppAccountId || '-'}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm text-muted-foreground">账户ID</label>
-                        <p className="text-base font-semibold font-mono mt-1">{selectedCandidate.cashierAccountId || '-'}</p>
-                      </div>
+              {/* 2. 收款账户模块 */}
+              <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">收款账户</h3>
+                <div className="space-y-4">
+                  {selectedRecord.upi && (
+                    <div>
+                      <label className="text-sm text-muted-foreground">UPI账户</label>
+                      <p className="text-base font-semibold font-mono mt-1">{selectedRecord.upi}</p>
                     </div>
-                  </div>
-                );
-              })()}
+                  )}
+                  {(selectedRecord.bankCode || selectedRecord.bankName) && (
+                    <div className="grid grid-cols-2 gap-4">
+                      {selectedRecord.bankCode && (
+                        <div>
+                          <label className="text-sm text-muted-foreground">银行代码</label>
+                          <p className="text-base font-semibold mt-1">{selectedRecord.bankCode}</p>
+                        </div>
+                      )}
+                      {selectedRecord.bankName && (
+                        <div>
+                          <label className="text-sm text-muted-foreground">银行名称</label>
+                          <p className="text-base font-semibold mt-1">{selectedRecord.bankName}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {selectedRecord.cardNumber && (
+                    <div>
+                      <label className="text-sm text-muted-foreground">卡号</label>
+                      <p className="text-base font-semibold font-mono mt-1">{selectedRecord.cardNumber}</p>
+                    </div>
+                  )}
+                  {(selectedRecord.holderName || selectedRecord.holderPhone || selectedRecord.holderEmail) && (
+                    <div className="grid grid-cols-3 gap-4">
+                      {selectedRecord.holderName && (
+                        <div>
+                          <label className="text-sm text-muted-foreground">持卡人姓名</label>
+                          <p className="text-base font-semibold mt-1">{selectedRecord.holderName}</p>
+                        </div>
+                      )}
+                      {selectedRecord.holderPhone && (
+                        <div>
+                          <label className="text-sm text-muted-foreground">持卡人手机</label>
+                          <p className="text-base font-semibold mt-1">{selectedRecord.holderPhone}</p>
+                        </div>
+                      )}
+                      {selectedRecord.holderEmail && (
+                        <div>
+                          <label className="text-sm text-muted-foreground">持卡人邮箱</label>
+                          <p className="text-base font-semibold mt-1">{selectedRecord.holderEmail}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
 
-              {/* 3. 结算信息模块 */}
+              {/* 3. 付款账户模块 */}
+              {selectedRecord.dispatchRecords && selectedRecord.dispatchRecords.length > 0 && (
+                <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">付款账户</h3>
+                  {(() => {
+                    const acceptedDispatch = selectedRecord.dispatchRecords.find(d => d.status === 'accepted' || d.status === 'pending');
+                    if (!acceptedDispatch) return <p className="text-sm text-muted-foreground">暂无接单信息</p>;
+                    
+                    const historyForDispatch = selectedRecord.dispatchHistory?.find(h => h.dispatchId === acceptedDispatch.dispatchId);
+                    const selectedCandidate = historyForDispatch?.candidates?.find(c => c.selected);
+                    
+                    return (
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <label className="text-sm text-muted-foreground">付款UPI</label>
+                          <p className="text-base font-semibold font-mono mt-1">{selectedCandidate?.upi || '-'}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-muted-foreground">手机号</label>
+                          {selectedCandidate?.user ? (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <p className="text-base font-semibold mt-1 cursor-help underline decoration-dotted">
+                                    {selectedCandidate.user.phone || '-'}
+                                  </p>
+                                </TooltipTrigger>
+                                <TooltipContent side="right" className="max-w-xs">
+                                  <div className="space-y-1 text-xs">
+                                    <div><span className="text-gray-400">用户ID:</span> <span className="font-mono">{selectedCandidate.user.user_id}</span></div>
+                                    <div><span className="text-gray-400">姓名:</span> {selectedCandidate.user.name || '-'}</div>
+                                    <div><span className="text-gray-400">手机:</span> {selectedCandidate.user.phone || '-'}</div>
+                                    <div><span className="text-gray-400">邮箱:</span> {selectedCandidate.user.email || '-'}</div>
+                                    <div><span className="text-gray-400">组织:</span> {selectedCandidate.user.org_id || '-'}</div>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : (
+                            <p className="text-base font-semibold mt-1">-</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="text-sm text-muted-foreground">接单时间</label>
+                          <p className="text-base font-semibold mt-1">{formatDateTime(acceptedDispatch.dispatchAt)}</p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* 4. 结算信息模块 */}
               <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
                 <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">结算信息</h3>
                 <div className="space-y-4">
@@ -612,10 +692,10 @@ export function PayoutRecords() {
                 </div>
               </div>
 
-              {/* 4. 接单账户模块 */}
+              {/* 4. 付款账户模块 */}
               {selectedRecord.dispatchRecords && selectedRecord.dispatchRecords.length > 0 && (
                 <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">接单账户</h3>
+                  <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">付款账户</h3>
                   {(() => {
                     const acceptedDispatch = selectedRecord.dispatchRecords.find(d => d.status === 'accepted' || d.status === 'pending');
                     if (!acceptedDispatch) return <p className="text-sm text-muted-foreground">暂无接单信息</p>;
@@ -626,11 +706,11 @@ export function PayoutRecords() {
                     return (
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <label className="text-sm text-muted-foreground">UPI账户</label>
+                          <label className="text-sm text-muted-foreground">付款UPI</label>
                           <p className="text-base font-semibold font-mono mt-1">{selectedCandidate?.upi || '-'}</p>
                         </div>
                         <div>
-                          <label className="text-sm text-muted-foreground">用户手机号</label>
+                          <label className="text-sm text-muted-foreground">Cashier手机号</label>
                           {selectedCandidate?.user ? (
                             <TooltipProvider>
                               <Tooltip>
