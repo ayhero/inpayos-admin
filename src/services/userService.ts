@@ -45,6 +45,52 @@ export interface CreateContractParams {
   payout?: any;
 }
 
+// 用户列表查询参数
+export interface UserListParams {
+  keyword?: string; // 关键词（模糊查询用户ID、名称、邮箱等）
+  user_id?: string; // 用户ID（精确查询）
+  user_type: string; // 必须指定: merchant 或 cashier_team
+  name?: string;
+  email?: string;
+  phone?: string;
+  type?: string;
+  status?: string;
+  created_at_start?: number;
+  created_at_end?: number;
+  page: number;
+  size: number;
+}
+
+// 用户信息（列表返回）
+export interface User {
+  id: number;
+  user_id: string;
+  user_type: string;
+  type?: string;
+  org_id?: string;
+  avatar?: string;
+  status: string;
+  online_status?: string;
+  last_login_at?: number;
+  last_active_at?: number;
+  name: string;
+  phone?: string;
+  email?: string;
+  region?: string;
+  has_g2fa?: boolean;
+  created_at: number;
+  updated_at: number;
+}
+
+// 分页结果
+export interface PageResult<T> {
+  records: T[];
+  total: number;
+  size: number;
+  current: number;
+  count: number;
+}
+
 // 创建路由参数
 export interface CreateRouterParams {
   user_id: string;
@@ -87,6 +133,26 @@ export class UserService {
         code: 'ERROR',
         msg: error.message || '注册用户失败',
         data: null,
+        success: false
+      };
+    }
+  }
+
+  // 获取用户列表
+  static async listUsers(params: UserListParams): Promise<ApiResponse<PageResult<User>>> {
+    try {
+      const response = await api.post<PageResult<User>>('/user/list', params);
+      return {
+        ...response,
+        success: response.code === '0000',
+        data: response.data || { records: [], total: 0, size: params.size, current: params.page, count: 0 }
+      };
+    } catch (error: any) {
+      console.error('获取用户列表失败:', error);
+      return {
+        code: 'ERROR',
+        msg: error.message || '获取用户列表失败',
+        data: { records: [], total: 0, size: params.size, current: params.page, count: 0 },
         success: false
       };
     }
