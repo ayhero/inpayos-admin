@@ -13,7 +13,7 @@ import {
   TooltipTrigger,
 } from './ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Search, Download, RefreshCw, User, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, RefreshCw, User, ChevronDown, ChevronUp } from 'lucide-react';
 import { cashierUserService, CashierUser, CashierUserListParams, CashierUserStats } from '../services/cashierUserService';
 import { toast } from '../utils/toast';
 import { StatusBadge } from './StatusBadge';
@@ -251,9 +251,9 @@ export function CashierUserManagement() {
                 <SelectItem value="suspended">暂停</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              导出
+            <Button variant="outline" onClick={() => { setSearchTerm(''); setStatusFilter('all'); }} disabled={loading}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              重置
             </Button>
           </div>
         </CardContent>
@@ -407,7 +407,7 @@ export function CashierUserManagement() {
       {/* 详情对话框 */}
       {selectedCashier && (
         <Dialog open={!!selectedCashier} onOpenChange={() => setSelectedCashier(null)}>
-          <DialogContent className="max-w-[60vw] w-[60vw] min-w-[700px] max-h-[90vh]" style={{width: '60vw', maxWidth: '60vw'}}>
+          <DialogContent className="max-w-[95vw] sm:max-w-6xl max-h-[90vh]">
             <DialogHeader>
               <DialogTitle>出纳员详情</DialogTitle>
             </DialogHeader>
@@ -806,6 +806,12 @@ export function CashierUserManagement() {
                                 <TableRow>
                                   <TableCell colSpan={8} className="bg-muted/30">
                                     <div className="p-4 space-y-3">
+                                      <div className="flex items-start justify-between mb-3">
+                                        <div>
+                                          <h4 className="text-sm font-semibold">佣金配置详情</h4>
+                                          <p className="text-xs text-muted-foreground mt-0.5">查看该佣金配置的完整信息</p>
+                                        </div>
+                                      </div>
                                       <div className="grid grid-cols-4 gap-3 text-sm">
                                         <div>
                                           <label className="text-muted-foreground">配置ID</label>

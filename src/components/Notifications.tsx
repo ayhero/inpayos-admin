@@ -174,6 +174,10 @@ export function Notifications() {
                     <SelectItem value="failed">发送失败</SelectItem>
                   </SelectContent>
                 </Select>
+                <Button variant="outline" onClick={() => { setSearchTerm(''); setTypeFilter('all'); setStatusFilter('all'); }} disabled={loading}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  重置
+                </Button>
                 <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                   <DialogTrigger asChild>
                     <Button className="gap-2">

@@ -266,7 +266,7 @@ export function CashierAccountManagement() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
+            <div className="flex-1 md:flex-initial md:w-80">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -300,9 +300,9 @@ export function CashierAccountManagement() {
                 <SelectItem value="non-primary">非主账号</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              导出
+            <Button variant="outline" onClick={() => { setSearchTerm(''); setStatusFilter('all'); setPrimaryFilter('all'); }} disabled={loading}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              重置
             </Button>
           </div>
         </CardContent>

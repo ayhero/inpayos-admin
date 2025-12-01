@@ -109,7 +109,8 @@ export function CashierMemberAccount() {
               placeholder="车队ID（选填，不填则查全部）"
               value={teamId}
               onChange={(e) => setTeamId(e.target.value)}
-              className="max-w-xs"
+              className="w-64"
+              maxLength={50}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             />
             <Select value={currency} onValueChange={setCurrency}>
@@ -124,6 +125,10 @@ export function CashierMemberAccount() {
               </SelectContent>
             </Select>
             <Button onClick={handleSearch}>搜索</Button>
+            <Button variant="outline" onClick={() => { setTeamId(''); setCurrency('all'); }} disabled={loading}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              重置
+            </Button>
             <Button variant="outline" onClick={handleRefresh} disabled={loading}>
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               刷新

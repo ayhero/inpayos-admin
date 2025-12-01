@@ -191,6 +191,10 @@ export function DispatchStrategyManagement() {
                 ))}
               </SelectContent>
             </Select>
+            <Button variant="outline" onClick={() => setSearchParams({ code: '', name: '', status: 'all' })} disabled={loading}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              重置
+            </Button>
           </div>
         </CardContent>
       </Card>

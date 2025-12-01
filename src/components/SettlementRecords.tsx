@@ -230,9 +230,9 @@ export function SettlementRecords() {
                     <SelectItem value="daily">日结算</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" className="gap-2">
-                  <Download className="h-4 w-4" />
-                  导出
+                <Button variant="outline" onClick={() => { setSearchTerm(''); setStatusFilter('all'); setPeriodFilter('all'); }} disabled={loading}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  重置
                 </Button>
               </div>
             </CardContent>

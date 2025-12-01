@@ -344,6 +344,10 @@ export function Account() {
                 <SelectItem value="locked">锁定</SelectItem>
               </SelectContent>
             </Select>
+            <Button variant="outline" onClick={() => { setSearchTerm(''); setRoleFilter('all'); setStatusFilter('all'); }}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              重置
+            </Button>
           </div>
         </CardContent>
       </Card>

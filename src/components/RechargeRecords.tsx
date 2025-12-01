@@ -234,12 +234,12 @@ export function RechargeRecords() {
                 <SelectItem value="all">所有币种</SelectItem>
                 <SelectItem value="INR">INR</SelectItem>
                 <SelectItem value="USDT">USDT</SelectItem>
-                <SelectItem value="USD">USD</SelectItem>
+                <SelectItem value="failed">失败</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              导出
+            <Button variant="outline" onClick={() => { setSearchTerm(''); setStatusFilter('all'); }} disabled={loading}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              重置
             </Button>
           </div>
         </CardContent>

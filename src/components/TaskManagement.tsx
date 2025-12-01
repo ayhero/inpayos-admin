@@ -159,6 +159,10 @@ const TaskManagement = () => {
                 <SelectItem value="disabled">已禁用</SelectItem>
               </SelectContent>
             </Select>
+            <Button variant="outline" onClick={() => { setSearchTerm(''); setStatusFilter(''); }} disabled={loading}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              重置
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -211,6 +211,10 @@ export function Transactions() {
               <Search className="h-4 w-4" />
               搜索
             </Button>
+            <Button variant="outline" onClick={() => { setSearchTerm(''); setTrxTypeFilter(TransactionType.PAYIN); setStatusFilter('all'); }} disabled={loading}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              重置
+            </Button>
           </div>
         </CardContent>
       </Card>

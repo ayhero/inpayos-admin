@@ -136,23 +136,36 @@ export function ViewDispatchStrategyModal({
             </div>
           )}
 
-          {strategy.rules && Object.keys(strategy.rules).length > 0 && (
-            <div className="space-y-3 pt-4 border-t">
-              <h3 className="text-base font-semibold">规则配置</h3>
-              <div className="grid grid-cols-4 gap-3">
-                {Object.entries(strategy.rules).map(([key, value]) => (
-                  <div key={key} className="flex flex-col gap-2 p-3 border rounded-lg bg-gray-50">
-                    <Label className="text-sm font-medium">
-                      {RULE_FIELD_LABELS[key] || key}
-                    </Label>
-                    <div className="flex-1">
-                      {renderRuleValue(key, value)}
+          {strategy.rules && Object.keys(strategy.rules).length > 0 && (() => {
+            // 过滤空值、null、空数组和0的配置
+            const filteredRules = Object.entries(strategy.rules).filter(([key, value]) => {
+              if (value === null || value === undefined) return false;
+              if (Array.isArray(value) && value.length === 0) return false;
+              if (typeof value === 'number' && value === 0) return false;
+              if (typeof value === 'string' && value === '') return false;
+              return true;
+            });
+            
+            if (filteredRules.length === 0) return null;
+            
+            return (
+              <div className="space-y-3 pt-4 border-t">
+                <h3 className="text-base font-semibold">规则配置</h3>
+                <div className="grid grid-cols-4 gap-3">
+                  {filteredRules.map(([key, value]) => (
+                    <div key={key} className="flex flex-col gap-2 p-3 border rounded-lg bg-gray-50">
+                      <Label className="text-sm font-medium">
+                        {RULE_FIELD_LABELS[key] || key}
+                      </Label>
+                      <div className="flex-1">
+                        {renderRuleValue(key, value)}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {strategy.remark && (
             <div>

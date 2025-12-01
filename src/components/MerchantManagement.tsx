@@ -294,11 +294,14 @@ export function MerchantManagement() {
                 <SelectItem value="suspended">暂停</SelectItem>
               </SelectContent>
             </Select>
+            <Button variant="outline" onClick={() => { setSearchTerm(''); setStatusFilter('all'); }} disabled={loading}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              重置
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* 商户列表 */}
       <Card>
         <CardContent className="pt-6">
           {loading ? (
@@ -359,7 +362,6 @@ export function MerchantManagement() {
         </CardContent>
       </Card>
 
-      {/* 分页 */}
       {!loading && merchants && merchants.length > 0 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-500">

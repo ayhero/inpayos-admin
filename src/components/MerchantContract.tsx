@@ -231,9 +231,13 @@ export function MerchantContract() {
                 <SelectItem value="active">生效中</SelectItem>
                 <SelectItem value="expired">已过期</SelectItem>
                 <SelectItem value="pending">待生效</SelectItem>
-                <SelectItem value="terminated">已终止</SelectItem>
+                <SelectItem value="expired">已过期</SelectItem>
               </SelectContent>
             </Select>
+            <Button variant="outline" onClick={() => { setSearchTerm(''); setStatusFilter('all'); }} disabled={loading}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              重置
+            </Button>
           </div>
         </CardContent>
       </Card>
