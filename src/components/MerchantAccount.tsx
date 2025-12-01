@@ -147,6 +147,10 @@ export function MerchantAccount() {
                 <SelectItem value="CNY">CNY</SelectItem>
               </SelectContent>
             </Select>
+            <Button variant="outline" onClick={() => { setMerchantId(''); setCurrency('all'); }} disabled={loading}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              重置
+            </Button>
           </div>
         </CardContent>
       </Card>

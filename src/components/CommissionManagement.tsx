@@ -22,6 +22,8 @@ import { getCcyLabel, getTrxMethodLabel, CCY_OPTIONS } from '../constants/busine
 import { StatusBadge } from './StatusBadge';
 import { Label } from './ui/label';
 import { formatAmountRange, formatAmountRangeWithCurrency } from '../utils/amountRange';
+import { CommissionDisplay } from './CommissionDisplay';
+import { CommissionInput } from './CommissionInput';
 
 // 交易类型映射
 const getTrxTypeLabel = (trxType: string) => {
@@ -274,22 +276,18 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-col gap-2">
-                      <Input 
-                        className="h-8 w-24"
-                        type="number"
-                        value={createData.fixed_commission || ''} 
-                        onChange={(e) => setCreateData({...createData, fixed_commission: e.target.value})}
-                        placeholder="固定佣金"
-                      />
-                      <Input 
-                        className="h-8 w-24"
-                        type="number"
-                        value={createData.rate || ''} 
-                        onChange={(e) => setCreateData({...createData, rate: e.target.value})}
-                        placeholder="费率(%)"
-                      />
-                    </div>
+                    <CommissionInput
+                      className="h-8 w-32"
+                      value={{
+                        rate: createData.rate,
+                        fixedCommission: createData.fixed_commission
+                      }}
+                      onChange={(value) => setCreateData({
+                        ...createData,
+                        rate: value.rate,
+                        fixed_commission: value.fixedCommission
+                      })}
+                    />
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -326,7 +324,6 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
               {/* 数据行 */}
               {commissions.map((commission) => {
                 const isEditing = editingId === commission.id;
-                const displayData = isEditing ? editData : commission;
                 const isExclusive = !!commission.cid; // 是否为专属佣金
                 
                 return (
@@ -420,27 +417,24 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
                     </TableCell>
                     <TableCell>
                       {isEditing ? (
-                        <div className="flex flex-col gap-2">
-                          <Input 
-                            className="h-8 w-24"
-                            type="number"
-                            placeholder="固定佣金"
-                            value={editData.fixed_commission || ''} 
-                            onChange={(e) => setEditData({...editData, fixed_commission: e.target.value})}
-                          />
-                          <Input 
-                            className="h-8 w-24"
-                            type="number"
-                            placeholder="费率(%)"
-                            value={editData.rate || ''} 
-                            onChange={(e) => setEditData({...editData, rate: e.target.value})}
-                          />
-                        </div>
+                        <CommissionInput
+                          className="h-8 w-32"
+                          value={{
+                            rate: editData.rate,
+                            fixedCommission: editData.fixed_commission
+                          }}
+                          onChange={(value) => setEditData({
+                            ...editData,
+                            rate: value.rate,
+                            fixed_commission: value.fixedCommission
+                          })}
+                        />
                       ) : (
-                        <div className="flex flex-col">
-                          <div className="text-sm">{commission.fixed_commission ? `固定: ${commission.fixed_commission}` : '-'}</div>
-                          <div className="text-sm">{commission.rate ? `费率: ${commission.rate}%` : '-'}</div>
-                        </div>
+                        <CommissionDisplay 
+                          rate={commission.rate} 
+                          fixedCommission={commission.fixed_commission}
+                          className="text-sm font-mono"
+                        />
                       )}
                     </TableCell>
                     <TableCell>
@@ -510,47 +504,37 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
                         <div className="p-4 space-y-3">
                           <div className="bg-blue-50 dark:bg-blue-950 rounded p-3">
                             <h5 className="text-sm font-semibold mb-2">明细</h5>
-                            <div className="grid grid-cols-4 gap-3 text-xs">
+                            <div className="grid grid-cols-3 gap-3 text-xs">
                               <div>
                                 <label className="text-muted-foreground">交易类型</label>
                                 <p className="mt-1">{getTrxTypeLabel(commission.trx_type)}</p>
                               </div>
+                              {commission.trx_method && (
+                                <div>
+                                  <label className="text-muted-foreground">交易方式</label>
+                                  <p className="mt-1">{getTrxMethodLabel(commission.trx_method)}</p>
+                                </div>
+                              )}
+                              {commission.country && (
+                                <div>
+                                  <label className="text-muted-foreground">国家</label>
+                                  <p className="mt-1">{commission.country}</p>
+                                </div>
+                              )}
                               <div>
-                                <label className="text-muted-foreground">币种</label>
-                                <p className="mt-1">{getCcyLabel(commission.ccy)}</p>
+                                <label className="text-muted-foreground">金额范围</label>
+                                <p className="mt-1 font-mono">{formatAmountRangeWithCurrency(commission.ccy || '', commission.min_amount, commission.max_amount, getCcyLabel)}</p>
                               </div>
                               <div>
-                                <label className="text-muted-foreground">国家</label>
-                                <p className="mt-1">{commission.country || '全部'}</p>
+                                <label className="text-muted-foreground">佣金</label>
+                                <p className="mt-1">
+                                  <CommissionDisplay 
+                                    rate={commission.rate} 
+                                    fixedCommission={commission.fixed_commission}
+                                    className="font-mono"
+                                  />
+                                </p>
                               </div>
-                              <div>
-                                <label className="text-muted-foreground">交易方式</label>
-                                <p className="mt-1">{commission.trx_method ? getTrxMethodLabel(commission.trx_method) : '全部'}</p>
-                              </div>
-                              {commission.min_amount && (
-                                <div>
-                                  <label className="text-muted-foreground">最小金额</label>
-                                  <p className="mt-1 font-mono">{commission.min_amount}</p>
-                                </div>
-                              )}
-                              {commission.max_amount && (
-                                <div>
-                                  <label className="text-muted-foreground">最大金额</label>
-                                  <p className="mt-1 font-mono">{commission.max_amount}</p>
-                                </div>
-                              )}
-                              {commission.fixed_commission && (
-                                <div>
-                                  <label className="text-muted-foreground">固定佣金</label>
-                                  <p className="mt-1 font-mono">{commission.fixed_commission}</p>
-                                </div>
-                              )}
-                              {commission.rate && (
-                                <div>
-                                  <label className="text-muted-foreground">佣金费率</label>
-                                  <p className="mt-1 font-mono">{commission.rate}%</p>
-                                </div>
-                              )}
                               {commission.min_fee && (
                                 <div>
                                   <label className="text-muted-foreground">最小手续费</label>
@@ -594,12 +578,7 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
                 <div className="mt-3 p-3 bg-muted rounded-md text-sm space-y-1">
                   <div>交易类型: <span className="font-semibold">{getTrxTypeLabel(commissionToDelete.trx_type)}</span></div>
                   <div>币种: <span className="font-semibold">{getCcyLabel(commissionToDelete.ccy)}</span></div>
-                  {commissionToDelete.fixed_commission && (
-                    <div>固定佣金: <span className="font-mono">{commissionToDelete.fixed_commission}</span></div>
-                  )}
-                  {commissionToDelete.rate && (
-                    <div>佣金费率: <span className="font-mono">{commissionToDelete.rate}%</span></div>
-                  )}
+                  <div>佣金: <CommissionDisplay rate={commissionToDelete.rate} fixedCommission={commissionToDelete.fixed_commission} className="font-mono" /></div>
                 </div>
               )}
             </AlertDialogDescription>

@@ -17,6 +17,7 @@ import { Search, RefreshCw, User, ChevronDown, ChevronUp } from 'lucide-react';
 import { cashierUserService, CashierUser, CashierUserListParams, CashierUserStats } from '../services/cashierUserService';
 import { toast } from '../utils/toast';
 import { StatusBadge } from './StatusBadge';
+import { CommissionDisplay } from './CommissionDisplay';
 import { getCcyLabel, getTrxMethodLabel } from '../constants/business';
 import { formatAmountRangeWithCurrency } from '../utils/amountRange';
 import { UserTypeLabel } from './UserTypeLabel';
@@ -349,8 +350,8 @@ export function CashierUserManagement() {
                         <TableCell>{cashier.ccy || '-'}</TableCell>
                         <TableCell><StatusBadge status={cashier.status} type="account" /></TableCell>
                         <TableCell><StatusBadge status={cashier.online_status} type="online" /></TableCell>
-                        <TableCell><StatusBadge status={cashier.payin_status} type="account" /></TableCell>
-                        <TableCell><StatusBadge status={cashier.payout_status} type="account" /></TableCell>
+                        <TableCell><StatusBadge status={cashier.payin_status || 'inactive'} type="account" /></TableCell>
+                        <TableCell><StatusBadge status={cashier.payout_status || 'inactive'} type="account" /></TableCell>
                         <TableCell>{formatDateTime(cashier.created_at)}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
@@ -522,7 +523,7 @@ export function CashierUserManagement() {
                               <TableCell><StatusBadge status={account.status} type="account" /></TableCell>
                               <TableCell><StatusBadge status={account.verify_status || 'unverified'} type="trx" /></TableCell>
                               <TableCell>{account.ccy}</TableCell>
-                              <TableCell>{formatDateTime(account.bound_at)}</TableCell>
+                              <TableCell>{account.bound_at ? formatDateTime(account.bound_at) : '-'}</TableCell>
                               <TableCell>{formatDateTime(account.created_at)}</TableCell>
                             </TableRow>
                           ))}
@@ -604,7 +605,7 @@ export function CashierUserManagement() {
                                         </div>
                                         <div>
                                           <label className="text-muted-foreground">绑定时间</label>
-                                          <p className="mt-1">{formatDateTime(account.bound_at)}</p>
+                                          <p className="mt-1">{account.bound_at ? formatDateTime(account.bound_at) : '-'}</p>
                                         </div>
                                       </div>
 
@@ -621,7 +622,7 @@ export function CashierUserManagement() {
                                             </div>
                                             <div className="flex items-center gap-2">
                                               <span className="text-muted-foreground">币种:</span>
-                                              <span className="font-semibold text-xs">{getCcyLabel(account.payin_config.ccy)}</span>
+                                              <span className="font-semibold text-xs">{getCcyLabel(account.payin_config.ccy || '')}</span>
                                             </div>
                                             <div>
                                               <span className="text-muted-foreground">日限笔数:</span> <span className="font-semibold">{account.payin_config.max_daily_count}</span>
@@ -634,8 +635,8 @@ export function CashierUserManagement() {
                                             </div>
                                             <div className="flex items-center gap-2 flex-wrap">
                                               <span className="text-muted-foreground">支持方式:</span>
-                                              {account.payin_config.support_trx_methods?.map((method, idx) => (
-                                                <span key={idx} className="text-xs font-semibold">{getTrxMethodLabel(method)}{idx < (account.payin_config.support_trx_methods?.length || 0) - 1 ? ', ' : ''}</span>
+                                              {account.payin_config?.support_trx_methods?.map((method, idx) => (
+                                                <span key={idx} className="text-xs font-semibold">{getTrxMethodLabel(method)}{idx < (account.payin_config?.support_trx_methods?.length || 0) - 1 ? ', ' : ''}</span>
                                               ))}
                                             </div>
                                           </div>
@@ -655,7 +656,7 @@ export function CashierUserManagement() {
                                             </div>
                                             <div className="flex items-center gap-2">
                                               <span className="text-muted-foreground">币种:</span>
-                                              <span className="font-semibold text-xs">{getCcyLabel(account.payout_config.ccy)}</span>
+                                              <span className="font-semibold text-xs">{getCcyLabel(account.payout_config.ccy || '')}</span>
                                             </div>
                                             <div>
                                               <span className="text-muted-foreground">日限笔数:</span> <span className="font-semibold">{account.payout_config.max_daily_count}</span>
@@ -668,8 +669,8 @@ export function CashierUserManagement() {
                                             </div>
                                             <div className="flex items-center gap-2 flex-wrap">
                                               <span className="text-muted-foreground">支持方式:</span>
-                                              {account.payout_config.support_trx_methods?.map((method, idx) => (
-                                                <span key={idx} className="text-xs font-semibold">{getTrxMethodLabel(method)}{idx < (account.payout_config.support_trx_methods?.length || 0) - 1 ? ', ' : ''}</span>
+                                              {account.payout_config?.support_trx_methods?.map((method, idx) => (
+                                                <span key={idx} className="text-xs font-semibold">{getTrxMethodLabel(method)}{idx < (account.payout_config?.support_trx_methods?.length || 0) - 1 ? ', ' : ''}</span>
                                               ))}
                                             </div>
                                           </div>
@@ -771,14 +772,11 @@ export function CashierUserManagement() {
                                 <TableCell>{commission.country || '全部'}</TableCell>
                                 <TableCell>{commission.trx_method ? getTrxMethodLabel(commission.trx_method) : '全部'}</TableCell>
                                 <TableCell>
-                                  <div className="text-xs space-y-1">
-                                    {commission.fixed_commission && (
-                                      <div>固定: {commission.fixed_commission}</div>
-                                    )}
-                                    {commission.rate && (
-                                      <div>费率: {commission.rate}%</div>
-                                    )}
-                                  </div>
+                                  <CommissionDisplay 
+                                    rate={commission.rate} 
+                                    fixedCommission={commission.fixed_commission}
+                                    className="text-xs font-mono"
+                                  />
                                 </TableCell>
                                 <TableCell>
                                   <StatusBadge 
@@ -836,15 +834,17 @@ export function CashierUserManagement() {
                                         )}
                                         <div>
                                           <label className="text-muted-foreground">金额范围</label>
-                                          <p className="mt-1">{formatAmountRangeWithCurrency(commission.min_amount, commission.max_amount, commission.ccy || '')}</p>
+                                          <p className="mt-1">{formatAmountRangeWithCurrency(commission.ccy || '', commission.min_amount, commission.max_amount, getCcyLabel)}</p>
                                         </div>
                                         <div>
                                           <label className="text-muted-foreground">佣金</label>
-                                          <div className="mt-1 space-y-0.5">
-                                            {commission.fixed_commission && <p className="font-mono">固定: {commission.fixed_commission}</p>}
-                                            {commission.rate && <p className="font-mono">费率: {commission.rate}%</p>}
-                                            {!commission.fixed_commission && !commission.rate && <p>-</p>}
-                                          </div>
+                                          <p className="mt-1">
+                                            <CommissionDisplay 
+                                              rate={commission.rate} 
+                                              fixedCommission={commission.fixed_commission}
+                                              className="font-mono"
+                                            />
+                                          </p>
                                         </div>
                                       </div>
                                       

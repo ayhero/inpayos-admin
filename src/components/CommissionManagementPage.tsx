@@ -13,6 +13,7 @@ import { StatusBadge } from './StatusBadge';
 import { getTrxTypeBadgeConfig } from '../constants/status';
 import { CCY_OPTIONS, getCcyLabel } from '../constants/business';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
+import { CommissionDisplay } from './CommissionDisplay';
 
 // 佣金管理专用的交易类型选项（只支持 cashier_payin 和 cashier_payout）
 const COMMISSION_TRX_TYPE_OPTIONS = [
@@ -340,8 +341,7 @@ export function CommissionManagementPage() {
               <TableRow>
                 <TableHead>类型</TableHead>
                 <TableHead>金额范围</TableHead>
-                <TableHead>费率</TableHead>
-                <TableHead>固定费用</TableHead>
+                <TableHead>佣金</TableHead>
                 <TableHead>优先级</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead>创建时间</TableHead>
@@ -350,9 +350,9 @@ export function CommissionManagementPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={8} className="text-center">加载中...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center">加载中...</TableCell></TableRow>
               ) : !commissions || commissions.length === 0 ? (
-                <TableRow><TableCell colSpan={8} className="text-center">暂无数据</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center">暂无数据</TableCell></TableRow>
               ) : (
                 commissions.map(c => (
                   <TableRow key={c.id}>
@@ -363,8 +363,13 @@ export function CommissionManagementPage() {
                       })()}
                     </TableCell>
                     <TableCell>{formatAmountRange(c.min_amount, c.max_amount, c.ccy)}</TableCell>
-                    <TableCell>{c.rate !== undefined ? `${c.rate}%` : '-'}</TableCell>
-                    <TableCell>{c.fixed_commission !== undefined ? `${getCcyLabel(c.ccy)} ${c.fixed_commission}` : '-'}</TableCell>
+                    <TableCell>
+                      <CommissionDisplay 
+                        rate={c.rate} 
+                        fixedCommission={c.fixed_commission}
+                        className="text-sm font-mono"
+                      />
+                    </TableCell>
                     <TableCell>{c.priority}</TableCell>
                     <TableCell><StatusBadge status={c.status} type="account" /></TableCell>
                     <TableCell>{formatDateTime(c.created_at)}</TableCell>

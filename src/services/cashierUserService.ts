@@ -48,6 +48,11 @@ export interface CashierAccount {
   created_at: number;
   updated_at: number;
   bound_at?: number;
+  // 银行卡相关信息
+  bank_name?: string;
+  card_number?: string;
+  holder_name?: string;
+  holder_phone?: string;
 }
 
 // 余额账户信息
