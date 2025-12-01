@@ -16,6 +16,7 @@ interface UserSelectorProps {
   className?: string;
   userType: 'merchant' | 'cashier_team'; // 用户类型
   autoLoad?: boolean; // 是否自动加载（模态窗打开时）
+  disabled?: boolean; // 是否禁用
 }
 
 export const UserSelector = forwardRef<HTMLDivElement, UserSelectorProps>(function UserSelector({
@@ -25,7 +26,8 @@ export const UserSelector = forwardRef<HTMLDivElement, UserSelectorProps>(functi
   placeholder = '选择用户 (空=全局)',
   className,
   userType,
-  autoLoad = false
+  autoLoad = false,
+  disabled = false
 }, ref) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -139,6 +141,7 @@ export const UserSelector = forwardRef<HTMLDivElement, UserSelectorProps>(functi
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
     const value = e.target.value;
     setSearchTerm(value);
     setIsOpen(true);
@@ -155,6 +158,7 @@ export const UserSelector = forwardRef<HTMLDivElement, UserSelectorProps>(functi
   };
 
   const handleInputFocus = () => {
+    if (disabled) return;
     setIsOpen(true);
   };
 
@@ -168,9 +172,10 @@ export const UserSelector = forwardRef<HTMLDivElement, UserSelectorProps>(functi
           placeholder={placeholder}
           className="pr-16"
           ref={inputRef as any}
+          disabled={disabled}
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-          {selectedUser && (
+          {selectedUser && !disabled && (
             <button
               type="button"
               onClick={handleClear}
@@ -190,7 +195,7 @@ export const UserSelector = forwardRef<HTMLDivElement, UserSelectorProps>(functi
       </div>
 
       {/* 下拉列表 */}
-      {isOpen && (
+      {isOpen && !disabled && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
           {loading ? (
             <div className="flex items-center justify-center py-3">

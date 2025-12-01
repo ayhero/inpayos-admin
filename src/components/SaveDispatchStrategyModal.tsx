@@ -149,6 +149,7 @@ export function SaveDispatchStrategyModal({
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="策略名称 *"
+                disabled={!!strategy}
                 className="w-64"
               />
               <div className="flex items-center space-x-2 w-24">
@@ -176,6 +177,7 @@ export function SaveDispatchStrategyModal({
                 className="w-64"
                 userType="cashier_team"
                 autoLoad={open}
+                disabled={!!strategy}
               />
               <Input
                 type="number"
@@ -188,6 +190,7 @@ export function SaveDispatchStrategyModal({
                 value={formData.version}
                 onChange={(e) => setFormData({ ...formData, version: e.target.value })}
                 placeholder="版本"
+                disabled={!!strategy}
                 className="w-40"
               />
             </div>
