@@ -258,9 +258,9 @@ export function RefundRecords() {
                 <TableHead>金额</TableHead>
                 <TableHead>支付方式</TableHead>
                 <TableHead>状态</TableHead>
+                <TableHead>状态</TableHead>
                 <TableHead>创建时间</TableHead>
-                <TableHead>完成时间</TableHead>
-                <TableHead>操作</TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -126,10 +126,6 @@ export function CashierAccountManagement() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.page, statusFilter, primaryFilter, searchTerm]);
 
-  const handleSearch = () => {
-    // fetchCashiers 会自动触发，因为 searchTerm 是依赖项
-  };
-
   const handleRefresh = () => {
     fetchCashiers();
     fetchStats();
@@ -277,8 +273,8 @@ export function CashierAccountManagement() {
                   placeholder="搜索姓名/UPI/ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   className="pl-10"
+                  maxLength={100}
                 />
               </div>
             </div>
@@ -304,10 +300,6 @@ export function CashierAccountManagement() {
                 <SelectItem value="non-primary">非主账号</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={handleSearch} className="gap-2">
-              <Search className="h-4 w-4" />
-              搜索
-            </Button>
             <Button variant="outline" className="gap-2">
               <Download className="h-4 w-4" />
               导出
@@ -322,7 +314,7 @@ export function CashierAccountManagement() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>收银员手机号</TableHead>
+                <TableHead>出纳员</TableHead>
                 <TableHead>UPI</TableHead>
                 <TableHead>银行卡</TableHead>
                 <TableHead>主账号</TableHead>
@@ -377,13 +369,12 @@ export function CashierAccountManagement() {
                       <div className="flex gap-2">
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
+                            <span
+                              className="text-blue-600 hover:text-blue-700 cursor-pointer"
                               onClick={() => handleViewDetail(cashier)}
                             >
-                              详情
-                            </Button>
+                              查看
+                            </span>
                           </DialogTrigger>
                           <DialogContent className="max-w-[45vw] w-[45vw] min-w-[600px]" style={{width: '45vw', maxWidth: '45vw'}}>
                             <DialogHeader>

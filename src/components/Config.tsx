@@ -363,8 +363,8 @@ export function Config() {
                 <TableHead>分类</TableHead>
                 <TableHead>类型</TableHead>
                 <TableHead>状态</TableHead>
-                <TableHead>更新时间</TableHead>
-                <TableHead>操作</TableHead>
+                <TableHead>创建时间</TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

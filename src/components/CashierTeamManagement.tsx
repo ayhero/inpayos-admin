@@ -231,7 +231,7 @@ export function CashierTeamManagement() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
+            <div className="flex-1 md:flex-initial md:w-80">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -239,6 +239,7 @@ export function CashierTeamManagement() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
+                  maxLength={100}
                 />
               </div>
             </div>
@@ -270,10 +271,10 @@ export function CashierTeamManagement() {
                 <TableRow>
                   <TableHead>名称</TableHead>
                   <TableHead>邮箱</TableHead>
-                  <TableHead>手机号</TableHead>
+                  <TableHead>电话</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>成员</TableHead>
-                  <TableHead>操作</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

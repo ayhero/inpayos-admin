@@ -20,7 +20,8 @@ import {
   FileText,
   Clock,
   Smartphone,
-  Route
+  Route,
+  Percent
 } from 'lucide-react';
 
 import { AuthContainer } from './components/AuthContainer';
@@ -48,6 +49,7 @@ import TaskManagement from './components/TaskManagement';
 import { MerchantRouter } from './components/MerchantRouter';
 import { FleetRouter } from './components/FleetRouter';
 import { DispatchStrategyManagement } from './components/DispatchStrategyManagement';
+import { CommissionManagementPage } from './components/CommissionManagementPage';
 
 export default function App() {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -140,13 +142,13 @@ export default function App() {
     // },
     {
       id: 'cashier-team',
-      label: '车队管理',
+      label: '车队',
       icon: Users,
       component: CashierTeamManagement
     },
     {
       id: 'cashier',
-      label: '出纳员管理',
+      label: '出纳员',
       icon: Users,
       component: CashierUserManagement
     },
@@ -179,6 +181,12 @@ export default function App() {
       label: '车队路由',
       icon: Route,
       component: FleetRouter
+    },
+    {
+      id: 'commission-management',
+      label: '佣金管理',
+      icon: Percent,
+      component: CommissionManagementPage
     },
     {
       id: 'dispatch-strategy',
@@ -281,11 +289,11 @@ export default function App() {
               </div>
             </div>
 
-            {/* 商户 */}
+            {/* 商户管理 */}
             <div className="px-3 mb-4">
               {sidebarOpen && (
                 <h4 className="text-xs font-semibold text-muted-foreground px-3 py-2 uppercase tracking-wider">
-                  商户
+                  商户管理
                 </h4>
               )}
               <div className="space-y-1">
@@ -306,15 +314,15 @@ export default function App() {
               </div>
             </div>
 
-            {/* 车队 */}
+            {/* 车队管理 */}
             <div className="px-3 mb-4">
               {sidebarOpen && (
                 <h4 className="text-xs font-semibold text-muted-foreground px-3 py-2 uppercase tracking-wider">
-                  车队
+                  车队管理
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(7, 14).map((item) => (
+                {menuItems.slice(7, 16).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
@@ -339,7 +347,7 @@ export default function App() {
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(14, 15).map((item) => (
+                {menuItems.slice(16, 17).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${

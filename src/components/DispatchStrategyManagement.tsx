@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from './ui/badge';
 import { RefreshCw, Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { toast } from '../utils/toast';
+import { StatusBadge } from './StatusBadge';
 import { 
   dispatchStrategyService, 
   DispatchStrategy, 
@@ -29,7 +30,6 @@ const STATUS_OPTIONS = [
   { value: 'all', label: '全部状态' },
   { value: 'active', label: '启用' },
   { value: 'inactive', label: '禁用' },
-  { value: 'testing', label: '测试' },
 ];
 
 export function DispatchStrategyManagement() {
@@ -137,20 +137,6 @@ export function DispatchStrategyManagement() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      'active': 'default',
-      'inactive': 'secondary',
-      'testing': 'outline'
-    };
-    const labels: Record<string, string> = {
-      'active': '启用',
-      'inactive': '禁用',
-      'testing': '测试'
-    };
-    return <Badge variant={variants[status] || 'secondary'}>{labels[status] || status}</Badge>;
-  };
-
   const formatDate = (timestamp: number) => {
     if (!timestamp) return '-';
     return new Date(timestamp).toLocaleString('zh-CN');
@@ -163,7 +149,7 @@ export function DispatchStrategyManagement() {
         <div className="flex gap-2">
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
-            新增
+            新建
           </Button>
           <Button onClick={handleRefresh} className="gap-2" variant="outline">
             <RefreshCw className="h-4 w-4" />
@@ -176,26 +162,26 @@ export function DispatchStrategyManagement() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 flex gap-4">
-              <Input
-                placeholder="策略代码"
-                value={searchParams.code}
-                onChange={(e) => setSearchParams({ ...searchParams, code: e.target.value })}
-                className="w-full md:w-48"
-              />
-              <Input
-                placeholder="策略名称"
-                value={searchParams.name}
-                onChange={(e) => setSearchParams({ ...searchParams, name: e.target.value })}
-                className="w-full md:w-48"
-              />
-            </div>
+            <Input
+              placeholder="策略代码"
+              value={searchParams.code}
+              onChange={(e) => setSearchParams({ ...searchParams, code: e.target.value })}
+              className="w-full md:w-48"
+              maxLength={50}
+            />
+            <Input
+              placeholder="策略名称"
+              value={searchParams.name}
+              onChange={(e) => setSearchParams({ ...searchParams, name: e.target.value })}
+              className="w-full md:w-48"
+              maxLength={100}
+            />
             <Select 
               value={searchParams.status} 
               onValueChange={(value) => setSearchParams({ ...searchParams, status: value })}
             >
-              <SelectTrigger className="w-full md:w-40">
-                <SelectValue placeholder="选择状态" />
+              <SelectTrigger className="w-full md:w-32">
+                <SelectValue placeholder="状态" />
               </SelectTrigger>
               <SelectContent>
                 {STATUS_OPTIONS.map(option => (
@@ -225,7 +211,7 @@ export function DispatchStrategyManagement() {
                   <TableHead>状态</TableHead>
                   <TableHead>优先级</TableHead>
                   <TableHead>创建时间</TableHead>
-                  <TableHead className="text-right">操作</TableHead>
+                  <TableHead className="text-right"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -248,7 +234,7 @@ export function DispatchStrategyManagement() {
                       <TableCell>{strategy.name}</TableCell>
                       <TableCell>{strategy.version}</TableCell>
                       <TableCell>{strategy.user_id || '-'}</TableCell>
-                      <TableCell>{getStatusBadge(strategy.status)}</TableCell>
+                      <TableCell><StatusBadge status={strategy.status} type="account" /></TableCell>
                       <TableCell>{strategy.priority}</TableCell>
                       <TableCell className="text-sm text-gray-600">
                         {formatDate(strategy.created_at)}
@@ -259,6 +245,8 @@ export function DispatchStrategyManagement() {
                             variant="ghost" 
                             size="sm"
                             onClick={() => handleView(strategy)}
+                            className="text-blue-600 hover:text-blue-700"
+                            title="查看"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -266,6 +254,8 @@ export function DispatchStrategyManagement() {
                             variant="ghost" 
                             size="sm"
                             onClick={() => handleEdit(strategy)}
+                            className="text-blue-600 hover:text-blue-700"
+                            title="编辑"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -273,8 +263,10 @@ export function DispatchStrategyManagement() {
                             variant="ghost" 
                             size="sm"
                             onClick={() => handleDeleteClick(strategy)}
+                            className="text-red-600 hover:text-red-700"
+                            title="删除"
                           >
-                            <Trash2 className="h-4 w-4 text-red-500" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>

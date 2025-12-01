@@ -212,7 +212,7 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
                 <TableHead>费率(%)</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead>优先级</TableHead>
-                <TableHead>操作</TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -251,6 +251,7 @@ export function AppAccountManagement() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
+                  maxLength={100}
                 />
               </div>
             </div>
@@ -309,9 +310,9 @@ export function AppAccountManagement() {
                   <TableHead>账户</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>验证状态</TableHead>
-                  <TableHead>账户数</TableHead>
-                  <TableHead>创建时间</TableHead>
-                  <TableHead>操作</TableHead>
+                  <TableHead>状态</TableHead>
+                  <TableHead>最后更新时间</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

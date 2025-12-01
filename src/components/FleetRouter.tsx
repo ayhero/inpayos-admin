@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from './ui/alert-dialog';
 import { routerService, RouterData, RouterListParams, CreateRouterParams } from '../services/routerService';
-import { Search, RefreshCw, Plus, Edit, Trash2, Power, PowerOff } from 'lucide-react';
+import { RefreshCw, Plus, Edit, Trash2, Power, PowerOff } from 'lucide-react';
 import { toast } from '../utils/toast';
 import { formatAmountRangeWithCurrency } from '../utils/amountRange';
 import { 
@@ -253,10 +253,11 @@ export function FleetRouter() {
     fetchRouters();
   }, [currentPage]);
 
-  const handleSearch = () => {
+  // Auto-search when searchParams change
+  useEffect(() => {
     setCurrentPage(1);
     fetchRouters();
-  };
+  }, [searchParams.tid, searchParams.trx_type, searchParams.channel_code, searchParams.status]);
 
   const handleReset = () => {
     setSearchParams({
@@ -279,7 +280,7 @@ export function FleetRouter() {
         <h1 className="text-2xl font-bold">车队路由</h1>
         <Button onClick={handleAdd} className="gap-2">
           <Plus className="h-4 w-4" />
-          新增
+          新建
         </Button>
       </div>
 
@@ -292,6 +293,7 @@ export function FleetRouter() {
                 placeholder="车队ID"
                 value={searchParams.tid}
                 onChange={(e) => setSearchParams({ ...searchParams, tid: e.target.value })}
+                maxLength={50}
               />
             </div>
             <Select
@@ -315,6 +317,7 @@ export function FleetRouter() {
                 placeholder="通道编码"
                 value={searchParams.channel_code}
                 onChange={(e) => setSearchParams({ ...searchParams, channel_code: e.target.value })}
+                maxLength={50}
               />
             </div>
             <Select
@@ -333,10 +336,6 @@ export function FleetRouter() {
                 ))}
               </SelectContent>
             </Select>
-            <Button onClick={handleSearch} disabled={loading}>
-              <Search className="h-4 w-4 mr-2" />
-              搜索
-            </Button>
             <Button variant="outline" onClick={handleReset} disabled={loading}>
               <RefreshCw className="h-4 w-4 mr-2" />
               重置
@@ -346,8 +345,8 @@ export function FleetRouter() {
       </Card>
 
       {/* 路由列表 */}
-      <div>
-        <div className="p-6">
+      <Card>
+        <CardContent className="pt-6">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -361,7 +360,7 @@ export function FleetRouter() {
                   <TableHead>优先级</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>创建时间</TableHead>
-                  <TableHead className="text-right">操作</TableHead>
+                  <TableHead className="text-right"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -402,41 +401,41 @@ export function FleetRouter() {
                           {router.status === 'active' ? (
                             <Button
                               size="sm"
-                              variant="outline"
+                              variant="ghost"
                               onClick={() => handleDisable(router)}
-                              className="text-orange-600 hover:text-orange-700 hover:border-orange-600"
+                              className="text-orange-600 hover:text-orange-700"
+                              title="禁用"
                             >
-                              <PowerOff className="h-3 w-3 mr-1" />
-                              禁用
+                              <PowerOff className="h-4 w-4" />
                             </Button>
                           ) : (
                             <Button
                               size="sm"
-                              variant="outline"
+                              variant="ghost"
                               onClick={() => handleEnable(router)}
-                              className="text-green-600 hover:text-green-700 hover:border-green-600"
+                              className="text-green-600 hover:text-green-700"
+                              title="启用"
                             >
-                              <Power className="h-3 w-3 mr-1" />
-                              启用
+                              <Power className="h-4 w-4" />
                             </Button>
                           )}
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant="ghost"
                             onClick={() => handleEdit(router)}
-                            className="text-blue-600 hover:text-blue-700 hover:border-blue-600"
+                            className="text-blue-600 hover:text-blue-700"
+                            title="编辑"
                           >
-                            <Edit className="h-3 w-3 mr-1" />
-                            编辑
+                            <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant="ghost"
                             onClick={() => handleDelete(router)}
-                            className="text-red-600 hover:text-red-700 hover:border-red-600"
+                            className="text-red-600 hover:text-red-700"
+                            title="删除"
                           >
-                            <Trash2 className="h-3 w-3 mr-1" />
-                            删除
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -445,9 +444,8 @@ export function FleetRouter() {
                 )}
               </TableBody>
             </Table>
-        </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mt-4">
             <div className="text-sm text-muted-foreground">
               共 {total} 条记录
             </div>
@@ -475,7 +473,8 @@ export function FleetRouter() {
               </Button>
             </div>
           </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="!w-[40vw] !max-w-[40vw] max-h-[90vh] overflow-y-auto">

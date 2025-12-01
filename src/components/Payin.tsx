@@ -134,13 +134,8 @@ export function PayinRecords() {
   // 当筛选条件变化时，重置到第一页并重新查询
   useEffect(() => {
     setPagination(prev => ({ ...prev, page: 1 }));
-    // 由于分页变化会触发上面的useEffect，所以不需要直接调用fetchRecords
-  }, [statusFilter]);
-
-  const handleSearch = () => {
-    setPagination(prev => ({ ...prev, page: 1 }));
     fetchRecords();
-  };
+  }, [statusFilter, searchTerm]);
 
   const getStatusBadge = (status: TransactionStatus) => {
     const displayName = getStatusDisplayName(status);
@@ -338,15 +333,15 @@ export function PayinRecords() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 md:flex-initial md:w-64">
+            <div className="flex-1 md:flex-initial md:w-80">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="搜索交易ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   className="pl-10"
+                  maxLength={100}
                 />
               </div>
             </div>
@@ -362,10 +357,6 @@ export function PayinRecords() {
                 <SelectItem value="cancelled">已取消</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={handleSearch} className="gap-2">
-              <Search className="h-4 w-4" />
-              搜索
-            </Button>
             <Button variant="outline" className="gap-2">
               <Download className="h-4 w-4" />
               导出
@@ -388,7 +379,7 @@ export function PayinRecords() {
                 <TableHead>状态</TableHead>
                 <TableHead>创建时间</TableHead>
                 <TableHead>完成时间</TableHead>
-                <TableHead>操作</TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -417,33 +408,28 @@ export function PayinRecords() {
                     <TableCell>{formatDateTime(record.createdAt)}</TableCell>
                     <TableCell>{record.completedAt ? formatDateTime(record.completedAt) : '-'}</TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
+                      <div className="flex gap-3">
+                        <span
+                          className="text-blue-600 hover:text-blue-700 cursor-pointer"
                           onClick={() => handleViewDetail(record)}
                         >
                           详情
-                        </Button>
+                        </span>
                         {record.status === TransactionStatus.FAILED && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
+                          <span
+                            className="text-blue-600 hover:text-blue-700 cursor-pointer"
                             onClick={() => handleRetryNotification(record.trxID)}
-                            className="gap-1"
                           >
-                            <RefreshCw className="h-4 w-4" />
-                          </Button>
+                            重试
+                          </span>
                         )}
                         {record.status === TransactionStatus.PENDING && (
-                          <Button 
-                            variant="default" 
-                            size="sm"
+                          <span
+                            className="text-green-600 hover:text-green-700 cursor-pointer"
                             onClick={() => handleConfirmTransaction(record)}
-                            className="gap-1"
                           >
                             确认
-                          </Button>
+                          </span>
                         )}
                       </div>
                     </TableCell>

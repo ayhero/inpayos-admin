@@ -263,8 +263,8 @@ export function Notifications() {
                     <TableHead>标题</TableHead>
                     <TableHead>接收人</TableHead>
                     <TableHead>状态</TableHead>
-                    <TableHead>发送时间</TableHead>
-                    <TableHead>操作</TableHead>
+                    <TableHead>创建时间</TableHead>
+                    <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -4,6 +4,11 @@ import { cronToChineseDescription, formatTimestamp, getStatusBadge } from '../ut
 import { getHandlerLabel } from '../constants/taskHandlers';
 import { toast } from '../utils/toast';
 import { Search, Play, Pause, RefreshCw, Eye, Edit } from 'lucide-react';
+import { Card, CardContent } from './ui/card';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 
 const TaskManagement = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -119,41 +124,44 @@ const TaskManagement = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">定时任务管理</h1>
-        <p className="text-gray-600">管理系统定时任务的执行状态和配置</p>
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">定时任务</h1>
+        <Button onClick={fetchTasks} variant="outline" className="gap-2">
+          <RefreshCw className="h-4 w-4" />
+          刷新
+        </Button>
       </div>
 
       {/* 搜索和筛选 */}
-      <div className="mb-6 flex gap-4">
-        <div className="md:w-64 relative">
-          <input
-            type="text"
-            placeholder="搜索任务名称或Handler Key"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-40"
-        >
-          <option value="">全部状态</option>
-          <option value="enabled">已启用</option>
-          <option value="disabled">已禁用</option>
-        </select>
-        <button
-          onClick={fetchTasks}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          刷新
-        </button>
-      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 md:flex-initial md:w-80">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="搜索任务名称或Handler Key..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                  maxLength={100}
+                />
+              </div>
+            </div>
+            <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}>
+              <SelectTrigger className="w-full md:w-40">
+                <SelectValue placeholder="状态" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部状态</SelectItem>
+                <SelectItem value="enabled">已启用</SelectItem>
+                <SelectItem value="disabled">已禁用</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 任务列表 */}
       {loading ? (
@@ -243,15 +251,12 @@ const TaskManagement = () => {
       )}
 
       {/* 详情对话框 */}
-      {detailDialog.open && detailDialog.task && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setDetailDialog({ open: false, task: null })}>
-          <div className="bg-white rounded-lg p-6 max-w-3xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-start mb-6">
-              <h2 className="text-xl font-bold">任务详情</h2>
-              <button onClick={() => setDetailDialog({ open: false, task: null })} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">
-                ×
-              </button>
-            </div>
+      <Dialog open={detailDialog.open} onOpenChange={(open) => !open && setDetailDialog({ open: false, task: null })}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>任务详情</DialogTitle>
+          </DialogHeader>
+          {detailDialog.task && (
             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
               <div>
                 <label className="text-sm text-muted-foreground">任务ID</label>
@@ -319,53 +324,43 @@ const TaskManagement = () => {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* 编辑Cron对话框 */}
-      {editDialog.open && editDialog.task && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setEditDialog({ open: false, task: null, cron: '' })}>
-          <div className="bg-white rounded-lg p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-bold">{editDialog.task.name}</h2>
-              <button onClick={() => setEditDialog({ open: false, task: null, cron: '' })} className="text-gray-500 hover:text-gray-700">
-                ✕
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <input
-                  type="text"
-                  value={editDialog.cron}
-                  onChange={(e) => setEditDialog({ ...editDialog, cron: e.target.value })}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSaveCron();
-                    }
-                  }}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="0 0 * * * *"
-                />
-              </div>
-              <div className="flex gap-2 justify-end">
-                <button
-                  onClick={() => setEditDialog({ open: false, task: null, cron: '' })}
-                  className="px-4 py-2 border rounded-lg hover:bg-gray-50"
-                >
-                  取消
-                </button>
-                <button
-                  onClick={handleSaveCron}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                >
-                  保存
-                </button>
-              </div>
+      <Dialog open={editDialog.open} onOpenChange={(open) => !open && setEditDialog({ open: false, task: null, cron: '' })}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editDialog.task?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Input
+                value={editDialog.cron}
+                onChange={(e) => setEditDialog({ ...editDialog, cron: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSaveCron();
+                  }
+                }}
+                placeholder="0 0 * * * *"
+              />
             </div>
           </div>
-        </div>
-      )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditDialog({ open: false, task: null, cron: '' })}
+            >
+              取消
+            </Button>
+            <Button onClick={handleSaveCron}>
+              保存
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

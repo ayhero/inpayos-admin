@@ -126,6 +126,7 @@ export function MerchantAccount() {
                   setMerchantId(e.target.value);
                   setPagination(prev => ({ ...prev, page: 1 }));
                 }}
+                maxLength={50}
               />
             </div>
             <Select 
@@ -168,8 +169,8 @@ export function MerchantAccount() {
                   <TableHead>冻结余额</TableHead>
                   <TableHead>保证金</TableHead>
                   <TableHead>状态</TableHead>
-                  <TableHead>更新时间</TableHead>
-                  <TableHead>操作</TableHead>
+                  <TableHead>最后更新时间</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

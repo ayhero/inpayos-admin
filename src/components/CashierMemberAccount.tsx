@@ -149,8 +149,8 @@ export function CashierMemberAccount() {
                   <TableHead className="text-right">可用余额</TableHead>
                   <TableHead className="text-right">冻结余额</TableHead>
                   <TableHead>状态</TableHead>
-                  <TableHead>更新时间</TableHead>
-                  <TableHead>操作</TableHead>
+                  <TableHead>最后更新时间</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

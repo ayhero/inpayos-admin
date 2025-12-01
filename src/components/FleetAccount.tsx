@@ -136,6 +136,7 @@ export function FleetAccount() {
                   setFleetId(e.target.value);
                   setPagination(prev => ({ ...prev, page: 1 }));
                 }}
+                maxLength={50}
               />
             </div>
             <Select 
@@ -179,8 +180,8 @@ export function FleetAccount() {
                   <TableHead>冻结余额</TableHead>
                   <TableHead>保证金</TableHead>
                   <TableHead>状态</TableHead>
-                  <TableHead>创建时间</TableHead>
-                  <TableHead>操作</TableHead>
+                  <TableHead>最后更新时间</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -196,9 +197,12 @@ export function FleetAccount() {
                     <TableCell>{getStatusBadge(account.status)}</TableCell>
                     <TableCell>{formatDateTime(account.created_at)}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" onClick={() => handleViewDetail(account)}>
+                      <span
+                        className="text-blue-600 hover:text-blue-700 cursor-pointer"
+                        onClick={() => handleViewDetail(account)}
+                      >
                         查看
-                      </Button>
+                      </span>
                     </TableCell>
                   </TableRow>
                 ))}

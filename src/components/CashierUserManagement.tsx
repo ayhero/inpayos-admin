@@ -18,6 +18,7 @@ import { cashierUserService, CashierUser, CashierUserListParams, CashierUserStat
 import { toast } from '../utils/toast';
 import { StatusBadge } from './StatusBadge';
 import { getCcyLabel, getTrxMethodLabel } from '../constants/business';
+import { formatAmountRangeWithCurrency } from '../utils/amountRange';
 import { CommissionManagement } from './CommissionManagement';
 
 // 交易类型中文映射
@@ -126,9 +127,10 @@ export function CashierUserManagement() {
     fetchStats();
   }, [fetchCashiers, fetchStats]);
 
-  const handleSearch = () => {
+  // Auto-search when searchTerm changes
+  useEffect(() => {
     setPagination(prev => ({ ...prev, page: 1 }));
-  };
+  }, [searchTerm, statusFilter]);
 
   const handleRefresh = () => {
     fetchCashiers();
@@ -160,7 +162,7 @@ export function CashierUserManagement() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">出纳员用户</h1>
+        <h1 className="text-2xl font-bold">出纳员</h1>
         <Button onClick={handleRefresh} className="gap-2" variant="outline">
           <RefreshCw className="h-4 w-4" />
           刷新
@@ -226,15 +228,15 @@ export function CashierUserManagement() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
+            <div className="flex-1 md:flex-initial md:w-80">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="搜索用户名/用户ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   className="pl-10"
+                  maxLength={100}
                 />
               </div>
             </div>
@@ -249,10 +251,6 @@ export function CashierUserManagement() {
                 <SelectItem value="suspended">暂停</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={handleSearch} className="gap-2">
-              <Search className="h-4 w-4" />
-              搜索
-            </Button>
             <Button variant="outline" className="gap-2">
               <Download className="h-4 w-4" />
               导出
@@ -285,7 +283,7 @@ export function CashierUserManagement() {
                       <TableHead>代收</TableHead>
                       <TableHead>代付</TableHead>
                       <TableHead>创建时间</TableHead>
-                      <TableHead>操作</TableHead>
+                      <TableHead></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -743,7 +741,7 @@ export function CashierUserManagement() {
                         <TableHeader>
                           <TableRow>
                             <TableHead>交易类型</TableHead>
-                            <TableHead>币种/金额范围</TableHead>
+                            <TableHead>交易金额</TableHead>
                             <TableHead>国家</TableHead>
                             <TableHead>交易方式</TableHead>
                             <TableHead>佣金计算</TableHead>
@@ -762,14 +760,12 @@ export function CashierUserManagement() {
                                   </Badge>
                                 </TableCell>
                                 <TableCell>
-                                  <div className="space-y-1">
-                                    <div className="font-semibold">{getCcyLabel(commission.ccy)}</div>
-                                    {(commission.min_amount || commission.max_amount) && (
-                                      <div className="text-xs text-muted-foreground">
-                                        {commission.min_amount || '0'} - {commission.max_amount || '∞'}
-                                      </div>
-                                    )}
-                                  </div>
+                                  {formatAmountRangeWithCurrency(
+                                    commission.ccy,
+                                    commission.min_amount,
+                                    commission.max_amount,
+                                    getCcyLabel
+                                  )}
                                 </TableCell>
                                 <TableCell>{commission.country || '全部'}</TableCell>
                                 <TableCell>{commission.trx_method ? getTrxMethodLabel(commission.trx_method) : '全部'}</TableCell>
@@ -787,7 +783,6 @@ export function CashierUserManagement() {
                                   <StatusBadge 
                                     status={commission.status} 
                                     type="account"
-                                    label={commission.status === 'active' ? '启用' : '禁用'}
                                   />
                                 </TableCell>
                                 <TableCell>{commission.priority}</TableCell>

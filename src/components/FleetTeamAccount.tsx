@@ -71,12 +71,12 @@ export function FleetTeamAccount() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.page, fleetId, currency]);
 
-  const handleRefresh = () => {
-    fetchAccounts();
-  };
-
-  const handleSearch = () => {
+  // Auto-search when fleetId or currency changes
+  useEffect(() => {
     setPagination(prev => ({ ...prev, page: 1 }));
+  }, [fleetId, currency]);
+
+  const handleRefresh = () => {
     fetchAccounts();
   };
 
@@ -108,7 +108,7 @@ export function FleetTeamAccount() {
               value={fleetId}
               onChange={(e) => setFleetId(e.target.value)}
               className="max-w-xs"
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              maxLength={50}
             />
             <Select value={currency} onValueChange={setCurrency}>
               <SelectTrigger className="w-[180px]">
@@ -121,7 +121,6 @@ export function FleetTeamAccount() {
                 <SelectItem value="CNY">CNY</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={handleSearch}>搜索</Button>
             <Button variant="outline" onClick={handleRefresh} disabled={loading}>
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               刷新
@@ -146,8 +145,8 @@ export function FleetTeamAccount() {
                   <TableHead className="text-right">可用余额</TableHead>
                   <TableHead className="text-right">冻结余额</TableHead>
                   <TableHead>状态</TableHead>
-                  <TableHead>更新时间</TableHead>
-                  <TableHead>操作</TableHead>
+                  <TableHead>最后更新时间</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
