@@ -425,7 +425,7 @@ export function DispatchRouterModal({ open, onOpenChange, userId, userName, user
                     <TableHead>状态</TableHead>
                     <TableHead>创建时间</TableHead>
                     <TableHead>生效时间</TableHead>
-                    <TableHead className="w-[200px]">操作</TableHead>
+                    <TableHead className="w-[200px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

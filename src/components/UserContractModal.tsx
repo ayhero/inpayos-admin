@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Fragment } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -345,50 +345,49 @@ export function UserContractModal({ open, onOpenChange, userId, userName, userTy
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12"></TableHead>
                   <TableHead>合同ID</TableHead>
                   <TableHead>生效时间</TableHead>
                   <TableHead>过期时间</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>创建时间</TableHead>
-                  <TableHead>操作</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {contracts.map((contract) => (
-                  <>
-                    <TableRow key={contract.id}>
+                  <Fragment key={contract.id}>
+                    <TableRow 
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => toggleExpand(contract.contract_id)}
+                    >
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        {expandedContractId === contract.contract_id ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </TableCell>
                       <TableCell className="font-mono text-xs">{contract.contract_id}</TableCell>
                       <TableCell>{formatDateTime(contract.start_at)}</TableCell>
                       <TableCell>{contract.expired_at ? formatDateTime(contract.expired_at) : '永不过期'}</TableCell>
                       <TableCell><StatusBadge status={contract.status} type="trx" /></TableCell>
                       <TableCell>{formatDateTime(contract.created_at)}</TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => toggleExpand(contract.contract_id)}
-                        >
-                          {expandedContractId === contract.contract_id ? (
-                            <ChevronUp className="h-4 w-4" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </TableCell>
+                      <TableCell></TableCell>
                     </TableRow>
                     {expandedContractId === contract.contract_id && (
                       <TableRow>
-                        <TableCell colSpan={6} className="bg-gray-50 p-4">
+                        <TableCell colSpan={7} className="bg-gray-50 p-4">
                           <ContractDetail contract={contract} />
                         </TableCell>
                       </TableRow>
                     )}
-                  </>
+                  </Fragment>
                 ))}
 
                 {!loading && !isAdding && contracts.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       暂无合同数据
                     </TableCell>
                   </TableRow>

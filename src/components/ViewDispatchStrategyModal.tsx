@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Badge } from './ui/badge';
 import { Label } from './ui/label';
 import { DispatchStrategy } from '../services/dispatchStrategyService';
@@ -89,6 +89,7 @@ export function ViewDispatchStrategyModal({
       <DialogContent className="max-w-[95vw] sm:max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>派单策略详情</DialogTitle>
+          <DialogDescription>查看派单策略的完整配置信息</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-4">

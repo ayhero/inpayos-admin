@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import {
   Tooltip,
   TooltipContent,
@@ -19,6 +19,7 @@ import { toast } from '../utils/toast';
 import { StatusBadge } from './StatusBadge';
 import { getCcyLabel, getTrxMethodLabel } from '../constants/business';
 import { formatAmountRangeWithCurrency } from '../utils/amountRange';
+import { UserTypeLabel } from './UserTypeLabel';
 import { CommissionManagement } from './CommissionManagement';
 
 // 交易类型中文映射
@@ -409,7 +410,7 @@ export function CashierUserManagement() {
         <Dialog open={!!selectedCashier} onOpenChange={() => setSelectedCashier(null)}>
           <DialogContent className="max-w-[95vw] sm:max-w-6xl max-h-[90vh]">
             <DialogHeader>
-              <DialogTitle>出纳员详情</DialogTitle>
+              <DialogTitle>出纳员</DialogTitle>
             </DialogHeader>
             <div className="space-y-6 py-4 max-h-[75vh] overflow-y-auto">
               {/* 基本信息 - 顶部模块 */}
@@ -812,7 +813,7 @@ export function CashierUserManagement() {
                                           <p className="text-xs text-muted-foreground mt-0.5">查看该佣金配置的完整信息</p>
                                         </div>
                                       </div>
-                                      <div className="grid grid-cols-4 gap-3 text-sm">
+                                      <div className="grid grid-cols-3 gap-3 text-sm">
                                         <div>
                                           <label className="text-muted-foreground">配置ID</label>
                                           <p className="font-mono mt-1">{commission.id}</p>
@@ -821,29 +822,29 @@ export function CashierUserManagement() {
                                           <label className="text-muted-foreground">交易类型</label>
                                           <p className="mt-1">{getTrxTypeLabel(commission.trx_type)}</p>
                                         </div>
-                                        <div>
-                                          <label className="text-muted-foreground">币种</label>
-                                          <p className="mt-1">{getCcyLabel(commission.ccy)}</p>
-                                        </div>
-                                        <div>
-                                          <label className="text-muted-foreground">国家</label>
-                                          <p className="mt-1">{commission.country || '全部'}</p>
-                                        </div>
-                                        <div>
-                                          <label className="text-muted-foreground">交易方式</label>
-                                          <p className="mt-1">{commission.trx_method ? getTrxMethodLabel(commission.trx_method) : '全部'}</p>
-                                        </div>
+                                        {commission.trx_method && (
+                                          <div>
+                                            <label className="text-muted-foreground">交易方式</label>
+                                            <p className="mt-1">{getTrxMethodLabel(commission.trx_method)}</p>
+                                          </div>
+                                        )}
+                                        {commission.country && (
+                                          <div>
+                                            <label className="text-muted-foreground">国家</label>
+                                            <p className="mt-1">{commission.country}</p>
+                                          </div>
+                                        )}
                                         <div>
                                           <label className="text-muted-foreground">金额范围</label>
-                                          <p className="mt-1">{commission.min_amount || '0'} - {commission.max_amount || '∞'}</p>
+                                          <p className="mt-1">{formatAmountRangeWithCurrency(commission.min_amount, commission.max_amount, commission.ccy || '')}</p>
                                         </div>
                                         <div>
-                                          <label className="text-muted-foreground">固定佣金</label>
-                                          <p className="mt-1 font-mono">{commission.fixed_commission || '-'}</p>
-                                        </div>
-                                        <div>
-                                          <label className="text-muted-foreground">佣金费率</label>
-                                          <p className="mt-1 font-mono">{commission.rate ? `${commission.rate}%` : '-'}</p>
+                                          <label className="text-muted-foreground">佣金</label>
+                                          <div className="mt-1 space-y-0.5">
+                                            {commission.fixed_commission && <p className="font-mono">固定: {commission.fixed_commission}</p>}
+                                            {commission.rate && <p className="font-mono">费率: {commission.rate}%</p>}
+                                            {!commission.fixed_commission && !commission.rate && <p>-</p>}
+                                          </div>
                                         </div>
                                       </div>
                                       
@@ -908,9 +909,12 @@ export function CashierUserManagement() {
         <Dialog open={!!commissionCashier} onOpenChange={() => setCommissionCashier(null)}>
           <DialogContent className="max-w-[80vw] w-[80vw] min-w-[900px] max-h-[90vh]" style={{width: '80vw', maxWidth: '80vw'}}>
             <DialogHeader>
-              <DialogTitle>
-                佣金
-              </DialogTitle>
+              <DialogTitle>佣金配置</DialogTitle>
+              <DialogDescription className="flex items-center gap-2 pt-1">
+                <UserTypeLabel type="cashier" />
+                <span className="font-medium">{commissionCashier.name}</span>
+                <span className="text-muted-foreground">({commissionCashier.user_id})</span>
+              </DialogDescription>
             </DialogHeader>
             <div className="max-h-[75vh] overflow-y-auto">
               <CommissionManagement 

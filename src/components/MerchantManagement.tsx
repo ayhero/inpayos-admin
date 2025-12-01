@@ -311,7 +311,7 @@ export function MerchantManagement() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow key="merchant-header">
+                <TableRow>
                   <TableHead>商户</TableHead>
                   <TableHead>邮箱</TableHead>
                   <TableHead>电话</TableHead>
@@ -322,7 +322,7 @@ export function MerchantManagement() {
               </TableHeader>
               <TableBody>
                 {merchants.map((merchant) => (
-                  <TableRow key={merchant.id}>
+                  <TableRow key={merchant.user_id}>
                     <TableCell>
                       <div className="font-semibold">{merchant.name}</div>
                       <div className="font-mono text-xs text-muted-foreground">{merchant.user_id}</div>

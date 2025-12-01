@@ -16,6 +16,7 @@ import { UserRouterModal } from './UserRouterModal';
 import { DispatchRouterModal } from './DispatchRouterModal';
 import { StatusBadge } from './StatusBadge';
 import { getChannelCodeLabel, getCcyLabel, getCountryLabel } from '../constants/business';
+import { formatAmountRange } from '../utils/amountRange';
 import { CreateUserModal } from './CreateUserModal';
 import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip';
 

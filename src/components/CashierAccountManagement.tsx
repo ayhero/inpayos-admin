@@ -378,113 +378,124 @@ export function CashierAccountManagement() {
                           </DialogTrigger>
                           <DialogContent className="max-w-[45vw] w-[45vw] min-w-[600px]" style={{width: '45vw', maxWidth: '45vw'}}>
                             <DialogHeader>
-                              <DialogTitle>Cashier详情</DialogTitle>
+                              <DialogTitle>出纳员账户</DialogTitle>
                             </DialogHeader>
                             {selectedCashier && (
-                              <div className="grid grid-cols-2 gap-4 py-4 max-h-[500px] overflow-y-auto">
-                                <div>
-                                  <label className="text-sm text-muted-foreground">Account ID</label>
-                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.account_id}</p>
+                              <div className="space-y-6 py-4 max-h-[500px] overflow-y-auto">
+                                {/* 基本信息 */}
+                                <div className="grid grid-cols-3 gap-4">
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">姓名</label>
+                                    <p className="text-base font-semibold mt-1">{selectedCashier.user?.name || '-'}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">电话</label>
+                                    <p className="text-base font-semibold mt-1">{selectedCashier.user?.phone || '-'}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">邮箱</label>
+                                    <p className="text-base font-semibold mt-1">{selectedCashier.user?.email || '-'}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">车队ID</label>
+                                    <p className="text-base font-semibold mt-1">{selectedCashier.user?.org_id || '-'}</p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">User ID</label>
-                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.user_id}</p>
+
+                                {/* 账户信息 */}
+                                <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">账户类型</label>
+                                    <p className="text-base font-semibold mt-1">{selectedCashier.type === 'private' ? '主账号' : '共享账号'}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">APP类型</label>
+                                    <p className="text-base font-semibold mt-1">{selectedCashier.app_type}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">APP账号ID</label>
+                                    <p className="text-base font-semibold font-mono mt-1">{selectedCashier.app_account_id || '-'}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">UPI ID</label>
+                                    <p className="text-base font-semibold font-mono mt-1">{selectedCashier.upi || '-'}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">UPI提供商</label>
+                                    <p className="text-base font-semibold mt-1">{selectedCashier.provider || '-'}</p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">收银员姓名</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.user?.name || '-'}</p>
+
+                                {/* 银行信息 */}
+                                <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">银行代码</label>
+                                    <p className="text-base font-semibold mt-1">{selectedCashier.bank_code || '-'}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">银行名称</label>
+                                    <p className="text-base font-semibold mt-1">{selectedCashier.bank_name || '-'}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">银行卡号</label>
+                                    <p className="text-base font-semibold font-mono mt-1">{selectedCashier.card_number || '-'}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">持卡人姓名</label>
+                                    <p className="text-base font-semibold mt-1">{selectedCashier.holder_name}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">持卡人电话</label>
+                                    <p className="text-base font-semibold mt-1">{selectedCashier.holder_phone}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">持卡人邮箱</label>
+                                    <p className="text-base font-semibold mt-1">{selectedCashier.holder_email || '-'}</p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">收银员电话</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.user?.phone || '-'}</p>
+
+                                {/* 状态信息 */}
+                                <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">账户状态</label>
+                                    <p className="mt-1">{getStatusBadge(selectedCashier.status)}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">在线状态</label>
+                                    <p className="mt-1">{getOnlineStatusBadge(selectedCashier.online_status)}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">代收状态</label>
+                                    <p className="mt-1">{getTrxStatusBadge(selectedCashier.payin_status)}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">代付状态</label>
+                                    <p className="mt-1">{getTrxStatusBadge(selectedCashier.payout_status)}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">备注</label>
+                                    <p className="text-base font-semibold mt-1">{selectedCashier.remark || '-'}</p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">收银员邮箱</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.user?.email || '-'}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">组织ID</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.user?.org_id || '-'}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">账户类型</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.type === 'private' ? '主账号' : '共享账号'}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">APP类型</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.app_type}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">APP账号ID</label>
-                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.app_account_id || '-'}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">UPI ID</label>
-                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.upi || '-'}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">UPI提供商</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.provider || '-'}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">银行代码</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.bank_code || '-'}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">银行名称</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.bank_name || '-'}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">银行卡号</label>
-                                  <p className="text-base font-semibold font-mono mt-1">{selectedCashier.card_number || '-'}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">持卡人姓名</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.holder_name}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">持卡人电话</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.holder_phone}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">持卡人邮箱</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.holder_email || '-'}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">账户状态</label>
-                                  <p className="mt-1">{getStatusBadge(selectedCashier.status)}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">在线状态</label>
-                                  <p className="mt-1">{getOnlineStatusBadge(selectedCashier.online_status)}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">代收状态</label>
-                                  <p className="mt-1">{getTrxStatusBadge(selectedCashier.payin_status)}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">代付状态</label>
-                                  <p className="mt-1">{getTrxStatusBadge(selectedCashier.payout_status)}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">备注</label>
-                                  <p className="text-base font-semibold mt-1">{selectedCashier.remark || '-'}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">创建时间</label>
-                                  <p className="text-base font-semibold mt-1">{formatDateTime(selectedCashier.created_at)}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">更新时间</label>
-                                  <p className="text-base font-semibold mt-1">{formatDateTime(selectedCashier.updated_at)}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">绑定时间</label>
-                                  <p className="text-base font-semibold mt-1">{formatDateTime(selectedCashier.bound_at)}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm text-muted-foreground">最后活跃时间</label>
-                                  <p className="text-base font-semibold mt-1">{formatDateTime(selectedCashier.last_active_at)}</p>
+
+                                {/* 时间信息 */}
+                                <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">创建时间</label>
+                                    <p className="text-base font-semibold mt-1">{formatDateTime(selectedCashier.created_at)}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">更新时间</label>
+                                    <p className="text-base font-semibold mt-1">{formatDateTime(selectedCashier.updated_at)}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">绑定时间</label>
+                                    <p className="text-base font-semibold mt-1">{formatDateTime(selectedCashier.bound_at)}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm text-muted-foreground">最后活跃时间</label>
+                                    <p className="text-base font-semibold mt-1">{formatDateTime(selectedCashier.last_active_at)}</p>
+                                  </div>
                                 </div>
                               </div>
                             )}

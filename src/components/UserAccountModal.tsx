@@ -159,7 +159,7 @@ export function UserAccountModal({ open, onOpenChange, userId, userName, userTyp
                   <TableHead>状态</TableHead>
                   <TableHead>最后活跃时间</TableHead>
                   <TableHead>创建时间</TableHead>
-                  <TableHead>操作</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -209,6 +209,7 @@ export function UserAccountModal({ open, onOpenChange, userId, userName, userTyp
                     <TableCell><StatusBadge status={account.status} type="account" /></TableCell>
                     <TableCell className="text-xs">{formatDateTime(account.last_active_at)}</TableCell>
                     <TableCell className="text-xs">{formatDateTime(account.created_at)}</TableCell>
+                    <TableCell></TableCell>
                   </TableRow>
                 ))}
 

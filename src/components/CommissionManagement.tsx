@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Fragment } from 'react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -21,7 +21,7 @@ import { toast } from '../utils/toast';
 import { getCcyLabel, getTrxMethodLabel, CCY_OPTIONS } from '../constants/business';
 import { StatusBadge } from './StatusBadge';
 import { Label } from './ui/label';
-import { formatAmountRange } from '../utils/amountRange';
+import { formatAmountRange, formatAmountRangeWithCurrency } from '../utils/amountRange';
 
 // 交易类型映射
 const getTrxTypeLabel = (trxType: string) => {
@@ -186,7 +186,7 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
   return (
     <div className="space-y-4">
       {/* 顶部操作按钮 */}
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex items-center justify-start gap-2">
         <Button onClick={handleCreate} size="sm">
           <Plus className="w-4 h-4 mr-1" />
           新增
@@ -201,15 +201,15 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
       {loading ? (
         <div className="text-center py-8">加载中...</div>
       ) : (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="overflow-y-auto">
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12"></TableHead>
                 <TableHead>类型</TableHead>
                 <TableHead>交易类型</TableHead>
                 <TableHead>交易金额</TableHead>
-                <TableHead>固定佣金</TableHead>
-                <TableHead>费率(%)</TableHead>
+                <TableHead>佣金</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead>优先级</TableHead>
                 <TableHead></TableHead>
@@ -219,6 +219,7 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
               {/* 新增行 */}
               {isCreating && (
                 <TableRow className="bg-blue-50 dark:bg-blue-950">
+                  <TableCell></TableCell>
                   <TableCell>
                     <Badge variant="default" className="bg-blue-500">专属</Badge>
                   </TableCell>
@@ -273,22 +274,22 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Input 
-                      className="h-8 w-24"
-                      type="number"
-                      value={createData.fixed_commission || ''} 
-                      onChange={(e) => setCreateData({...createData, fixed_commission: e.target.value})}
-                      placeholder="0"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input 
-                      className="h-8 w-24"
-                      type="number"
-                      value={createData.rate || ''} 
-                      onChange={(e) => setCreateData({...createData, rate: e.target.value})}
-                      placeholder="0"
-                    />
+                    <div className="flex flex-col gap-2">
+                      <Input 
+                        className="h-8 w-24"
+                        type="number"
+                        value={createData.fixed_commission || ''} 
+                        onChange={(e) => setCreateData({...createData, fixed_commission: e.target.value})}
+                        placeholder="固定佣金"
+                      />
+                      <Input 
+                        className="h-8 w-24"
+                        type="number"
+                        value={createData.rate || ''} 
+                        onChange={(e) => setCreateData({...createData, rate: e.target.value})}
+                        placeholder="费率(%)"
+                      />
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -310,7 +311,7 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
                     />
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-1">
+                    <div className="flex gap-2">
                       <Button size="sm" variant="ghost" onClick={handleSaveCreate}>
                         <Save className="h-4 w-4 text-green-600" />
                       </Button>
@@ -329,8 +330,19 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
                 const isExclusive = !!commission.cid; // 是否为专属佣金
                 
                 return (
-                <>
-                  <TableRow key={commission.id} className={isEditing ? 'bg-yellow-50 dark:bg-yellow-950' : ''}>
+                <Fragment key={commission.id}>
+                  <TableRow 
+                    key={commission.id} 
+                    className={isEditing ? 'bg-yellow-50 dark:bg-yellow-950' : 'cursor-pointer hover:bg-gray-50'}
+                    onClick={() => !isEditing && setExpandedId(expandedId === commission.id ? null : commission.id)}
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      {expandedId === commission.id ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </TableCell>
                     <TableCell>
                       {isExclusive ? (
                         <Badge variant="default" className="bg-blue-500">专属</Badge>
@@ -408,26 +420,27 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
                     </TableCell>
                     <TableCell>
                       {isEditing ? (
-                        <Input 
-                          className="h-8 w-24"
-                          type="number"
-                          value={editData.fixed_commission || ''} 
-                          onChange={(e) => setEditData({...editData, fixed_commission: e.target.value})}
-                        />
+                        <div className="flex flex-col gap-2">
+                          <Input 
+                            className="h-8 w-24"
+                            type="number"
+                            placeholder="固定佣金"
+                            value={editData.fixed_commission || ''} 
+                            onChange={(e) => setEditData({...editData, fixed_commission: e.target.value})}
+                          />
+                          <Input 
+                            className="h-8 w-24"
+                            type="number"
+                            placeholder="费率(%)"
+                            value={editData.rate || ''} 
+                            onChange={(e) => setEditData({...editData, rate: e.target.value})}
+                          />
+                        </div>
                       ) : (
-                        commission.fixed_commission || '-'
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {isEditing ? (
-                        <Input 
-                          className="h-8 w-24"
-                          type="number"
-                          value={editData.rate || ''} 
-                          onChange={(e) => setEditData({...editData, rate: e.target.value})}
-                        />
-                      ) : (
-                        commission.rate ? `${commission.rate}%` : '-'
+                        <div className="flex flex-col">
+                          <div className="text-sm">{commission.fixed_commission ? `固定: ${commission.fixed_commission}` : '-'}</div>
+                          <div className="text-sm">{commission.rate ? `费率: ${commission.rate}%` : '-'}</div>
+                        </div>
                       )}
                     </TableCell>
                     <TableCell>
@@ -457,7 +470,7 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
                         commission.priority
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       {isEditing ? (
                         <div className="flex gap-1">
                           <Button size="sm" variant="ghost" onClick={handleSaveEdit}>
@@ -469,13 +482,6 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
                         </div>
                       ) : (
                         <div className="flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setExpandedId(expandedId === commission.id ? null : commission.id)}
-                          >
-                            {expandedId === commission.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                          </Button>
                           {isExclusive && (
                             <Button
                               variant="ghost"
@@ -569,7 +575,7 @@ export function CommissionManagement({ userId, userType }: CommissionManagementP
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </Fragment>
               );
               })}
             </TableBody>

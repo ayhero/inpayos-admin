@@ -229,7 +229,7 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
                   <TableHead>优先级</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>创建时间</TableHead>
-                  <TableHead>操作</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

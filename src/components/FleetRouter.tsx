@@ -360,7 +360,7 @@ export function FleetRouter() {
                   <TableHead>优先级</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>创建时间</TableHead>
-                  <TableHead className="text-right"></TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
