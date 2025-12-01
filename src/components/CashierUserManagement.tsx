@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -11,15 +12,29 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip';
-import { Search, Download, RefreshCw, User } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Search, Download, RefreshCw, User, ChevronDown, ChevronUp } from 'lucide-react';
 import { cashierUserService, CashierUser, CashierUserListParams, CashierUserStats } from '../services/cashierUserService';
 import { toast } from '../utils/toast';
 import { StatusBadge } from './StatusBadge';
+import { getCcyLabel, getTrxMethodLabel } from '../constants/business';
+
+// 交易类型中文映射
+const getTrxTypeLabel = (trxType: string) => {
+  const typeMap: Record<string, string> = {
+    'cashier_payin': '代收',
+    'cashier_payout': '代付',
+    'payin': '代收',
+    'payout': '代付',
+  };
+  return typeMap[trxType] || trxType;
+};
 
 export function CashierUserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedCashier, setSelectedCashier] = useState<CashierUser | null>(null);
+  const [expandedAccountId, setExpandedAccountId] = useState<string | null>(null);
   const [cashiers, setCashiers] = useState<CashierUser[]>([]);
   const [stats, setStats] = useState<CashierUserStats>({
     total: 0,
@@ -385,165 +400,329 @@ export function CashierUserManagement() {
       {/* 详情对话框 */}
       {selectedCashier && (
         <Dialog open={!!selectedCashier} onOpenChange={() => setSelectedCashier(null)}>
-          <DialogContent className="max-w-[45vw] w-[45vw] min-w-[600px]" style={{width: '45vw', maxWidth: '45vw'}}>
+          <DialogContent className="max-w-[60vw] w-[60vw] min-w-[700px] max-h-[90vh]" style={{width: '60vw', maxWidth: '60vw'}}>
             <DialogHeader>
-              <DialogTitle>Cashier用户详情</DialogTitle>
+              <DialogTitle>出纳员详情</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 max-h-[500px] overflow-y-auto">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">用户ID</div>
-                  <div className="mt-1 font-mono text-sm">{selectedCashier.user_id}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">姓名</div>
-                  <div className="mt-1">{selectedCashier.name || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">手机</div>
-                  <div className="mt-1">{selectedCashier.phone || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">邮箱</div>
-                  <div className="mt-1">{selectedCashier.email || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">车队ID</div>
-                  <div className="mt-1">{selectedCashier.tid || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">币种</div>
-                  <div className="mt-1">{selectedCashier.ccy || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">国家</div>
-                  <div className="mt-1">{selectedCashier.country || '-'}</div>
-                </div>
-              </div>
-
-              {/* 状态信息 - 两行 */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">状态</div>
-                  <div className="mt-1"><StatusBadge status={selectedCashier.status} type="account" /></div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">在线状态</div>
-                  <div className="mt-1"><StatusBadge status={selectedCashier.online_status} type="online" /></div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">代收状态</div>
-                  <div className="mt-1"><StatusBadge status={selectedCashier.payin_status} type="trx" /></div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">代付状态</div>
-                  <div className="mt-1"><StatusBadge status={selectedCashier.payout_status} type="trx" /></div>
-                </div>
-              </div>
-
-              {/* 时间信息 - 单独一行 */}
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">创建时间</div>
-                  <div className="mt-1">{formatDateTime(selectedCashier.created_at)}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">更新时间</div>
-                  <div className="mt-1">{formatDateTime(selectedCashier.updated_at)}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">最后登录</div>
-                  <div className="mt-1">{formatDateTime(selectedCashier.last_login_at)}</div>
-                </div>
-              </div>
-
-              {/* 主账户信息 */}
-              {selectedCashier.primary_account && (
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-4">主账户信息</h3>
-                  <div className="space-y-4 border rounded-lg p-4 bg-muted/50">
-                    {/* 基本信息 */}
-                    <div className="grid grid-cols-2 gap-4">
-                      {selectedCashier.primary_account.upi && (
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">UPI ID</div>
-                          <div className="mt-1 font-mono text-sm">{selectedCashier.primary_account.upi}</div>
-                        </div>
-                      )}
-                      {selectedCashier.primary_account.app_type && (
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">APP</div>
-                          <div className="mt-1">{selectedCashier.primary_account.app_type}</div>
-                        </div>
-                      )}
-                      {selectedCashier.primary_account.bank_name && (
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">银行名称</div>
-                          <div className="mt-1">{selectedCashier.primary_account.bank_name}</div>
-                        </div>
-                      )}
-                      {selectedCashier.primary_account.bank_code && (
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">银行代码</div>
-                          <div className="mt-1">{selectedCashier.primary_account.bank_code}</div>
-                        </div>
-                      )}
-                      {selectedCashier.primary_account.card_number && (
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">卡号</div>
-                          <div className="mt-1 font-mono text-sm">{selectedCashier.primary_account.card_number}</div>
-                        </div>
-                      )}
-                      {selectedCashier.primary_account.holder_name && (
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">持卡人姓名</div>
-                          <div className="mt-1">{selectedCashier.primary_account.holder_name}</div>
-                        </div>
-                      )}
-                      {selectedCashier.primary_account.holder_phone && (
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">持卡人手机</div>
-                          <div className="mt-1">{selectedCashier.primary_account.holder_phone}</div>
-                        </div>
-                      )}
-                      {selectedCashier.primary_account.holder_email && (
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">持卡人邮箱</div>
-                          <div className="mt-1">{selectedCashier.primary_account.holder_email}</div>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* 状态信息 */}
-                    <div className="grid grid-cols-2 gap-4">
-                      {selectedCashier.primary_account.status && (
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">账户状态</div>
-                          <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.status} type="account" /></div>
-                        </div>
-                      )}
-                      {selectedCashier.primary_account.online_status && (
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">在线状态</div>
-                          <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.online_status} type="online" /></div>
-                        </div>
-                      )}
-                      {selectedCashier.primary_account.payin_status && (
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">代收状态</div>
-                          <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.payin_status} type="trx" /></div>
-                        </div>
-                      )}
-                      {selectedCashier.primary_account.payout_status && (
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground">代付状态</div>
-                          <div className="mt-1"><StatusBadge status={selectedCashier.primary_account.payout_status} type="trx" /></div>
-                        </div>
-                      )}
-                    </div>
+            <div className="space-y-6 py-4 max-h-[75vh] overflow-y-auto">
+              {/* 基本信息 - 顶部模块 */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">基本信息</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm text-muted-foreground">出纳员ID</label>
+                    <p className="text-base font-semibold font-mono mt-1">{selectedCashier.user_id}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">姓名</label>
+                    <p className="text-base font-semibold mt-1">{selectedCashier.name || '-'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">手机</label>
+                    <p className="text-base font-semibold mt-1">{selectedCashier.phone || '-'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">状态</label>
+                    <p className="mt-1"><StatusBadge status={selectedCashier.status} type="account" /></p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">在线状态</label>
+                    <p className="mt-1"><StatusBadge status={selectedCashier.online_status} type="online" /></p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">车队ID</label>
+                    <p className="text-base font-mono mt-1">{selectedCashier.org_id || '-'}</p>
                   </div>
                 </div>
-              )}
+              </div>
+
+              {/* Tab 页面 */}
+              <Tabs defaultValue="team" className="w-full">
+                <TabsList>
+                  <TabsTrigger value="team">车队信息</TabsTrigger>
+                  <TabsTrigger value="app-accounts">
+                    APP账户 ({selectedCashier.app_accounts?.length || 0})
+                  </TabsTrigger>
+                  <TabsTrigger value="cashier-accounts">
+                    收银账户 ({selectedCashier.cashier_accounts?.length || 0})
+                  </TabsTrigger>
+                  <TabsTrigger value="accounts">
+                    余额账户 ({selectedCashier.accounts?.length || 0})
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* 车队信息 Tab */}
+                <TabsContent value="team" className="mt-4">
+                  {selectedCashier.team ? (
+                    <div className="border rounded-lg p-4 space-y-4">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <label className="text-sm text-muted-foreground">车队ID</label>
+                          <p className="text-base font-mono mt-1">{selectedCashier.team.user_id}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-muted-foreground">车队名称</label>
+                          <p className="text-base mt-1">{selectedCashier.team.name}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-muted-foreground">邮箱</label>
+                          <p className="text-base mt-1">{selectedCashier.team.email || '-'}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-muted-foreground">类型</label>
+                          <p className="text-base mt-1">{selectedCashier.team.type || '-'}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-muted-foreground">状态</label>
+                          <p className="mt-1"><StatusBadge status={selectedCashier.team.status} type="account" /></p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-muted-foreground">地区</label>
+                          <p className="text-base mt-1">{selectedCashier.team.region || '-'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">暂无车队信息</div>
+                  )}
+                </TabsContent>
+
+                {/* APP账户列表 Tab */}
+                <TabsContent value="app-accounts" className="mt-4">
+                  {selectedCashier.app_accounts && selectedCashier.app_accounts.length > 0 ? (
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>APP类型</TableHead>
+                            <TableHead>账户ID</TableHead>
+                            <TableHead>状态</TableHead>
+                            <TableHead>验证状态</TableHead>
+                            <TableHead>币种</TableHead>
+                            <TableHead>绑定时间</TableHead>
+                            <TableHead>创建时间</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedCashier.app_accounts.map((account, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{account.app_type?.toUpperCase() || '-'}</TableCell>
+                              <TableCell className="font-mono text-xs">{account.account_id}</TableCell>
+                              <TableCell><StatusBadge status={account.status} type="account" /></TableCell>
+                              <TableCell><StatusBadge status={account.verify_status || 'unverified'} type="trx" /></TableCell>
+                              <TableCell>{account.ccy}</TableCell>
+                              <TableCell>{formatDateTime(account.bound_at)}</TableCell>
+                              <TableCell>{formatDateTime(account.created_at)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">暂无APP账户</div>
+                  )}
+                </TabsContent>
+
+                {/* 收银账户列表 Tab */}
+                <TabsContent value="cashier-accounts" className="mt-4">
+                  {selectedCashier.cashier_accounts && selectedCashier.cashier_accounts.length > 0 ? (
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>UPI</TableHead>
+                            <TableHead>App</TableHead>
+                            <TableHead>类型</TableHead>
+                            <TableHead>状态</TableHead>
+                            <TableHead>在线状态</TableHead>
+                            <TableHead>代收</TableHead>
+                            <TableHead>代付</TableHead>
+                            <TableHead className="w-[50px]"></TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedCashier.cashier_accounts.map((account) => (
+                            <>
+                              <TableRow key={account.account_id}>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    {account.primary && <span className="text-green-600">★</span>}
+                                    <span className="font-mono text-sm">{account.upi}</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>{account.provider || '-'}</TableCell>
+                                <TableCell>
+                                  <StatusBadge status={account.type || 'private'} type="trx" />
+                                </TableCell>
+                                <TableCell><StatusBadge status={account.status} type="account" /></TableCell>
+                                <TableCell><StatusBadge status={account.online_status || 'offline'} type="online" /></TableCell>
+                                <TableCell>
+                                  <StatusBadge status={account.payin_status === 'active' ? 'enabled' : 'disabled'} type="trx" />
+                                </TableCell>
+                                <TableCell>
+                                  <StatusBadge status={account.payout_status === 'active' ? 'enabled' : 'disabled'} type="trx" />
+                                </TableCell>
+                                <TableCell>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => setExpandedAccountId(
+                                      expandedAccountId === account.account_id ? null : account.account_id
+                                    )}
+                                  >
+                                    {expandedAccountId === account.account_id ? 
+                                      <ChevronUp className="h-4 w-4" /> : 
+                                      <ChevronDown className="h-4 w-4" />
+                                    }
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                              {expandedAccountId === account.account_id && (
+                                <TableRow>
+                                  <TableCell colSpan={8} className="bg-muted/30">
+                                    <div className="p-4 space-y-4">
+                                      <div className="grid grid-cols-3 gap-4 text-sm">
+                                        <div>
+                                          <label className="text-muted-foreground">账户ID</label>
+                                          <p className="font-mono mt-1">{account.account_id}</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-muted-foreground">APP账户ID</label>
+                                          <p className="font-mono mt-1">{account.app_account_id || '-'}</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-muted-foreground">绑定时间</label>
+                                          <p className="mt-1">{formatDateTime(account.bound_at)}</p>
+                                        </div>
+                                      </div>
+
+                                      {/* 代收配置 */}
+                                      {account.payin_config && (
+                                        <div className="bg-blue-50 dark:bg-blue-950 rounded p-3">
+                                          <h5 className="text-sm font-semibold mb-2">代收配置</h5>
+                                          <div className="grid grid-cols-3 gap-3 text-xs">
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-muted-foreground">交易类型:</span>
+                                              <Badge variant="default" className="bg-blue-600 text-xs">
+                                                {getTrxTypeLabel(account.payin_config.trx_type || '')}
+                                              </Badge>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-muted-foreground">币种:</span>
+                                              <span className="font-semibold text-xs">{getCcyLabel(account.payin_config.ccy)}</span>
+                                            </div>
+                                            <div>
+                                              <span className="text-muted-foreground">日限笔数:</span> <span className="font-semibold">{account.payin_config.max_daily_count}</span>
+                                            </div>
+                                            <div>
+                                              <span className="text-muted-foreground">日限金额:</span> <span className="font-semibold">{account.payin_config.max_daily_sum}</span>
+                                            </div>
+                                            <div>
+                                              <span className="text-muted-foreground">单笔范围:</span> <span className="font-semibold">{account.payin_config.min_trx_amount} - {account.payin_config.max_trx_amount}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                              <span className="text-muted-foreground">支持方式:</span>
+                                              {account.payin_config.support_trx_methods?.map((method, idx) => (
+                                                <span key={idx} className="text-xs font-semibold">{getTrxMethodLabel(method)}{idx < (account.payin_config.support_trx_methods?.length || 0) - 1 ? ', ' : ''}</span>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* 代付配置 */}
+                                      {account.payout_config && (
+                                        <div className="bg-orange-50 dark:bg-orange-950 rounded p-3">
+                                          <h5 className="text-sm font-semibold mb-2">代付配置</h5>
+                                          <div className="grid grid-cols-3 gap-3 text-xs">
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-muted-foreground">交易类型:</span>
+                                              <Badge variant="default" className="bg-orange-600 text-xs">
+                                                {getTrxTypeLabel(account.payout_config.trx_type || '')}
+                                              </Badge>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-muted-foreground">币种:</span>
+                                              <span className="font-semibold text-xs">{getCcyLabel(account.payout_config.ccy)}</span>
+                                            </div>
+                                            <div>
+                                              <span className="text-muted-foreground">日限笔数:</span> <span className="font-semibold">{account.payout_config.max_daily_count}</span>
+                                            </div>
+                                            <div>
+                                              <span className="text-muted-foreground">日限金额:</span> <span className="font-semibold">{account.payout_config.max_daily_sum}</span>
+                                            </div>
+                                            <div>
+                                              <span className="text-muted-foreground">单笔范围:</span> <span className="font-semibold">{account.payout_config.min_trx_amount} - {account.payout_config.max_trx_amount}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                              <span className="text-muted-foreground">支持方式:</span>
+                                              {account.payout_config.support_trx_methods?.map((method, idx) => (
+                                                <span key={idx} className="text-xs font-semibold">{getTrxMethodLabel(method)}{idx < (account.payout_config.support_trx_methods?.length || 0) - 1 ? ', ' : ''}</span>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
+                                        <div>创建时间: {formatDateTime(account.created_at)}</div>
+                                        <div>更新时间: {formatDateTime(account.updated_at)}</div>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">暂无收银账户</div>
+                  )}
+                </TabsContent>
+
+                {/* 余额账户列表 Tab */}
+                <TabsContent value="accounts" className="mt-4">
+                  {selectedCashier.accounts && selectedCashier.accounts.length > 0 ? (
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>币种</TableHead>
+                            <TableHead>总余额</TableHead>
+                            <TableHead>可用余额</TableHead>
+                            <TableHead>冻结余额</TableHead>
+                            <TableHead>保证金</TableHead>
+                            <TableHead>可用保证金</TableHead>
+                            <TableHead>冻结保证金</TableHead>
+                            <TableHead>状态</TableHead>
+                            <TableHead>最后更新</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedCashier.accounts.map((account) => (
+                            <TableRow key={account.account_id}>
+                              <TableCell>{account.ccy}</TableCell>
+                              <TableCell className="font-mono">{parseFloat(account.balance || '0').toFixed(2)}</TableCell>
+                              <TableCell className="font-mono text-green-600">{parseFloat(account.available_balance || '0').toFixed(2)}</TableCell>
+                              <TableCell className="font-mono text-red-600">{parseFloat(account.frozen_balance || '0').toFixed(2)}</TableCell>
+                              <TableCell className="font-mono">{parseFloat(account.margin_balance || '0').toFixed(2)}</TableCell>
+                              <TableCell className="font-mono text-green-600">{parseFloat(account.available_margin_balance || '0').toFixed(2)}</TableCell>
+                              <TableCell className="font-mono text-red-600">{parseFloat(account.frozen_margin_balance || '0').toFixed(2)}</TableCell>
+                              <TableCell><StatusBadge status={account.status} type="account" /></TableCell>
+                              <TableCell>{formatDateTime(account.updated_at)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">暂无余额账户</div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
           </DialogContent>
         </Dialog>

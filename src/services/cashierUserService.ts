@@ -2,67 +2,122 @@ import { api, ApiResponse } from './api';
 
 // 出纳员用户交易配置
 export interface CashierUserTrxConfig {
-  min_trx_amount?: number;
-  max_trx_amount?: number;
+  ccy?: string;
+  trx_type?: string;
+  min_trx_amount?: string;
+  max_trx_amount?: string;
   max_daily_count?: number;
-  max_daily_sum?: number;
+  max_daily_sum?: string;
   max_monthly_count?: number;
-  max_monthly_sum?: number;
+  max_monthly_sum?: string;
   max_current_count?: number;
-  max_current_sum?: number;
+  max_current_sum?: string;
   max_failures?: number;
   support_trx_methods?: string[];
 }
 
+// APP账户信息
+export interface AppAccount {
+  app_type: string;
+  account_id: string;
+  user_id: string;
+  status: string;
+  verify_status?: string;
+  ccy: string;
+  created_at: number;
+  updated_at: number;
+  bound_at?: number;
+}
+
+// 收银账户信息
+export interface CashierAccount {
+  account_id: string;
+  user_id: string;
+  app_type: string;
+  app_account_id: string;
+  type: string;
+  upi: string;
+  provider: string;
+  primary?: boolean;
+  status: string;
+  online_status?: string;
+  payin_status: string;
+  payout_status: string;
+  payin_config?: CashierUserTrxConfig;
+  payout_config?: CashierUserTrxConfig;
+  created_at: number;
+  updated_at: number;
+  bound_at?: number;
+}
+
+// 余额账户信息
+export interface BalanceAccount {
+  balance: string;
+  available_balance: string;
+  frozen_balance: string;
+  margin_balance: string;
+  available_margin_balance: string;
+  frozen_margin_balance: string;
+  account_id: string;
+  user_id: string;
+  user_type: string;
+  is_default: boolean;
+  ccy: string;
+  status: string;
+  version: number;
+  last_active_at: number;
+  user: any;
+  created_at: number;
+  updated_at: number;
+}
+
+// 车队信息
+export interface TeamInfo {
+  id: number;
+  user_id: string;
+  user_type: string;
+  type: string;
+  status: string;
+  name: string;
+  email?: string;
+  region?: string;
+  has_g2fa: boolean;
+  created_at: number;
+  updated_at: number;
+  primary_account?: any;
+}
+
 // 出纳员用户信息接口 (Cashier User)
 export interface CashierUser {
-  tid: string;                  // 车队ID
+  id: number;
   user_id: string;              // 用户ID
-  phone: string;                // 手机号
-  email: string;                // 邮箱
-  name: string;                 // 姓名
-  avatar: string;               // 头像
-  country: string;              // 国家
-  country_code: string;         // 国家代码
-  province: string;             // 省份
-  city: string;                 // 城市
-  ccy: string;                  // 币种
-  payin_status: string;         // 代收状态
-  payout_status: string;        // 代付状态
-  payin_config: CashierUserTrxConfig;   // 用户级别代收配置
-  payout_config: CashierUserTrxConfig;  // 用户级别代付配置
+  user_type: string;            // 用户类型
+  org_id?: string;              // 组织ID（车队ID）
+  tid?: string;                 // 车队ID (兼容旧字段)
+  phone?: string;               // 手机号
+  email?: string;               // 邮箱
+  name?: string;                // 姓名
+  avatar?: string;              // 头像
+  country?: string;             // 国家
+  country_code?: string;        // 国家代码
+  province?: string;            // 省份
+  city?: string;                // 城市
+  ccy?: string;                 // 币种
+  payin_status?: string;        // 代收状态
+  payout_status?: string;       // 代付状态
+  payin_config?: CashierUserTrxConfig;   // 用户级别代收配置
+  payout_config?: CashierUserTrxConfig;  // 用户级别代付配置
   status: string;               // 用户状态
   online_status: string;        // 在线状态
   created_at: number;           // 创建时间
   updated_at: number;           // 更新时间
-  last_login_at: number;        // 最后登录时间
+  last_login_at?: number;       // 最后登录时间
   has_g2fa: boolean;            // 是否启用二次验证
-  primary_account?: PrimaryAccount; // 主账户信息
-  accounts?: any[];             // 账户列表
-}
-
-// 主账户信息
-export interface PrimaryAccount {
-  account_id: string;           // 账户ID
-  user_id: string;              // 用户ID
-  app_type: string;             // 应用类型
-  app_account_id: string;       // 应用账户ID
-  type: string;                 // 账户类型
-  upi: string;                  // UPI ID
-  provider: string;             // UPI提供商
-  bank_name: string;            // 银行名称
-  bank_code: string;            // 银行代码
-  card_number: string;          // 卡号
-  holder_name: string;          // 持卡人姓名
-  holder_phone: string;         // 持卡人手机
-  holder_email: string;         // 持卡人邮箱
-  primary: boolean;             // 是否主账户
-  status: string;               // 状态
-  online_status: string;        // 在线状态
-  payin_status: string;         // 代收状态
-  payout_status: string;        // 代付状态
-  created_at: number;           // 创建时间
-  updated_at: number;           // 更新时间
+  team?: TeamInfo;              // 车队信息
+  app_accounts?: AppAccount[];  // APP账户列表
+  cashier_accounts?: CashierAccount[]; // 收银账户列表
+  accounts?: BalanceAccount[];  // 余额账户列表
+  primary_account?: CashierAccount; // 主账户信息 (兼容旧字段)
 }
 
 // 出纳员用户列表查询参数
