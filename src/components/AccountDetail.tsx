@@ -1,7 +1,8 @@
-import { Badge } from './ui/badge';
+// import { Badge } from './ui/badge';
 import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip';
 import { CurrencyDisplay } from '../utils/currencyMapping';
-import { getAccountStatusBadgeConfig } from '../constants/status';
+import { UserTypeLabel } from './UserTypeLabel';
+import { StatusBadge } from './StatusBadge';
 
 // 账户详情组件的Props类型
 interface AccountDetailProps {
@@ -16,15 +17,17 @@ export function AccountDetail({ account, formatDateTime, formatAmount }: Account
   }
 
   // 判断是商户还是车队（根据user_type或其他字段）
-  const isMerchant = account.user_type === 'merchant';
+  // const isMerchant = account.user_type === 'merchant';
 
   // 获取状态Badge配置
-  const statusConfig = getAccountStatusBadgeConfig(account.status);
-  const statusBadge = (
-    <Badge variant={statusConfig.variant} className={statusConfig.className}>
-      {statusConfig.label}
-    </Badge>
-  );
+  // const statusConfig = getAccountStatusBadgeConfig(account.status);
+  // const statusBadge = (
+  //   <Badge variant={statusConfig.variant} className={statusConfig.className}>
+  //     {statusConfig.label}
+  //   </Badge>
+  // );
+  const statusBadge = <StatusBadge status={account.status} type="account" />;
+  const userTypeBadge = <UserTypeLabel type={account.user_type} />;
 
   return (
     <div className="space-y-6 max-h-[500px] overflow-y-auto">
@@ -37,24 +40,27 @@ export function AccountDetail({ account, formatDateTime, formatAmount }: Account
             <p className="mt-1 text-sm font-mono">{account.account_id}</p>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-500">{isMerchant ? '商户' : '车队'}</label>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <p className="mt-1 text-sm cursor-help underline decoration-dotted">{account.user?.name || '-'}</p>
-              </TooltipTrigger>
-              {account.user && (
-                <TooltipContent side="right" className="max-w-xs">
-                  <div className="space-y-1 text-xs">
-                    <div><span className="text-gray-400">用户ID:</span> {account.user.user_id}</div>
-                    <div><span className="text-gray-400">用户类型:</span> {account.user.user_type}</div>
-                    {account.user.org_id && <div><span className="text-gray-400">所属组织:</span> {account.user.org_id}</div>}
-                    {account.user.phone && <div><span className="text-gray-400">手机号:</span> {account.user.phone}</div>}
-                    {account.user.email && <div><span className="text-gray-400">邮箱:</span> {account.user.email}</div>}
-                    {account.user.status && <div><span className="text-gray-400">状态:</span> {account.user.status}</div>}
-                  </div>
-                </TooltipContent>
-              )}
-            </Tooltip>
+            <label className="text-sm font-medium text-gray-500">用户类型</label>
+            <div className="flex items-center gap-2 mt-1">
+              {userTypeBadge}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-sm cursor-help underline decoration-dotted">{account.user?.name || '-'}</p>
+                </TooltipTrigger>
+                {account.user && (
+                  <TooltipContent side="right" className="max-w-xs">
+                    <div className="space-y-1 text-xs">
+                      <div><span className="text-gray-400">用户ID:</span> {account.user.user_id}</div>
+                      <div><span className="text-gray-400">用户类型:</span> <UserTypeLabel type={account.user.user_type} /></div>
+                      {account.user.org_id && <div><span className="text-gray-400">所属组织:</span> {account.user.org_id}</div>}
+                      {account.user.phone && <div><span className="text-gray-400">手机号:</span> {account.user.phone}</div>}
+                      {account.user.email && <div><span className="text-gray-400">邮箱:</span> {account.user.email}</div>}
+                      {account.user.status && <div><span className="text-gray-400">状态:</span> <StatusBadge status={account.user.status} type="account" /></div>}
+                    </div>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </div>
           </div>
           <div></div>
         </div>

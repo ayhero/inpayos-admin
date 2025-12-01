@@ -3,6 +3,19 @@ import { Account, Contract, Router } from './merchantService';
 import { DispatchRouter } from './dispatchRouterService';
 
 // CashierTeam 信息接口 - 现在使用统一的 User 结构
+export interface CashierTeamMember {
+  id: number;
+  user_id: string;
+  user_type: string;
+  status: string;
+  online_status?: string;
+  name?: string;
+  phone?: string;
+  has_g2fa?: boolean;
+  created_at?: number;
+  updated_at?: number;
+}
+
 export interface CashierTeam {
   id: number;
   user_id: string;
@@ -19,6 +32,7 @@ export interface CashierTeam {
   contracts?: Contract[];
   routers?: Router[];
   dispatch_routers?: DispatchRouter[];
+  members?: CashierTeamMember[];
 }
 
 // CashierTeam 列表查询参数

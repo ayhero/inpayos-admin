@@ -17,6 +17,7 @@ import { DispatchRouterModal } from './DispatchRouterModal';
 import { StatusBadge } from './StatusBadge';
 import { getChannelCodeLabel, getCcyLabel, getCountryLabel } from '../constants/business';
 import { CreateUserModal } from './CreateUserModal';
+import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip';
 
 export function CashierTeamManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -271,8 +272,6 @@ export function CashierTeamManagement() {
                   <TableHead>邮箱</TableHead>
                   <TableHead>手机号</TableHead>
                   <TableHead>状态</TableHead>
-                  <TableHead>订单统计</TableHead>
-                  <TableHead>余额</TableHead>
                   <TableHead>成员</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
@@ -297,31 +296,37 @@ export function CashierTeamManagement() {
                     </TableCell>
                     <TableCell><StatusBadge status={team.status} type="account" /></TableCell>
                     <TableCell>
-                      <div className="text-xs space-y-1">
-                        <div className="flex gap-2">
-                          <span className="text-blue-600">代收: {team.payin_stats?.total || 0}</span>
-                          <span className="text-orange-600">代付: {team.payout_stats?.total || 0}</span>
-                        </div>
-                        <div className="flex gap-1 text-xs">
-                          <Badge variant="secondary" className="text-xs px-1">成功: {team.payin_stats?.success || 0}</Badge>
-                          <Badge variant="destructive" className="text-xs px-1">失败: {team.payin_stats?.failed || 0}</Badge>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-mono text-sm font-medium">
-                        ₹{team.default_balance || '0.00'}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1 flex-wrap">
-                        {team.cashier_accounts?.slice(0, 3).map((account, index) => (
-                          <Badge key={index} variant="outline" className="text-xs px-1">
-                            {account.app_type?.toUpperCase()}
-                          </Badge>
-                        )) || <span className="text-muted-foreground text-xs">暂无</span>}
-                        {team.cashier_accounts && team.cashier_accounts.length > 3 && (
-                          <span className="text-muted-foreground text-xs">+{team.cashier_accounts.length - 3}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm">
+                          <span className="text-green-600 font-semibold">
+                            {
+                              Array.isArray(team.members)
+                                ? team.members.filter(m => m.status === 'active').length
+                                : 0
+                            }
+                          </span>
+                          <span className="text-muted-foreground">/</span>
+                          <span className="font-semibold">
+                            {Array.isArray(team.members) ? team.members.length : 0}
+                          </span>
+                        </span>
+                        {team.members && team.members.length > 0 && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Users className="h-4 w-4 text-blue-500 cursor-pointer" />
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="max-w-xs">
+                                <div className="space-y-1 text-xs">
+                                {team.members.map((m, idx) => (
+                                  <div key={idx} className="flex items-center gap-2">
+                                    <span>{m.name || m.user_id}</span>
+                                    <StatusBadge status={m.status} type="account" />
+                                    <StatusBadge status={m.online_status || 'offline'} type="online" />
+                                  </div>
+                                ))}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
                         )}
                       </div>
                     </TableCell>
