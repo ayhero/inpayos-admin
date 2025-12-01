@@ -172,8 +172,8 @@ export interface StatusBadgeConfig {
 }
 
 export const ACCOUNT_STATUS_BADGE_CONFIG: Record<string, StatusBadgeConfig> = {
-  'active': { label: '正常', variant: 'default', className: 'bg-green-500' },
-  'inactive': { label: '停用', variant: 'secondary', className: 'bg-gray-500' },
+  'active': { label: '启用', variant: 'default', className: 'bg-green-500' },
+  'inactive': { label: '禁用', variant: 'secondary', className: 'bg-gray-500' },
   'frozen': { label: '冻结', variant: 'destructive', className: '' },
   'suspended': { label: '暂停', variant: 'destructive', className: 'bg-yellow-500' },
   'locked': { label: '锁定', variant: 'destructive', className: '' },

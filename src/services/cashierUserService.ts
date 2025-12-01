@@ -118,6 +118,36 @@ export interface CashierUser {
   cashier_accounts?: CashierAccount[]; // 收银账户列表
   accounts?: BalanceAccount[];  // 余额账户列表
   primary_account?: CashierAccount; // 主账户信息 (兼容旧字段)
+  commissions?: CommissionConfig[]; // 佣金配置列表
+}
+
+// 佣金配置接口
+export interface CommissionConfig {
+  id: number;
+  tid: string;
+  cid: string;
+  trx_type: string;
+  status: string;
+  country: string;
+  trx_method: string;
+  min_amount?: string;
+  max_amount?: string;
+  min_fee?: string;
+  max_fee?: string;
+  min_rate?: string;
+  max_rate?: string;
+  min_usd_fee?: string;
+  max_usd_fee?: string;
+  min_usd_rate?: string;
+  max_usd_rate?: string;
+  ccy: string;
+  fixed_commission?: string;
+  rate?: string;
+  fixed_usd_commission?: string;
+  usd_rate?: string;
+  priority: number;
+  created_at: number;
+  updated_at: number;
 }
 
 // 出纳员用户列表查询参数

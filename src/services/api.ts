@@ -44,6 +44,10 @@ apiClient.interceptors.request.use(
 // 响应拦截器
 apiClient.interceptors.response.use(
   (response: AxiosResponse): AxiosResponse => {
+    // 统一处理响应，添加success字段
+    if (response.data && response.data.code !== undefined) {
+      response.data.success = response.data.code === '0000';
+    }
     return response;
   },
   async (error: any) => {

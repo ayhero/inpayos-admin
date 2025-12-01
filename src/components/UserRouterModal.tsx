@@ -10,6 +10,7 @@ import { Plus, X, Save, Power, PowerOff, RefreshCw } from 'lucide-react';
 import { merchantService, MerchantRouter } from '../services/merchantService';
 import { routerService, CreateRouterParams } from '../services/routerService';
 import { toast } from '../utils/toast';
+import { formatAmountRange } from '../utils/amountRange';
 import { UserTypeLabel } from './UserTypeLabel';
 import { Badge } from './ui/badge';
 import { ConfirmDialog } from './ui/confirm-dialog';
@@ -381,10 +382,7 @@ export function UserRouterModal({ open, onOpenChange, userId, userName, userType
                         <div>
                           <div>{getCcyLabel(router.ccy || '')}</div>
                           <div className="text-xs text-muted-foreground">
-                            {router.min_amount && router.max_amount 
-                              ? `${router.min_amount} - ${router.max_amount}`
-                              : '-'
-                            }
+                            {formatAmountRange(router.min_amount, router.max_amount)}
                           </div>
                         </div>
                       </TableCell>

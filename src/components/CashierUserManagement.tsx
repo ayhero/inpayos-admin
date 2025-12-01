@@ -18,6 +18,7 @@ import { cashierUserService, CashierUser, CashierUserListParams, CashierUserStat
 import { toast } from '../utils/toast';
 import { StatusBadge } from './StatusBadge';
 import { getCcyLabel, getTrxMethodLabel } from '../constants/business';
+import { CommissionManagement } from './CommissionManagement';
 
 // 交易类型中文映射
 const getTrxTypeLabel = (trxType: string) => {
@@ -34,6 +35,7 @@ export function CashierUserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedCashier, setSelectedCashier] = useState<CashierUser | null>(null);
+  const [commissionCashier, setCommissionCashier] = useState<CashierUser | null>(null);
   const [expandedAccountId, setExpandedAccountId] = useState<string | null>(null);
   const [cashiers, setCashiers] = useState<CashierUser[]>([]);
   const [stats, setStats] = useState<CashierUserStats>({
@@ -348,11 +350,11 @@ export function CashierUserManagement() {
                         <TableCell>{cashier.ccy || '-'}</TableCell>
                         <TableCell><StatusBadge status={cashier.status} type="account" /></TableCell>
                         <TableCell><StatusBadge status={cashier.online_status} type="online" /></TableCell>
-                        <TableCell><StatusBadge status={cashier.payin_status} type="trx" /></TableCell>
-                        <TableCell><StatusBadge status={cashier.payout_status} type="trx" /></TableCell>
+                        <TableCell><StatusBadge status={cashier.payin_status} type="account" /></TableCell>
+                        <TableCell><StatusBadge status={cashier.payout_status} type="account" /></TableCell>
                         <TableCell>{formatDateTime(cashier.created_at)}</TableCell>
                         <TableCell>
-                          <Dialog>
+                          <div className="flex gap-1">
                             <Button
                               variant="ghost"
                               size="sm"
@@ -360,7 +362,14 @@ export function CashierUserManagement() {
                             >
                               查看
                             </Button>
-                          </Dialog>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setCommissionCashier(cashier)}
+                            >
+                              佣金
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -448,6 +457,9 @@ export function CashierUserManagement() {
                   </TabsTrigger>
                   <TabsTrigger value="accounts">
                     余额账户 ({selectedCashier.accounts?.length || 0})
+                  </TabsTrigger>
+                  <TabsTrigger value="commissions">
+                    佣金配置 ({selectedCashier.commissions?.length || 0})
                   </TabsTrigger>
                 </TabsList>
 
@@ -722,7 +734,189 @@ export function CashierUserManagement() {
                     <div className="text-center py-8 text-muted-foreground">暂无余额账户</div>
                   )}
                 </TabsContent>
+
+                {/* 佣金配置列表 Tab */}
+                <TabsContent value="commissions" className="mt-4">
+                  {selectedCashier.commissions && selectedCashier.commissions.length > 0 ? (
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>交易类型</TableHead>
+                            <TableHead>币种/金额范围</TableHead>
+                            <TableHead>国家</TableHead>
+                            <TableHead>交易方式</TableHead>
+                            <TableHead>佣金计算</TableHead>
+                            <TableHead>状态</TableHead>
+                            <TableHead>优先级</TableHead>
+                            <TableHead className="w-[50px]"></TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedCashier.commissions.map((commission) => (
+                            <>
+                              <TableRow key={commission.id}>
+                                <TableCell>
+                                  <Badge variant="default" className={commission.trx_type === 'cashier_payin' ? 'bg-blue-600' : 'bg-orange-600'}>
+                                    {getTrxTypeLabel(commission.trx_type)}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="space-y-1">
+                                    <div className="font-semibold">{getCcyLabel(commission.ccy)}</div>
+                                    {(commission.min_amount || commission.max_amount) && (
+                                      <div className="text-xs text-muted-foreground">
+                                        {commission.min_amount || '0'} - {commission.max_amount || '∞'}
+                                      </div>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>{commission.country || '全部'}</TableCell>
+                                <TableCell>{commission.trx_method ? getTrxMethodLabel(commission.trx_method) : '全部'}</TableCell>
+                                <TableCell>
+                                  <div className="text-xs space-y-1">
+                                    {commission.fixed_commission && (
+                                      <div>固定: {commission.fixed_commission}</div>
+                                    )}
+                                    {commission.rate && (
+                                      <div>费率: {commission.rate}%</div>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <StatusBadge 
+                                    status={commission.status} 
+                                    type="account"
+                                    label={commission.status === 'active' ? '启用' : '禁用'}
+                                  />
+                                </TableCell>
+                                <TableCell>{commission.priority}</TableCell>
+                                <TableCell>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => setExpandedAccountId(
+                                      expandedAccountId === `commission-${commission.id}` ? null : `commission-${commission.id}`
+                                    )}
+                                  >
+                                    {expandedAccountId === `commission-${commission.id}` ? 
+                                      <ChevronUp className="h-4 w-4" /> : 
+                                      <ChevronDown className="h-4 w-4" />
+                                    }
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                              {expandedAccountId === `commission-${commission.id}` && (
+                                <TableRow>
+                                  <TableCell colSpan={8} className="bg-muted/30">
+                                    <div className="p-4 space-y-3">
+                                      <div className="grid grid-cols-4 gap-3 text-sm">
+                                        <div>
+                                          <label className="text-muted-foreground">配置ID</label>
+                                          <p className="font-mono mt-1">{commission.id}</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-muted-foreground">交易类型</label>
+                                          <p className="mt-1">{getTrxTypeLabel(commission.trx_type)}</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-muted-foreground">币种</label>
+                                          <p className="mt-1">{getCcyLabel(commission.ccy)}</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-muted-foreground">国家</label>
+                                          <p className="mt-1">{commission.country || '全部'}</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-muted-foreground">交易方式</label>
+                                          <p className="mt-1">{commission.trx_method ? getTrxMethodLabel(commission.trx_method) : '全部'}</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-muted-foreground">金额范围</label>
+                                          <p className="mt-1">{commission.min_amount || '0'} - {commission.max_amount || '∞'}</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-muted-foreground">固定佣金</label>
+                                          <p className="mt-1 font-mono">{commission.fixed_commission || '-'}</p>
+                                        </div>
+                                        <div>
+                                          <label className="text-muted-foreground">佣金费率</label>
+                                          <p className="mt-1 font-mono">{commission.rate ? `${commission.rate}%` : '-'}</p>
+                                        </div>
+                                      </div>
+                                      
+                                      {(commission.min_fee || commission.max_fee || commission.min_rate || commission.max_rate) && (
+                                        <div className="bg-blue-50 dark:bg-blue-950 rounded p-3">
+                                          <h5 className="text-sm font-semibold mb-2">佣金限制</h5>
+                                          <div className="grid grid-cols-4 gap-3 text-xs">
+                                            {commission.min_fee && (
+                                              <div>
+                                                <span className="text-muted-foreground">最小佣金:</span>
+                                                <span className="ml-2 font-mono">{commission.min_fee}</span>
+                                              </div>
+                                            )}
+                                            {commission.max_fee && (
+                                              <div>
+                                                <span className="text-muted-foreground">最大佣金:</span>
+                                                <span className="ml-2 font-mono">{commission.max_fee}</span>
+                                              </div>
+                                            )}
+                                            {commission.min_rate && (
+                                              <div>
+                                                <span className="text-muted-foreground">最小费率:</span>
+                                                <span className="ml-2 font-mono">{commission.min_rate}%</span>
+                                              </div>
+                                            )}
+                                            {commission.max_rate && (
+                                              <div>
+                                                <span className="text-muted-foreground">最大费率:</span>
+                                                <span className="ml-2 font-mono">{commission.max_rate}%</span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      <div className="grid grid-cols-3 gap-3 text-xs text-muted-foreground">
+                                        <div>创建时间: {formatDateTime(commission.created_at)}</div>
+                                        <div>更新时间: {formatDateTime(commission.updated_at)}</div>
+                                        <div>优先级: {commission.priority}</div>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">暂无佣金配置</div>
+                  )}
+                </TabsContent>
               </Tabs>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* 佣金配置对话框 */}
+      {commissionCashier && (
+        <Dialog open={!!commissionCashier} onOpenChange={() => setCommissionCashier(null)}>
+          <DialogContent className="max-w-[80vw] w-[80vw] min-w-[900px] max-h-[90vh]" style={{width: '80vw', maxWidth: '80vw'}}>
+            <DialogHeader>
+              <DialogTitle>
+                佣金
+              </DialogTitle>
+            </DialogHeader>
+            <div className="max-h-[75vh] overflow-y-auto">
+              <CommissionManagement 
+                userId={commissionCashier.user_id} 
+                userType="cashier"
+                teamId={commissionCashier.org_id}
+              />
             </div>
           </DialogContent>
         </Dialog>

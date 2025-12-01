@@ -19,6 +19,7 @@ import {
 } from './ui/alert-dialog';
 import { dispatchRouterService, DispatchRouter, SaveDispatchRouterParams } from '../services/dispatchRouterService';
 import { dispatchStrategyService, DispatchStrategy } from '../services/dispatchStrategyService';
+import { formatAmountRange } from '../utils/amountRange';
 import { toast } from '../utils/toast';
 import { UserTypeLabel } from './UserTypeLabel';
 import { 
@@ -636,7 +637,7 @@ export function DispatchRouterModal({ open, onOpenChange, userId, userName, user
                         <TableCell className="text-xs">
                           <div>{getCcyLabel(router.trx_ccy)}</div>
                           <div className="font-mono">
-                            {formatAmount(router.min_amount)} ~ {formatAmount(router.max_amount)}
+                            {formatAmountRange(router.min_amount, router.max_amount)}
                           </div>
                         </TableCell>
                         <TableCell className="text-xs font-mono">
@@ -790,7 +791,7 @@ export function DispatchRouterModal({ open, onOpenChange, userId, userName, user
                                         <div>
                                           <span className="text-muted-foreground">金额范围: </span>
                                           <span className="font-medium font-mono">
-                                            {formatAmount(router.strategy.min_amount)} ~ {formatAmount(router.strategy.max_amount)}
+                                            {formatAmountRange(router.strategy.min_amount, router.strategy.max_amount)}
                                           </span>
                                         </div>
                                       )}

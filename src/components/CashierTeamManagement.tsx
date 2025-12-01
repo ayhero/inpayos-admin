@@ -550,10 +550,7 @@ export function CashierTeamManagement() {
                               <TableCell>{getCcyLabel(router.ccy || '')}</TableCell>
                               <TableCell>{getCountryLabel(router.country || '')}</TableCell>
                               <TableCell>
-                                {router.min_amount && router.max_amount 
-                                  ? `${router.min_amount} - ${router.max_amount}`
-                                  : '-'
-                                }
+                                {formatAmountRange(router.min_amount, router.max_amount)}
                               </TableCell>
                               <TableCell>{router.priority || 0}</TableCell>
                               <TableCell><StatusBadge status={router.status} type="account" /></TableCell>

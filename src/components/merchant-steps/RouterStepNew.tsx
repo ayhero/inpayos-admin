@@ -17,6 +17,7 @@ import {
   getCountryLabel,
   getChannelCodeLabel
 } from '../../constants/business';
+import { formatAmountRangeWithCurrency } from '../../utils/amountRange';
 
 interface RouterData {
   trx_type: string;
@@ -58,25 +59,6 @@ export function RouterStep({ data, onChange }: RouterStepProps) {
   const updateData = (newData: RouterData[]) => {
     setLocalData(newData);
     onChange(newData);
-  };
-
-  // 格式化金额范围显示（币种 + 金额）
-  const formatAmountRange = (ccy: string, minAmount: number, maxAmount: number) => {
-    const prefix = ccy ? `${ccy} ` : '';
-    
-    if (minAmount === 0 && maxAmount === 0) {
-      return `${prefix}不限`;
-    }
-    
-    if (minAmount === 0) {
-      return `${prefix}0 - ${maxAmount.toLocaleString()}`;
-    }
-    
-    if (maxAmount === 0) {
-      return `${prefix}${minAmount.toLocaleString()} 起`;
-    }
-    
-    return `${prefix}${minAmount.toLocaleString()} - ${maxAmount.toLocaleString()}`;
   };
 
   // 开始新增路由
@@ -445,7 +427,7 @@ export function RouterStep({ data, onChange }: RouterStepProps) {
                       {router.trx_method.toUpperCase()}
                     </TableCell>
                     <TableCell className="text-sm">
-                      {formatAmountRange(router.ccy, router.min_amount, router.max_amount)}
+                      {formatAmountRangeWithCurrency(router.ccy, router.min_amount, router.max_amount)}
                     </TableCell>
                     <TableCell>
                       {router.country ? getCountryLabel(router.country) : '-'}

@@ -414,7 +414,7 @@ export function RouterStep({ data, onChange }: RouterStepProps) {
                         {getChannelLabel(router.channel_code)}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {router.min_amount} - {router.max_amount}
+                        {formatAmountRange(router.min_amount, router.max_amount)}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-xs">

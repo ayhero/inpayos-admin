@@ -19,6 +19,7 @@ import {
 import { routerService, RouterData, RouterListParams, CreateRouterParams } from '../services/routerService';
 import { Search, RefreshCw, Plus, Edit, Trash2, Power, PowerOff } from 'lucide-react';
 import { toast } from '../utils/toast';
+import { formatAmountRangeWithCurrency } from '../utils/amountRange';
 import { 
   getTrxTypeLabel, 
   getChannelCodeLabel,
@@ -391,34 +392,7 @@ export function FleetRouter() {
                       <TableCell>{router.channel_account || '-'}</TableCell>
                       <TableCell>{router.channel_group || '-'}</TableCell>
                       <TableCell>
-                        {(() => {
-                          const formatAmountRange = (ccy: string, minAmount: number, maxAmount: number) => {
-                            const ccyLabel = ccy ? getCcyLabel(ccy) : '';
-                            
-                            // 如果没有货币代码且没有金额限制，只显示“不限”
-                            if (!ccy && !minAmount && !maxAmount) {
-                              return '不限';
-                            }
-                            
-                            const prefix = ccyLabel && ccyLabel !== '-' ? `${ccyLabel} ` : '';
-                            
-                            if (!minAmount && !maxAmount) {
-                              return `${prefix}不限`;
-                            }
-                            
-                            if (!minAmount || minAmount === 0) {
-                              return `${prefix}0 - ${maxAmount?.toFixed(2) || '0'}`;
-                            }
-                            
-                            if (!maxAmount || maxAmount === 0) {
-                              return `${prefix}${minAmount.toFixed(2)} 起`;
-                            }
-                            
-                            return `${prefix}${minAmount.toFixed(2)} - ${maxAmount.toFixed(2)}`;
-                          };
-                          return formatAmountRange(router.ccy, router.min_amount, router.max_amount);
-                        })()
-                        }
+                        {formatAmountRangeWithCurrency(router.ccy, router.min_amount, router.max_amount, getCcyLabel)}
                       </TableCell>
                       <TableCell>{router.priority || '-'}</TableCell>
                       <TableCell>{getStatusBadge(router.status)}</TableCell>
@@ -711,11 +685,7 @@ export function FleetRouter() {
                   <div className="flex gap-2">
                     <span className="font-semibold text-gray-700 min-w-[80px]">交易金额:</span>
                     <span className="text-gray-900">
-                      {getCcyLabel(routerToDelete?.ccy)} {routerToDelete?.min_amount || 0} ~ {
-                        routerToDelete?.max_amount && routerToDelete.max_amount > 0 
-                          ? routerToDelete.max_amount 
-                          : '无上限'
-                      }
+                      {formatAmountRangeWithCurrency(routerToDelete?.ccy, routerToDelete?.min_amount, routerToDelete?.max_amount, getCcyLabel)}
                     </span>
                   </div>
                 )}
