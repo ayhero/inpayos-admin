@@ -48,6 +48,7 @@ import { AppAccountManagement } from './components/AppAccountManagement';
 import TaskManagement from './components/TaskManagement';
 import { MerchantRouter } from './components/MerchantRouter';
 import { FleetRouter } from './components/FleetRouter';
+import { ChannelManagement } from './components/ChannelManagement';
 import { DispatchStrategyManagement } from './components/DispatchStrategyManagement';
 import { CommissionManagementPage } from './components/CommissionManagementPage';
 
@@ -133,6 +134,12 @@ export default function App() {
       label: '商户路由',
       icon: Route,
       component: MerchantRouter
+    },
+    {
+      id: 'channel-management',
+      label: '渠道',
+      icon: Route,
+      component: ChannelManagement
     },
     // {
     //   id: 'merchant-settlement',

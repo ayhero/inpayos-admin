@@ -65,6 +65,7 @@ export const COUNTRY_OPTIONS = Object.entries(countryMap).map(([value, label]) =
 export const CHANNEL_CODE_MAP: { [key: string]: string } = {
   'test': '测试',
   'cashier': '收银员',
+  'anypay': 'Anypay',
 };
 
 // 渠道选项
