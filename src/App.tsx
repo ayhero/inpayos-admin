@@ -49,6 +49,7 @@ import TaskManagement from './components/TaskManagement';
 import { MerchantRouter } from './components/MerchantRouter';
 import { FleetRouter } from './components/FleetRouter';
 import { ChannelManagement } from './components/ChannelManagement';
+import { ChannelGroupManagement } from './components/ChannelGroupManagement';
 import { DispatchStrategyManagement } from './components/DispatchStrategyManagement';
 import { CommissionManagementPage } from './components/CommissionManagementPage';
 
@@ -92,146 +93,155 @@ export default function App() {
     }
   }, [isLoggedIn]);
 
-  const menuItems = [
+  const menuGroups = [
     {
-      id: 'dashboard',
-      label: '首页',
-      icon: Home,
-      component: Dashboard
+      id: 'main',
+      label: '',
+      items: [
+        {
+          id: 'dashboard',
+          label: '首页',
+          icon: Home,
+          component: Dashboard
+        }
+      ]
     },
     {
-      id: 'payin',
-      label: '代收',
-      icon: ArrowDownLeft,
-      component: PayinRecords
-    },
-    {
-      id: 'payout',
-      label: '代付',
-      icon: ArrowUpRight,
-      component: PayoutRecords
+      id: 'payment',
+      label: '交易管理',
+      items: [
+        {
+          id: 'payin',
+          label: '代收',
+          icon: ArrowDownLeft,
+          component: PayinRecords
+        },
+        {
+          id: 'payout',
+          label: '代付',
+          icon: ArrowUpRight,
+          component: PayoutRecords
+        }
+      ]
     },
     {
       id: 'merchant',
-      label: '商户',
-      icon: Store,
-      component: MerchantManagement
+      label: '商户管理',
+      items: [
+        {
+          id: 'merchant',
+          label: '商户',
+          icon: Store,
+          component: MerchantManagement
+        },
+        {
+          id: 'merchant-contract',
+          label: '商户合约',
+          icon: FileText,
+          component: MerchantContract
+        },
+        {
+          id: 'merchant-account',
+          label: '商户账户',
+          icon: Wallet,
+          component: MerchantAccount
+        },
+        {
+          id: 'merchant-router',
+          label: '商户路由',
+          icon: Route,
+          component: MerchantRouter
+        },
+        {
+          id: 'channel-management',
+          label: '渠道账户',
+          icon: Route,
+          component: ChannelManagement
+        },
+        {
+          id: 'channel-group-management',
+          label: '渠道组',
+          icon: Route,
+          component: ChannelGroupManagement
+        }
+      ]
     },
     {
-      id: 'merchant-contract',
-      label: '商户合约',
-      icon: FileText,
-      component: MerchantContract
+      id: 'fleet',
+      label: '车队管理',
+      items: [
+        {
+          id: 'cashier-team',
+          label: '车队',
+          icon: Users,
+          component: CashierTeamManagement
+        },
+        {
+          id: 'cashier',
+          label: '出纳员',
+          icon: Users,
+          component: CashierUserManagement
+        },
+        {
+          id: 'cashier-account',
+          label: '出纳员账户',
+          icon: Users,
+          component: CashierAccountManagement
+        },
+        {
+          id: 'app-account',
+          label: '应用账户',
+          icon: Smartphone,
+          component: AppAccountManagement
+        },
+        {
+          id: 'fleet-contract',
+          label: '车队合约',
+          icon: FileText,
+          component: FleetContract
+        },
+        {
+          id: 'fleet-account',
+          label: '车队账户',
+          icon: Wallet,
+          component: AccountManagement
+        },
+        {
+          id: 'fleet-router',
+          label: '车队路由',
+          icon: Route,
+          component: FleetRouter
+        },
+        {
+          id: 'commission-management',
+          label: '佣金管理',
+          icon: Percent,
+          component: CommissionManagementPage
+        },
+        {
+          id: 'dispatch-strategy',
+          label: '派单策略',
+          icon: Route,
+          component: DispatchStrategyManagement
+        }
+      ]
     },
     {
-      id: 'merchant-account',
-      label: '商户账户',
-      icon: Wallet,
-      component: MerchantAccount
-    },
-    {
-      id: 'merchant-router',
-      label: '商户路由',
-      icon: Route,
-      component: MerchantRouter
-    },
-    {
-      id: 'channel-management',
-      label: '渠道',
-      icon: Route,
-      component: ChannelManagement
-    },
-    // {
-    //   id: 'merchant-settlement',
-    //   label: '结算',
-    //   icon: Calculator,
-    //   component: MerchantSettlement
-    // },
-    {
-      id: 'cashier-team',
-      label: '车队',
-      icon: Users,
-      component: CashierTeamManagement
-    },
-    {
-      id: 'cashier',
-      label: '出纳员',
-      icon: Users,
-      component: CashierUserManagement
-    },
-    {
-      id: 'cashier-account',
-      label: '出纳员账户',
-      icon: Users,
-      component: CashierAccountManagement
-    },
-    {
-      id: 'app-account',
-      label: '应用账户',
-      icon: Smartphone,
-      component: AppAccountManagement
-    },
-    {
-      id: 'fleet-contract',
-      label: '车队合约',
-      icon: FileText,
-      component: FleetContract
-    },
-    {
-      id: 'fleet-account',
-      label: '车队账户',
-      icon: Wallet,
-      component: AccountManagement
-    },
-    {
-      id: 'fleet-router',
-      label: '车队路由',
-      icon: Route,
-      component: FleetRouter
-    },
-    {
-      id: 'commission-management',
-      label: '佣金管理',
-      icon: Percent,
-      component: CommissionManagementPage
-    },
-    {
-      id: 'dispatch-strategy',
-      label: '派单策略',
-      icon: Route,
-      component: DispatchStrategyManagement
-    },
-    // {
-    //   id: 'fleet-settlement',
-    //   label: '结算',
-    //   icon: Calculator,
-    //   component: FleetSettlement
-    // },
-    // {
-    //   id: 'refund',
-    //   label: '退款',
-    //   icon: Undo2,
-    //   component: RefundRecords
-    // },
-    // {
-    //   id: 'recharge',
-    //   label: '充值记录',
-    //   icon: Plus,
-    //   component: RechargeRecords
-    // },
-    // {
-    //   id: 'settlement',
-    //   label: '结算',
-    //   icon: Calculator,
-    //   component: SettlementRecords
-    // },
-    {
-      id: 'task-management',
-      label: '定时任务',
-      icon: Clock,
-      component: TaskManagement
-    },
+      id: 'system',
+      label: '系统管理',
+      items: [
+        {
+          id: 'task-management',
+          label: '定时任务',
+          icon: Clock,
+          component: TaskManagement
+        }
+      ]
+    }
   ];
+
+  // 为了保持向后兼容，创建扁平的menuItems数组
+  const menuItems = menuGroups.flatMap(group => group.items);
 
   const ActiveComponent = menuItems.find(item => item.id === activeMenu)?.component || Dashboard;
 
@@ -256,120 +266,31 @@ export default function App() {
           </div>
 
           <div className="flex-1 overflow-y-auto py-4">
-            {/* 首页 */}
-            <div className="px-3 mb-4">
-              <div
-                className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
-                  activeMenu === 'dashboard' 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'hover:bg-muted'
-                }`}
-                onClick={() => setActiveMenu('dashboard')}
-              >
-                <Home className="h-4 w-4 flex-shrink-0" />
-                {sidebarOpen && <span>首页</span>}
+            {menuGroups.map((group) => (
+              <div key={group.id} className="px-3 mb-4">
+                {group.label && sidebarOpen && (
+                  <h4 className="text-xs font-semibold text-muted-foreground px-3 py-2 uppercase tracking-wider">
+                    {group.label}
+                  </h4>
+                )}
+                <div className="space-y-1">
+                  {group.items.map((item) => (
+                    <div
+                      key={item.id}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
+                        activeMenu === item.id 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'hover:bg-muted'
+                      }`}
+                      onClick={() => setActiveMenu(item.id)}
+                    >
+                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                      {sidebarOpen && <span>{item.label}</span>}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-
-            {/* 交易管理 */}
-            <div className="px-3 mb-4">
-              {sidebarOpen && (
-                <h4 className="text-xs font-semibold text-muted-foreground px-3 py-2 uppercase tracking-wider">
-                  交易管理
-                </h4>
-              )}
-              <div className="space-y-1">
-                {menuItems.slice(1, 3).map((item) => (
-                  <div
-                    key={item.id}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
-                      activeMenu === item.id 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'hover:bg-muted'
-                    }`}
-                    onClick={() => setActiveMenu(item.id)}
-                  >
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
-                    {sidebarOpen && <span>{item.label}</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 商户管理 */}
-            <div className="px-3 mb-4">
-              {sidebarOpen && (
-                <h4 className="text-xs font-semibold text-muted-foreground px-3 py-2 uppercase tracking-wider">
-                  商户管理
-                </h4>
-              )}
-              <div className="space-y-1">
-                {menuItems.slice(3, 8).map((item) => (
-                  <div
-                    key={item.id}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
-                      activeMenu === item.id 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'hover:bg-muted'
-                    }`}
-                    onClick={() => setActiveMenu(item.id)}
-                  >
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
-                    {sidebarOpen && <span>{item.label}</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 车队管理 */}
-            <div className="px-3 mb-4">
-              {sidebarOpen && (
-                <h4 className="text-xs font-semibold text-muted-foreground px-3 py-2 uppercase tracking-wider">
-                  车队管理
-                </h4>
-              )}
-              <div className="space-y-1">
-                {menuItems.slice(8, 17).map((item) => (
-                  <div
-                    key={item.id}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
-                      activeMenu === item.id 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'hover:bg-muted'
-                    }`}
-                    onClick={() => setActiveMenu(item.id)}
-                  >
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
-                    {sidebarOpen && <span>{item.label}</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 系统管理 */}
-            <div className="px-3">
-              {sidebarOpen && (
-                <h4 className="text-xs font-semibold text-muted-foreground px-3 py-2 uppercase tracking-wider">
-                  系统管理
-                </h4>
-              )}
-              <div className="space-y-1">
-                {menuItems.slice(16, 17).map((item) => (
-                  <div
-                    key={item.id}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
-                      activeMenu === item.id 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'hover:bg-muted'
-                    }`}
-                    onClick={() => setActiveMenu(item.id)}
-                  >
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
-                    {sidebarOpen && <span>{item.label}</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 

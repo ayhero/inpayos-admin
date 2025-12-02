@@ -6,7 +6,7 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Plus, Edit, Trash2, Eye, Trash, PlusCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Trash, PlusCircle, RefreshCw } from 'lucide-react';
 import { ToastContainer } from './Toast';
 import { toast } from '../utils/toast';
 import { StatusBadge } from './StatusBadge';
@@ -225,7 +225,7 @@ export function ChannelManagement() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">渠道管理</h1>
+        <h1 className="text-2xl font-bold">渠道账户</h1>
         <Button onClick={handleCreateChannel} className="gap-2">
           <Plus className="h-4 w-4" />
           新建
@@ -272,6 +272,14 @@ export function ChannelManagement() {
                 <SelectItem value="inactive">禁用</SelectItem>
               </SelectContent>
             </Select>
+            <Button 
+              variant="outline" 
+              onClick={() => setSearchParams({ channel_code: '', account_id: '', status: '' })}
+              className="w-full md:w-auto"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              重置
+            </Button>
 
           </div>
         </CardContent>
@@ -582,7 +590,7 @@ export function ChannelManagement() {
           style={{ width: '60vw', maxWidth: '60vw' }}
         >
           <DialogHeader>
-            <DialogTitle>新增渠道</DialogTitle>
+            <DialogTitle>新建渠道账户</DialogTitle>
           </DialogHeader>
           <div className="space-y-6">
             <div className="grid grid-cols-3 gap-4">
@@ -804,7 +812,7 @@ export function ChannelManagement() {
           style={{ width: '60vw', maxWidth: '60vw' }}
         >
           <DialogHeader>
-            <DialogTitle>编辑渠道</DialogTitle>
+            <DialogTitle>编辑渠道账户</DialogTitle>
           </DialogHeader>
           <div className="space-y-6">
             <div className="grid grid-cols-3 gap-4">
