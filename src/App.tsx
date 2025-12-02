@@ -304,7 +304,7 @@ export default function App() {
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(3, 7).map((item) => (
+                {menuItems.slice(3, 8).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
@@ -329,7 +329,7 @@ export default function App() {
                 </h4>
               )}
               <div className="space-y-1">
-                {menuItems.slice(7, 16).map((item) => (
+                {menuItems.slice(8, 17).map((item) => (
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${

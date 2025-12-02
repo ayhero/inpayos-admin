@@ -58,7 +58,7 @@ export class ChannelService {
   // 获取渠道列表
   static async getChannelList(params: ChannelListParams): Promise<ChannelListResponse> {
     try {
-      const response = await api.post('/admin/channel/list', params);
+      const response = await api.post('/channel/list', params);
       
       if (response.code === '0000') {
         return {
@@ -100,7 +100,7 @@ export class ChannelService {
   // 创建渠道
   static async createChannel(data: CreateChannelData): Promise<ChannelResponse> {
     try {
-      const response = await api.post('/admin/channel/create', data);
+      const response = await api.post('/channel/create', data);
       
       if (response.code === '0000') {
         return {
@@ -126,7 +126,7 @@ export class ChannelService {
   static async updateChannel(id: number, data: CreateChannelData): Promise<ChannelResponse> {
     try {
       const updateData = { ...data, id };
-      const response = await api.post('/admin/channel/update', updateData);
+      const response = await api.post('/channel/update', updateData);
       
       if (response.code === '0000') {
         return {
@@ -151,7 +151,7 @@ export class ChannelService {
   // 删除渠道
   static async deleteChannel(id: number): Promise<ChannelResponse> {
     try {
-      const response = await api.post('/admin/channel/delete', { id });
+      const response = await api.post('/channel/delete', { id });
       
       if (response.code === '0000') {
         return {
