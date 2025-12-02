@@ -6,7 +6,7 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Trash, PlusCircle } from 'lucide-react';
 import { ToastContainer } from './Toast';
 import { toast } from '../utils/toast';
 import { StatusBadge } from './StatusBadge';
@@ -18,7 +18,19 @@ export function ChannelManagement() {
   const [channels, setChannels] = useState<ChannelData[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedChannel, setSelectedChannel] = useState<ChannelData | null>(null);
+  const [formData, setFormData] = useState({
+    channel_code: '',
+    account_id: '',
+    secret: '',
+    status: 'active',
+    pkgs: [] as string[],
+    groups: [] as string[],
+    detail: {} as Record<string, any>,
+    settings: {} as Record<string, any>
+  });
   
   // 搜索参数
   const [searchParams, setSearchParams] = useState({
@@ -96,8 +108,18 @@ export function ChannelManagement() {
   };
 
   const handleEditChannel = (channel: ChannelData) => {
-    console.log('Edit channel:', channel);
-    toast.info('编辑功能开发中...');
+    setSelectedChannel(channel);
+    setFormData({
+      channel_code: channel.channel_code,
+      account_id: channel.account_id,
+      secret: channel.secret || '',
+      status: channel.status,
+      pkgs: channel.pkgs || [],
+      groups: channel.groups || [],
+      detail: channel.detail || {},
+      settings: channel.settings || {}
+    });
+    setShowEditModal(true);
   };
 
   const handleDeleteChannel = (channel: ChannelData) => {
@@ -105,8 +127,99 @@ export function ChannelManagement() {
     toast.info('删除功能开发中...');
   };
 
+  // 表单提交处理
+  const handleFormSubmit = async () => {
+    try {
+      if (selectedChannel) {
+        // 编辑模式
+        const response = await ChannelService.updateChannel(selectedChannel.id, formData);
+        if (response.success) {
+          toast.success('更新成功');
+          setShowEditModal(false);
+          fetchChannels();
+        } else {
+          toast.error(response.message || '更新失败');
+        }
+      } else {
+        // 创建模式
+        const response = await ChannelService.createChannel(formData);
+        if (response.success) {
+          toast.success('创建成功');
+          setShowCreateModal(false);
+          fetchChannels();
+        } else {
+          toast.error(response.message || '创建失败');
+        }
+      }
+    } catch (error) {
+      console.error('Submit error:', error);
+      toast.error('操作失败');
+    }
+  };
+
+  // 添加表单字段处理函数
+  const addDetailRow = () => {
+    const newKey = `key_${Object.keys(formData.detail).length + 1}`;
+    setFormData(prev => ({
+      ...prev,
+      detail: { ...prev.detail, [newKey]: '' }
+    }));
+  };
+
+  const removeDetailRow = (key: string) => {
+    setFormData(prev => {
+      const newDetail = { ...prev.detail };
+      delete newDetail[key];
+      return { ...prev, detail: newDetail };
+    });
+  };
+
+  const updateDetailRow = (oldKey: string, newKey: string, value: any) => {
+    setFormData(prev => {
+      const newDetail = { ...prev.detail };
+      delete newDetail[oldKey];
+      newDetail[newKey] = value;
+      return { ...prev, detail: newDetail };
+    });
+  };
+
+  const addSettingsRow = () => {
+    const newKey = `key_${Object.keys(formData.settings).length + 1}`;
+    setFormData(prev => ({
+      ...prev,
+      settings: { ...prev.settings, [newKey]: '' }
+    }));
+  };
+
+  const removeSettingsRow = (key: string) => {
+    setFormData(prev => {
+      const newSettings = { ...prev.settings };
+      delete newSettings[key];
+      return { ...prev, settings: newSettings };
+    });
+  };
+
+  const updateSettingsRow = (oldKey: string, newKey: string, value: any) => {
+    setFormData(prev => {
+      const newSettings = { ...prev.settings };
+      delete newSettings[oldKey];
+      newSettings[newKey] = value;
+      return { ...prev, settings: newSettings };
+    });
+  };
+
   const handleCreateChannel = () => {
-    toast.info('创建功能开发中...');
+    setFormData({
+      channel_code: '',
+      account_id: '',
+      secret: '',
+      status: 'active',
+      pkgs: [],
+      groups: [],
+      detail: {},
+      settings: {}
+    });
+    setShowCreateModal(true);
   };
 
   return (
@@ -459,6 +572,450 @@ export function ChannelManagement() {
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 新增渠道模态窗 */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent 
+          className="max-h-[80vh] overflow-y-auto"
+          style={{ width: '60vw', maxWidth: '60vw' }}
+        >
+          <DialogHeader>
+            <DialogTitle>新增渠道</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Select
+                  value={formData.channel_code}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, channel_code: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择渠道" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CHANNEL_CODE_OPTIONS.filter(option => option.value !== 'all').map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Input
+                  value={formData.account_id}
+                  onChange={(e) => setFormData(prev => ({ ...prev, account_id: e.target.value }))}
+                  placeholder="请输入账户ID"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.status === 'active'}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    status: e.target.checked ? 'active' : 'inactive' 
+                  }))}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm text-gray-700">启用状态</span>
+              </div>
+              <div className="col-span-3">
+                <Input
+                  value={formData.secret}
+                  onChange={(e) => setFormData(prev => ({ ...prev, secret: e.target.value }))}
+                  placeholder="请输入密钥"
+                  type="password"
+                />
+              </div>
+              <div>
+                <Input
+                  value={formData.pkgs.join(',')}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    pkgs: e.target.value.split(',').filter(p => p.trim()) 
+                  }))}
+                  placeholder="支持包（用逗号分隔）"
+                />
+              </div>
+              <div className="col-span-2">
+                <Input
+                  value={formData.groups.join(',')}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    groups: e.target.value.split(',').filter(g => g.trim()) 
+                  }))}
+                  placeholder="分组（用逗号分隔）"
+                />
+              </div>
+            </div>
+
+            {/* 详情配置表格 */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">详情配置</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={addDetailRow}
+                >
+                  <PlusCircle className="h-4 w-4 mr-1" />
+                  添加行
+                </Button>
+              </div>
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2 text-left font-medium text-gray-700 border-b w-1/3">键</th>
+                      <th className="px-4 py-2 text-left font-medium text-gray-700 border-b">值</th>
+                      <th className="px-4 py-2 text-center font-medium text-gray-700 border-b w-20">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(formData.detail).map(([key, value]) => (
+                      <tr key={key} className="border-b last:border-b-0">
+                        <td className="px-4 py-2">
+                          <Input
+                            value={key}
+                            onChange={(e) => updateDetailRow(key, e.target.value, value)}
+                            placeholder="键名"
+                          />
+                        </td>
+                        <td className="px-4 py-2">
+                          <Input
+                            value={typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                            onChange={(e) => {
+                              try {
+                                const parsedValue = JSON.parse(e.target.value);
+                                updateDetailRow(key, key, parsedValue);
+                              } catch {
+                                updateDetailRow(key, key, e.target.value);
+                              }
+                            }}
+                            placeholder="值（支持JSON）"
+                          />
+                        </td>
+                        <td className="px-4 py-2 text-center">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removeDetailRow(key)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* 配置设置表格 */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">配置设置</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={addSettingsRow}
+                >
+                  <PlusCircle className="h-4 w-4 mr-1" />
+                  添加行
+                </Button>
+              </div>
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2 text-left font-medium text-gray-700 border-b w-1/3">键</th>
+                      <th className="px-4 py-2 text-left font-medium text-gray-700 border-b">值</th>
+                      <th className="px-4 py-2 text-center font-medium text-gray-700 border-b w-20">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(formData.settings).map(([key, value]) => (
+                      <tr key={key} className="border-b last:border-b-0">
+                        <td className="px-4 py-2">
+                          <Input
+                            value={key}
+                            onChange={(e) => updateSettingsRow(key, e.target.value, value)}
+                            placeholder="键名"
+                          />
+                        </td>
+                        <td className="px-4 py-2">
+                          <Input
+                            value={typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                            onChange={(e) => {
+                              try {
+                                const parsedValue = JSON.parse(e.target.value);
+                                updateSettingsRow(key, key, parsedValue);
+                              } catch {
+                                updateSettingsRow(key, key, e.target.value);
+                              }
+                            }}
+                            placeholder="值（支持JSON）"
+                          />
+                        </td>
+                        <td className="px-4 py-2 text-center">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removeSettingsRow(key)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateModal(false)}
+              >
+                取消
+              </Button>
+              <Button onClick={handleFormSubmit}>
+                创建
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 编辑渠道模态窗 */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent 
+          className="max-h-[80vh] overflow-y-auto"
+          style={{ width: '60vw', maxWidth: '60vw' }}
+        >
+          <DialogHeader>
+            <DialogTitle>编辑渠道</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Select
+                  value={formData.channel_code}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, channel_code: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择渠道" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CHANNEL_CODE_OPTIONS.filter(option => option.value !== 'all').map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Input
+                  value={formData.account_id}
+                  onChange={(e) => setFormData(prev => ({ ...prev, account_id: e.target.value }))}
+                  placeholder="请输入账户ID"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.status === 'active'}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    status: e.target.checked ? 'active' : 'inactive' 
+                  }))}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm text-gray-700">启用状态</span>
+              </div>
+              <div className="col-span-3">
+                <Input
+                  value={formData.secret}
+                  onChange={(e) => setFormData(prev => ({ ...prev, secret: e.target.value }))}
+                  placeholder="请输入密钥"
+                  type="password"
+                />
+              </div>
+              <div>
+                <Input
+                  value={formData.pkgs.join(',')}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    pkgs: e.target.value.split(',').filter(p => p.trim()) 
+                  }))}
+                  placeholder="支持包（用逗号分隔）"
+                />
+              </div>
+              <div className="col-span-2">
+                <Input
+                  value={formData.groups.join(',')}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    groups: e.target.value.split(',').filter(g => g.trim()) 
+                  }))}
+                  placeholder="分组（用逗号分隔）"
+                />
+              </div>
+            </div>
+
+            {/* 详情配置表格 */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">详情配置</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={addDetailRow}
+                >
+                  <PlusCircle className="h-4 w-4 mr-1" />
+                  添加行
+                </Button>
+              </div>
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2 text-left font-medium text-gray-700 border-b w-1/3">键</th>
+                      <th className="px-4 py-2 text-left font-medium text-gray-700 border-b">值</th>
+                      <th className="px-4 py-2 text-center font-medium text-gray-700 border-b w-20">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(formData.detail).map(([key, value]) => (
+                      <tr key={key} className="border-b last:border-b-0">
+                        <td className="px-4 py-2">
+                          <Input
+                            value={key}
+                            onChange={(e) => updateDetailRow(key, e.target.value, value)}
+                            placeholder="键名"
+                          />
+                        </td>
+                        <td className="px-4 py-2">
+                          <Input
+                            value={typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                            onChange={(e) => {
+                              try {
+                                const parsedValue = JSON.parse(e.target.value);
+                                updateDetailRow(key, key, parsedValue);
+                              } catch {
+                                updateDetailRow(key, key, e.target.value);
+                              }
+                            }}
+                            placeholder="值（支持JSON）"
+                          />
+                        </td>
+                        <td className="px-4 py-2 text-center">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removeDetailRow(key)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* 配置设置表格 */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">配置设置</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={addSettingsRow}
+                >
+                  <PlusCircle className="h-4 w-4 mr-1" />
+                  添加行
+                </Button>
+              </div>
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2 text-left font-medium text-gray-700 border-b w-1/3">键</th>
+                      <th className="px-4 py-2 text-left font-medium text-gray-700 border-b">值</th>
+                      <th className="px-4 py-2 text-center font-medium text-gray-700 border-b w-20">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(formData.settings).map(([key, value]) => (
+                      <tr key={key} className="border-b last:border-b-0">
+                        <td className="px-4 py-2">
+                          <Input
+                            value={key}
+                            onChange={(e) => updateSettingsRow(key, e.target.value, value)}
+                            placeholder="键名"
+                          />
+                        </td>
+                        <td className="px-4 py-2">
+                          <Input
+                            value={typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                            onChange={(e) => {
+                              try {
+                                const parsedValue = JSON.parse(e.target.value);
+                                updateSettingsRow(key, key, parsedValue);
+                              } catch {
+                                updateSettingsRow(key, key, e.target.value);
+                              }
+                            }}
+                            placeholder="值（支持JSON）"
+                          />
+                        </td>
+                        <td className="px-4 py-2 text-center">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removeSettingsRow(key)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => setShowEditModal(false)}
+              >
+                取消
+              </Button>
+              <Button onClick={handleFormSubmit}>
+                保存
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
