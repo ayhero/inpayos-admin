@@ -64,10 +64,10 @@ export class ChannelService {
         return {
           success: true,
           data: {
-            records: response.data.list || [],
+            records: response.data.records || [],
             total: response.data.total || 0,
-            page: response.data.pagination?.page || 1,
-            size: response.data.pagination?.size || 20
+            page: response.data.current || 1,
+            size: response.data.size || 20
           }
         };
       } else {
