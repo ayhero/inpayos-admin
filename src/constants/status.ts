@@ -258,3 +258,33 @@ export const getOnlineStatusBadgeConfig = (status: string): StatusBadgeConfig =>
     className: '' 
   };
 };
+
+// 渠道状态 Badge 配置
+export const CHANNEL_STATUS_BADGE_CONFIG: Record<string, StatusBadgeConfig> = {
+  '0': { label: '处理中', variant: 'outline', className: 'bg-blue-500' },
+  '1': { label: '成功', variant: 'default', className: 'bg-green-500' },
+  '2': { label: '失败', variant: 'destructive', className: '' },
+  'pending': { label: '处理中', variant: 'outline', className: 'bg-blue-500' },
+  'success': { label: '成功', variant: 'default', className: 'bg-green-500' },
+  'failed': { label: '失败', variant: 'destructive', className: '' }
+};
+
+// 获取渠道状态 Badge 配置
+export const getChannelStatusBadgeConfig = (status: string | number | undefined): StatusBadgeConfig => {
+  if (status === undefined || status === null) {
+    return { label: '-', variant: 'outline' as const, className: 'bg-gray-400' };
+  }
+  const statusStr = String(status);
+  return CHANNEL_STATUS_BADGE_CONFIG[statusStr] || { 
+    label: statusStr || '-', 
+    variant: 'outline' as const, 
+    className: '' 
+  };
+};
+
+// 获取渠道状态显示名称
+export const getChannelStatusDisplayName = (status: string | number | undefined): string => {
+  if (status === undefined || status === null) return '-';
+  const config = getChannelStatusBadgeConfig(status);
+  return config.label;
+};

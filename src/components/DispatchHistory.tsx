@@ -18,8 +18,8 @@ export function DispatchHistory({ dispatchHistory, formatDateTime }: DispatchHis
       <h3 className="text-lg font-semibold mb-3 pb-2 border-b">派单历史</h3>
       <div className="space-y-4">
         {dispatchHistory.map((history) => (
-          <div key={history.historyId} className="border rounded-lg p-4 bg-muted/30">
-            <div className="flex justify-between items-start mb-3">
+          <div key={history.historyId} className="space-y-3">
+            <div className="flex justify-between items-start">
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant="outline">第 {history.dispatchRound} 轮</Badge>
                 <Badge variant={history.success ? 'default' : 'destructive'} className={history.success ? 'bg-green-500' : ''}>
@@ -39,7 +39,7 @@ export function DispatchHistory({ dispatchHistory, formatDateTime }: DispatchHis
               </div>
             </div>
             {history.candidates && history.candidates.length > 0 && (
-              <div className="mt-3">
+              <div>
                 <div className="border rounded overflow-hidden">
                   <table className="w-full text-xs">
                     <thead className="bg-muted/50">

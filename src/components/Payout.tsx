@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { DispatchHistory } from './DispatchHistory';
 import { Search, RefreshCw, X } from 'lucide-react';
 import { 
   transactionService, 
@@ -16,10 +17,9 @@ import {
   TransactionQueryParams,
   TodayStats 
 } from '../services/transactionService';
-import { getStatusDisplayName, getStatusColor, getTrxTypeBadgeConfig } from '../constants/status';
-import { getTrxMethodLabel } from '../constants/business';
+import { getStatusDisplayName, getStatusColor, getTrxTypeBadgeConfig, getChannelStatusBadgeConfig } from '../constants/status';
+import { getTrxMethodLabel, getChannelCodeLabel } from '../constants/business';
 import { toast } from '../utils/toast';
-import { DispatchHistory } from './DispatchHistory';
 
 export function PayoutRecords() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -130,12 +130,6 @@ export function PayoutRecords() {
   useEffect(() => {
     fetchRecords();
   }, [pagination.page]);
-
-  // 当筛选条件变化时，重置到第一页并重新查询
-  useEffect(() => {
-    setPagination(prev => ({ ...prev, page: 1 }));
-    fetchRecords();
-  }, [statusFilter, searchTerm]);
 
   const getStatusBadge = (status: TransactionStatus) => {
     const displayName = getStatusDisplayName(status);
@@ -350,7 +344,19 @@ export function PayoutRecords() {
                 <SelectItem value="cancelled">已取消</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" onClick={() => { setSearchTerm(''); setStatusFilter('all'); }} disabled={loading}>
+            <Button onClick={() => {
+              setPagination(prev => ({ ...prev, page: 1 }));
+              fetchRecords();
+            }} disabled={loading}>
+              <Search className="h-4 w-4 mr-2" />
+              搜索
+            </Button>
+            <Button variant="outline" onClick={() => { 
+              setSearchTerm('');
+              setStatusFilter('all');
+              setPagination(prev => ({ ...prev, page: 1 }));
+              fetchRecords();
+            }} disabled={loading}>
               <RefreshCw className="h-4 w-4 mr-2" />
               重置
             </Button>
@@ -453,7 +459,7 @@ export function PayoutRecords() {
 
       {/* 详情对话框 */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-[80vw] w-[80vw] min-w-[800px]" style={{width: '80vw', maxWidth: '80vw'}}>
+        <DialogContent className="max-w-[60vw] w-[60vw] min-w-[600px]" style={{width: '60vw', maxWidth: '60vw'}}>
           <DialogHeader>
             <DialogTitle>代付交易详情</DialogTitle>
           </DialogHeader>
@@ -461,286 +467,264 @@ export function PayoutRecords() {
             <div className="text-center py-12">加载中...</div>
           ) : selectedRecord ? (
             <div className="py-4 max-h-[70vh] overflow-y-auto">
-              <div className="grid grid-cols-2 gap-6">
-                {/* 左侧栏 */}
-                <div className="space-y-4">
-              {/* 1. 基本信息模块 */}
-              <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
-                <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">基本信息</h3>
-                <div className="space-y-4">
-                  {/* 1.1 交易ID、状态 */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm text-muted-foreground">交易ID</label>
-                      <p className="text-base font-semibold font-mono mt-1">{selectedRecord.trxID}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground">状态</label>
-                      <p className="mt-1">{getStatusBadge(selectedRecord.status)}</p>
-                    </div>
-                  </div>
-                  
-                  {/* 1.2 交易类型、支付方式、金额 */}
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="text-sm text-muted-foreground">交易类型</label>
-                      <p className="text-base font-semibold mt-1">
-                        {(() => {
-                          const config = getTrxTypeBadgeConfig(selectedRecord.trxType || '');
-                          return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
-                        })()}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground">支付方式</label>
-                      <p className="text-base font-semibold mt-1">{getTrxMethodLabel(selectedRecord.trxMethod)}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground">金额</label>
-                      <p className="text-base font-semibold mt-1">
-                        {formatCurrencyForModal(selectedRecord.amount, selectedRecord.ccy, selectedRecord.usdAmount)}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* 1.3 备注 */}
-                  <div>
-                    <label className="text-sm text-muted-foreground">备注</label>
-                    <p className="text-base font-semibold mt-1">{selectedRecord.remark || '-'}</p>
-                  </div>
-                  
-                  {/* 1.3 创建时间、完成时间、过期时间 */}
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="text-sm text-muted-foreground">创建时间</label>
-                      <p className="text-base font-semibold mt-1">{formatDateTime(selectedRecord.createdAt)}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground">完成时间</label>
-                      <p className="text-base font-semibold mt-1">{selectedRecord.completedAt ? formatDateTime(selectedRecord.completedAt) : '-'}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground">过期时间</label>
-                      <p className="text-base font-semibold mt-1">{selectedRecord.expiredAt ? formatDateTime(selectedRecord.expiredAt) : '-'}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <div className="space-y-4">
 
-              {/* 2. 收款账户模块 */}
-              <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
-                <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">收款账户</h3>
-                <div className="space-y-4">
-                  {selectedRecord.upi && (
-                    <div>
-                      <label className="text-sm text-muted-foreground">UPI账户</label>
-                      <p className="text-base font-semibold font-mono mt-1">{selectedRecord.upi}</p>
-                    </div>
-                  )}
-                  {(selectedRecord.bankCode || selectedRecord.bankName) && (
+                {/* 1. 基本信息模块 */}
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-300 dark:border-gray-600">基本信息</h3>
+                  <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                      {selectedRecord.bankCode && (
-                        <div>
-                          <label className="text-sm text-muted-foreground">银行代码</label>
-                          <p className="text-base font-semibold mt-1">{selectedRecord.bankCode}</p>
-                        </div>
-                      )}
-                      {selectedRecord.bankName && (
-                        <div>
-                          <label className="text-sm text-muted-foreground">银行名称</label>
-                          <p className="text-base font-semibold mt-1">{selectedRecord.bankName}</p>
-                        </div>
-                      )}
+                      <div>
+                        <label className="text-sm text-muted-foreground">交易ID</label>
+                        <p className="text-base font-semibold font-mono mt-1">{selectedRecord.trxID}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">状态</label>
+                        <p className="mt-1">{getStatusBadge(selectedRecord.status)}</p>
+                      </div>
                     </div>
-                  )}
-                  {selectedRecord.cardNumber && (
-                    <div>
-                      <label className="text-sm text-muted-foreground">卡号</label>
-                      <p className="text-base font-semibold font-mono mt-1">{selectedRecord.cardNumber}</p>
-                    </div>
-                  )}
-                  {(selectedRecord.holderName || selectedRecord.holderPhone || selectedRecord.holderEmail) && (
+                    
                     <div className="grid grid-cols-3 gap-4">
-                      {selectedRecord.holderName && (
-                        <div>
-                          <label className="text-sm text-muted-foreground">持卡人姓名</label>
-                          <p className="text-base font-semibold mt-1">{selectedRecord.holderName}</p>
-                        </div>
-                      )}
-                      {selectedRecord.holderPhone && (
-                        <div>
-                          <label className="text-sm text-muted-foreground">持卡人手机</label>
-                          <p className="text-base font-semibold mt-1">{selectedRecord.holderPhone}</p>
-                        </div>
-                      )}
-                      {selectedRecord.holderEmail && (
-                        <div>
-                          <label className="text-sm text-muted-foreground">持卡人邮箱</label>
-                          <p className="text-base font-semibold mt-1">{selectedRecord.holderEmail}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 3. 付款账户模块 */}
-              {selectedRecord.dispatchRecords && selectedRecord.dispatchRecords.length > 0 && (
-                <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">付款账户</h3>
-                  {(() => {
-                    const acceptedDispatch = selectedRecord.dispatchRecords.find(d => d.status === 'accepted' || d.status === 'pending');
-                    if (!acceptedDispatch) return <p className="text-sm text-muted-foreground">暂无接单信息</p>;
-                    
-                    const historyForDispatch = selectedRecord.dispatchHistory?.find(h => h.dispatchId === acceptedDispatch.dispatchId);
-                    const selectedCandidate = historyForDispatch?.candidates?.find(c => c.selected);
-                    
-                    return (
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <label className="text-sm text-muted-foreground">付款UPI</label>
-                          <p className="text-base font-semibold font-mono mt-1">{selectedCandidate?.upi || '-'}</p>
-                        </div>
-                        <div>
-                          <label className="text-sm text-muted-foreground">手机号</label>
-                          {selectedCandidate?.user ? (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <p className="text-base font-semibold mt-1 cursor-help underline decoration-dotted">
-                                    {selectedCandidate.user.phone || '-'}
-                                  </p>
-                                </TooltipTrigger>
-                                <TooltipContent side="right" className="max-w-xs">
-                                  <div className="space-y-1 text-xs">
-                                    <div><span className="text-gray-400">用户ID:</span> <span className="font-mono">{selectedCandidate.user.user_id}</span></div>
-                                    <div><span className="text-gray-400">姓名:</span> {selectedCandidate.user.name || '-'}</div>
-                                    <div><span className="text-gray-400">手机:</span> {selectedCandidate.user.phone || '-'}</div>
-                                    <div><span className="text-gray-400">邮箱:</span> {selectedCandidate.user.email || '-'}</div>
-                                    <div><span className="text-gray-400">组织:</span> {selectedCandidate.user.org_id || '-'}</div>
-                                  </div>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          ) : (
-                            <p className="text-base font-semibold mt-1">-</p>
-                          )}
-                        </div>
-                        <div>
-                          <label className="text-sm text-muted-foreground">接单时间</label>
-                          <p className="text-base font-semibold mt-1">{formatDateTime(acceptedDispatch.dispatchAt)}</p>
-                        </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">交易类型</label>
+                        <p className="text-base font-semibold mt-1">
+                          {(() => {
+                            const config = getTrxTypeBadgeConfig(selectedRecord.trxType || '');
+                            return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
+                          })()}
+                        </p>
                       </div>
-                    );
-                  })()}
-                </div>
-              )}
-
-              {/* 4. 结算信息模块 */}
-              <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
-                <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">结算信息</h3>
-                <div className="space-y-4">
-                  {/* 3.1 状态、时间 */}
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="text-sm text-muted-foreground">结算状态</label>
-                      <p className="text-base font-semibold mt-1">{selectedRecord.settleStatus || '-'}</p>
+                      <div>
+                        <label className="text-sm text-muted-foreground">支付方式</label>
+                        <p className="text-base font-semibold mt-1">{getTrxMethodLabel(selectedRecord.trxMethod)}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">金额</label>
+                        <p className="text-base font-semibold mt-1">
+                          {formatCurrencyForModal(selectedRecord.amount, selectedRecord.ccy, selectedRecord.usdAmount)}
+                        </p>
+                      </div>
                     </div>
+                    
                     <div>
-                      <label className="text-sm text-muted-foreground">结算ID</label>
-                      <p className="text-base font-semibold font-mono mt-1">{selectedRecord.settleID || '-'}</p>
+                      <label className="text-sm text-muted-foreground">备注</label>
+                      <p className="text-base font-semibold mt-1">{selectedRecord.remark || '-'}</p>
                     </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground">结算时间</label>
-                      <p className="text-base font-semibold mt-1">{selectedRecord.settledAt ? formatDateTime(selectedRecord.settledAt) : '-'}</p>
-                    </div>
-                  </div>
-                  
-                  {/* 3.2 币种、金额、费用 */}
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="text-sm text-muted-foreground">结算币种</label>
-                      <p className="text-base font-semibold mt-1">{selectedRecord.ccy}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground">结算金额</label>
-                      <p className="text-base font-semibold mt-1">
-                        {selectedRecord.settleAmount 
-                          ? `${formatCurrency(selectedRecord.settleAmount, selectedRecord.ccy)}${selectedRecord.settleUsdAmount && parseFloat(selectedRecord.settleUsdAmount) > 0 ? ` ($${selectedRecord.settleUsdAmount})` : ''}` 
-                          : '-'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground">手续费</label>
-                      <p className="text-base font-semibold mt-1">
-                        {selectedRecord.feeAmount ? formatCurrency(selectedRecord.feeAmount, selectedRecord.feeCcy || selectedRecord.ccy) : '-'}
-                      </p>
+                    
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-sm text-muted-foreground">创建时间</label>
+                        <p className="text-base font-semibold mt-1">{formatDateTime(selectedRecord.createdAt)}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">完成时间</label>
+                        <p className="text-base font-semibold mt-1">{selectedRecord.completedAt ? formatDateTime(selectedRecord.completedAt) : '-'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">过期时间</label>
+                        <p className="text-base font-semibold mt-1">{selectedRecord.expiredAt ? formatDateTime(selectedRecord.expiredAt) : '-'}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* 4. 付款账户模块 */}
-              {selectedRecord.dispatchRecords && selectedRecord.dispatchRecords.length > 0 && (
-                <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">付款账户</h3>
-                  {(() => {
-                    const acceptedDispatch = selectedRecord.dispatchRecords.find(d => d.status === 'accepted' || d.status === 'pending');
-                    if (!acceptedDispatch) return <p className="text-sm text-muted-foreground">暂无接单信息</p>;
-                    
-                    const historyForDispatch = selectedRecord.dispatchHistory?.find(h => h.dispatchId === acceptedDispatch.dispatchId);
-                    const selectedCandidate = historyForDispatch?.candidates?.find(c => c.selected);
-                    
-                    return (
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <label className="text-sm text-muted-foreground">付款UPI</label>
-                          <p className="text-base font-semibold font-mono mt-1">{selectedCandidate?.upi || '-'}</p>
-                        </div>
-                        <div>
-                          <label className="text-sm text-muted-foreground">Cashier手机号</label>
-                          {selectedCandidate?.user ? (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <p className="text-base font-semibold mt-1 cursor-help underline decoration-dotted">
-                                    {selectedCandidate.user.phone || '-'}
-                                  </p>
-                                </TooltipTrigger>
-                                <TooltipContent side="right" className="max-w-xs">
-                                  <div className="space-y-1 text-xs">
-                                    <div><span className="text-gray-400">用户ID:</span> <span className="font-mono">{selectedCandidate.user.user_id}</span></div>
-                                    <div><span className="text-gray-400">姓名:</span> {selectedCandidate.user.name || '-'}</div>
-                                    <div><span className="text-gray-400">手机:</span> {selectedCandidate.user.phone || '-'}</div>
-                                    <div><span className="text-gray-400">邮箱:</span> {selectedCandidate.user.email || '-'}</div>
-                                    <div><span className="text-gray-400">组织:</span> {selectedCandidate.user.org_id || '-'}</div>
-                                  </div>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          ) : (
-                            <p className="text-base font-semibold mt-1">-</p>
-                          )}
-                        </div>
-                        <div>
-                          <label className="text-sm text-muted-foreground">接单时间</label>
-                          <p className="text-base font-semibold mt-1">{formatDateTime(acceptedDispatch.dispatchAt)}</p>
-                        </div>
+                {/* 2. 渠道信息模块 */}
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-300 dark:border-gray-600">渠道信息</h3>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-sm text-muted-foreground">渠道</label>
+                        <p className="text-base font-semibold mt-1">{getChannelCodeLabel(selectedRecord.channelCode)}</p>
                       </div>
-                    );
-                  })()}
+                      <div>
+                        <label className="text-sm text-muted-foreground">渠道账户</label>
+                        <p className="text-base font-semibold mt-1">{selectedRecord.channelAccount || '-'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">渠道组</label>
+                        <p className="text-base font-semibold mt-1">{selectedRecord.channelGroup || '-'}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm text-muted-foreground">渠道交易ID</label>
+                        <p className="text-base font-semibold font-mono mt-1">{selectedRecord.channelTrxID || '-'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">渠道状态</label>
+                        <p className="mt-1">
+                          {(() => {
+                            const config = getChannelStatusBadgeConfig(selectedRecord.channelStatus);
+                            return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
+                          })()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
 
+                {/* 3. 派单历史模块 */}
+                {selectedRecord.dispatchHistory && selectedRecord.dispatchHistory.length > 0 && (
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                    <DispatchHistory 
+                      dispatchHistory={selectedRecord.dispatchHistory} 
+                      formatDateTime={formatDateTime} 
+                    />
+                  </div>
+                )}
+
+                {/* 4. 收款账户模块 */}
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-300 dark:border-gray-600">收款账户</h3>
+                  <div className="space-y-4">
+                    {selectedRecord.upi && (
+                      <div>
+                        <label className="text-sm text-muted-foreground">UPI账户</label>
+                        <p className="text-base font-semibold font-mono mt-1">{selectedRecord.upi}</p>
+                      </div>
+                    )}
+                    {(selectedRecord.bankCode || selectedRecord.bankName) && (
+                      <div className="grid grid-cols-2 gap-4">
+                        {selectedRecord.bankCode && (
+                          <div>
+                            <label className="text-sm text-muted-foreground">银行代码</label>
+                            <p className="text-base font-semibold mt-1">{selectedRecord.bankCode}</p>
+                          </div>
+                        )}
+                        {selectedRecord.bankName && (
+                          <div>
+                            <label className="text-sm text-muted-foreground">银行名称</label>
+                            <p className="text-base font-semibold mt-1">{selectedRecord.bankName}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {selectedRecord.cardNumber && (
+                      <div>
+                        <label className="text-sm text-muted-foreground">卡号</label>
+                        <p className="text-base font-semibold font-mono mt-1">{selectedRecord.cardNumber}</p>
+                      </div>
+                    )}
+                    {(selectedRecord.holderName || selectedRecord.holderPhone || selectedRecord.holderEmail) && (
+                      <div className="grid grid-cols-3 gap-4">
+                        {selectedRecord.holderName && (
+                          <div>
+                            <label className="text-sm text-muted-foreground">持卡人姓名</label>
+                            <p className="text-base font-semibold mt-1">{selectedRecord.holderName}</p>
+                          </div>
+                        )}
+                        {selectedRecord.holderPhone && (
+                          <div>
+                            <label className="text-sm text-muted-foreground">持卡人手机</label>
+                            <p className="text-base font-semibold mt-1">{selectedRecord.holderPhone}</p>
+                          </div>
+                        )}
+                        {selectedRecord.holderEmail && (
+                          <div>
+                            <label className="text-sm text-muted-foreground">持卡人邮箱</label>
+                            <p className="text-base font-semibold mt-1">{selectedRecord.holderEmail}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                
-                {/* 右侧栏 - 派单历史 */}
-                <div className="bg-indigo-50/50 dark:bg-indigo-950/30 border-2 border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
-              <DispatchHistory 
-                dispatchHistory={selectedRecord.dispatchHistory} 
-                formatDateTime={formatDateTime} 
-              />
+
+                {/* 5. 付款账户模块 */}
+                {selectedRecord.dispatchRecords && selectedRecord.dispatchRecords.length > 0 && (
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-300 dark:border-gray-600">付款账户</h3>
+                    {(() => {
+                      const acceptedDispatch = selectedRecord.dispatchRecords.find(d => d.status === 'accepted' || d.status === 'pending');
+                      if (!acceptedDispatch) return <p className="text-sm text-muted-foreground">暂无接单信息</p>;
+                      
+                      const historyForDispatch = selectedRecord.dispatchHistory?.find(h => h.dispatchId === acceptedDispatch.dispatchId);
+                      const selectedCandidate = historyForDispatch?.candidates?.find(c => c.selected);
+                      
+                      return (
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <label className="text-sm text-muted-foreground">付款UPI</label>
+                            <p className="text-base font-semibold font-mono mt-1">{selectedCandidate?.upi || '-'}</p>
+                          </div>
+                          <div>
+                            <label className="text-sm text-muted-foreground">手机号</label>
+                            {selectedCandidate?.user ? (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <p className="text-base font-semibold mt-1 cursor-help underline decoration-dotted">
+                                      {selectedCandidate.user.phone || '-'}
+                                    </p>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="max-w-xs">
+                                    <div className="space-y-1 text-xs">
+                                      <div><span className="text-gray-400">用户ID:</span> <span className="font-mono">{selectedCandidate.user.user_id}</span></div>
+                                      <div><span className="text-gray-400">姓名:</span> {selectedCandidate.user.name || '-'}</div>
+                                      <div><span className="text-gray-400">手机:</span> {selectedCandidate.user.phone || '-'}</div>
+                                      <div><span className="text-gray-400">邮箱:</span> {selectedCandidate.user.email || '-'}</div>
+                                      <div><span className="text-gray-400">组织:</span> {selectedCandidate.user.org_id || '-'}</div>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            ) : (
+                              <p className="text-base font-semibold mt-1">-</p>
+                            )}
+                          </div>
+                          <div>
+                            <label className="text-sm text-muted-foreground">接单时间</label>
+                            <p className="text-base font-semibold mt-1">{formatDateTime(acceptedDispatch.dispatchAt)}</p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {/* 6. 结算信息模块 */}
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-300 dark:border-gray-600">结算信息</h3>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-sm text-muted-foreground">结算状态</label>
+                        <p className="text-base font-semibold mt-1">{selectedRecord.settleStatus || '-'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">结算ID</label>
+                        <p className="text-base font-semibold font-mono mt-1">{selectedRecord.settleID || '-'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">结算时间</label>
+                        <p className="text-base font-semibold mt-1">{selectedRecord.settledAt ? formatDateTime(selectedRecord.settledAt) : '-'}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-sm text-muted-foreground">结算币种</label>
+                        <p className="text-base font-semibold mt-1">{selectedRecord.ccy}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">结算金额</label>
+                        <p className="text-base font-semibold mt-1">
+                          {selectedRecord.settleAmount 
+                            ? `${formatCurrency(selectedRecord.settleAmount, selectedRecord.ccy)}${selectedRecord.settleUsdAmount && parseFloat(selectedRecord.settleUsdAmount) > 0 ? ` ($${selectedRecord.settleUsdAmount})` : ''}` 
+                            : '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">手续费</label>
+                        <p className="text-base font-semibold mt-1">
+                          {selectedRecord.feeAmount ? formatCurrency(selectedRecord.feeAmount, selectedRecord.feeCcy || selectedRecord.ccy) : '-'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
               </div>
             </div>
           ) : null}
