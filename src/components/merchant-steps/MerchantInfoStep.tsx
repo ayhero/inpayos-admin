@@ -4,6 +4,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Checkbox } from '../ui/checkbox';
+import { EmailInputWithValidation } from '../ui/email-input-with-validation';
 import { Building2, Mail, Phone } from 'lucide-react';
 import { CCY_OPTIONS } from '../../constants/business';
 
@@ -24,6 +25,7 @@ interface MerchantInfoStepProps {
 
 export function MerchantInfoStep({ data, onChange }: MerchantInfoStepProps) {
   const [localData, setLocalData] = useState<MerchantInfo>(data);
+  const [emailValidation, setEmailValidation] = useState({ isValid: false, isAvailable: false });
 
   useEffect(() => {
     setLocalData(data);
@@ -33,6 +35,11 @@ export function MerchantInfoStep({ data, onChange }: MerchantInfoStepProps) {
     const newData = { ...localData, [field]: value };
     setLocalData(newData);
     onChange(newData);
+  };
+
+  // 处理邮箱验证结果
+  const handleEmailValidationChange = (isValid: boolean, isAvailable: boolean) => {
+    setEmailValidation({ isValid, isAvailable });
   };
 
   return (
@@ -85,22 +92,15 @@ export function MerchantInfoStep({ data, onChange }: MerchantInfoStepProps) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="merchant-email">
-                邮箱 <span className="text-red-500">*</span>
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="merchant-email"
-                  type="email"
-                  value={localData.email}
-                  onChange={(e) => updateField('email', e.target.value)}
-                  placeholder="请输入邮箱"
-                  className="pl-10"
-                />
-              </div>
-            </div>
+            <EmailInputWithValidation
+              id="merchant-email"
+              label="邮箱"
+              placeholder="请输入邮箱"
+              value={localData.email}
+              onChange={(value) => updateField('email', value)}
+              required={true}
+              onValidationChange={handleEmailValidationChange}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="merchant-phone">手机</Label>

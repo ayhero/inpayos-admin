@@ -21,7 +21,9 @@ import {
   Clock,
   Smartphone,
   Route,
-  Percent
+  Percent,
+  Database,
+  ChevronDown
 } from 'lucide-react';
 
 import { AuthContainer } from './components/AuthContainer';
@@ -50,6 +52,7 @@ import { MerchantRouter } from './components/MerchantRouter';
 import { FleetRouter } from './components/FleetRouter';
 import { ChannelManagement } from './components/ChannelManagement';
 import { ChannelGroupManagement } from './components/ChannelGroupManagement';
+import DictionaryManagement from './components/DictionaryManagement';
 import { DispatchStrategyManagement } from './components/DispatchStrategyManagement';
 import { CommissionManagementPage } from './components/CommissionManagementPage';
 
@@ -57,6 +60,7 @@ export default function App() {
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showChangePasswordDialog, setShowChangePasswordDialog] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [merchantInfo, setMerchantInfo] = useState<UserInfo | null>(null);
   const { isLoggedIn, currentUser, login, logout } = useAuthStore();
 
@@ -92,6 +96,17 @@ export default function App() {
         });
     }
   }, [isLoggedIn]);
+
+  // 切换菜单组折叠状态
+  const toggleGroupCollapse = (groupId: string) => {
+    const newCollapsed = new Set(collapsedGroups);
+    if (newCollapsed.has(groupId)) {
+      newCollapsed.delete(groupId);
+    } else {
+      newCollapsed.add(groupId);
+    }
+    setCollapsedGroups(newCollapsed);
+  };
 
   const menuGroups = [
     {
@@ -235,6 +250,12 @@ export default function App() {
           label: '定时任务',
           icon: Clock,
           component: TaskManagement
+        },
+        {
+          id: 'dictionary-management',
+          label: '数据字典',
+          icon: Database,
+          component: DictionaryManagement
         }
       ]
     }
@@ -266,31 +287,40 @@ export default function App() {
           </div>
 
           <div className="flex-1 overflow-y-auto py-4">
-            {menuGroups.map((group) => (
-              <div key={group.id} className="px-3 mb-4">
-                {group.label && sidebarOpen && (
-                  <h4 className="text-xs font-semibold text-muted-foreground px-3 py-2 uppercase tracking-wider">
-                    {group.label}
-                  </h4>
-                )}
-                <div className="space-y-1">
-                  {group.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
-                        activeMenu === item.id 
-                          ? 'bg-primary text-primary-foreground' 
-                          : 'hover:bg-muted'
-                      }`}
-                      onClick={() => setActiveMenu(item.id)}
+            {menuGroups.map((group) => {
+              const isCollapsed = collapsedGroups.has(group.id);
+              return (
+                <div key={group.id} className="px-3 mb-4">
+                  {group.label && sidebarOpen && (
+                    <div 
+                      className="flex items-center justify-between text-xs font-semibold text-muted-foreground px-3 py-2 uppercase tracking-wider cursor-pointer hover:text-foreground transition-colors"
+                      onClick={() => toggleGroupCollapse(group.id)}
                     >
-                      <item.icon className="h-4 w-4 flex-shrink-0" />
-                      {sidebarOpen && <span>{item.label}</span>}
+                      <span>{group.label}</span>
+                      <ChevronDown className={`h-3 w-3 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
                     </div>
-                  ))}
+                  )}
+                  {(!isCollapsed || !sidebarOpen) && (
+                    <div className="space-y-1">
+                      {group.items.map((item) => (
+                        <div
+                          key={item.id}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
+                            activeMenu === item.id 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'hover:bg-muted'
+                          }`}
+                          onClick={() => setActiveMenu(item.id)}
+                        >
+                          <item.icon className="h-4 w-4 flex-shrink-0" />
+                          {sidebarOpen && <span>{item.label}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
