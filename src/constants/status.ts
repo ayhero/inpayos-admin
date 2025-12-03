@@ -288,3 +288,25 @@ export const getChannelStatusDisplayName = (status: string | number | undefined)
   const config = getChannelStatusBadgeConfig(status);
   return config.label;
 };
+
+// 结算状态 Badge 配置
+export const SETTLE_STATUS_BADGE_CONFIG: Record<string, StatusBadgeConfig> = {
+  'pending': { label: '待结算', variant: 'outline', className: 'bg-yellow-500' },
+  'processing': { label: '结算中', variant: 'outline', className: 'bg-blue-500' },
+  'success': { label: '已结算', variant: 'default', className: 'bg-green-500' },
+  'settled': { label: '已结算', variant: 'default', className: 'bg-green-500' },
+  'failed': { label: '结算失败', variant: 'destructive', className: '' },
+  'cancelled': { label: '已取消', variant: 'secondary', className: 'bg-gray-500' }
+};
+
+// 获取结算状态 Badge 配置
+export const getSettleStatusBadgeConfig = (status: string | undefined): StatusBadgeConfig => {
+  if (!status) {
+    return { label: '未结算', variant: 'secondary' as const, className: 'bg-gray-400' };
+  }
+  return SETTLE_STATUS_BADGE_CONFIG[status.toLowerCase()] || { 
+    label: status, 
+    variant: 'outline' as const, 
+    className: '' 
+  };
+};

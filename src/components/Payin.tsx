@@ -17,7 +17,7 @@ import {
   TransactionQueryParams,
   TodayStats 
 } from '../services/transactionService';
-import { getStatusDisplayName, getStatusColor, getTrxTypeBadgeConfig, getChannelStatusBadgeConfig } from '../constants/status';
+import { getStatusDisplayName, getStatusColor, getTrxTypeBadgeConfig, getChannelStatusBadgeConfig, getSettleStatusBadgeConfig } from '../constants/status';
 import { getTrxMethodLabel, getChannelCodeLabel } from '../constants/business';
 import { toast } from '../utils/toast';
 
@@ -657,7 +657,12 @@ export function PayinRecords() {
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="text-sm text-muted-foreground">结算状态</label>
-                      <p className="text-base font-semibold mt-1">{selectedRecord.settleStatus || '-'}</p>
+                      <p className="mt-1">
+                        {(() => {
+                          const config = getSettleStatusBadgeConfig(selectedRecord.settleStatus);
+                          return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
+                        })()}
+                      </p>
                     </div>
                     <div>
                       <label className="text-sm text-muted-foreground">结算ID</label>
