@@ -57,7 +57,7 @@ jobs:
           type=ref,event=branch
           type=ref,event=pr
           type=sha,prefix={{branch}}-
-          type=raw,value=prod1-latest
+          type=raw,value=prod-latest
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
@@ -69,7 +69,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    environment: PROD1
+    environment: PROD
     needs: build
     
     steps:
@@ -95,7 +95,7 @@ jobs:
           docker rm inpayos-admin-prod || true
           
           # 拉取最新镜像
-          docker pull ghcr.io/ayhero/inpayos-admin:prod1-latest
+          docker pull ghcr.io/ayhero/inpayos-admin:prod-latest
           
           # 创建环境配置文件
           echo '${{ secrets.ENV }}' > .env.production
@@ -108,7 +108,7 @@ jobs:
             -v /opt/inpayos-admin/logs:/var/log/nginx \
             -v /opt/inpayos-admin/.env.production:/app/.env.production \
             --add-host host.docker.internal:host-gateway \
-            ghcr.io/ayhero/inpayos-admin:prod1-latest
+            ghcr.io/ayhero/inpayos-admin:prod-latest
           
           # 等待服务启动
           sleep 15
