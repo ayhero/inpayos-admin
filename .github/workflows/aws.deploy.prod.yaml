@@ -1,9 +1,9 @@
 name: AWS Prod Deployment
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
-  release:
-    types: [main]
 
 env:
   REGISTRY: ghcr.io
