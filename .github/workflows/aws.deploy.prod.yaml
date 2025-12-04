@@ -8,8 +8,9 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  AWS_HOST: 13.127.163.14  # 生产环境IP
-  API_HOST: 13.127.163.14  # 生产环境IP
+  # AWS_HOST: 13.127.163.14  # 旧生产环境IP
+  AWS_HOST: 52.66.146.93  # 生产环境IP
+  API_HOST: 52.66.146.93  # 生产环境IP
 
 jobs:
   build:
