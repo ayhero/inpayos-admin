@@ -1,6 +1,8 @@
 name: AWS Prod2 Deployment
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
 
 env:
