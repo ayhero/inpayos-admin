@@ -143,17 +143,20 @@ export function UserContractModal({ open, onOpenChange, userId, userName, userTy
 
   // 保存新合同
   const handleSaveContract = () => {
-    if (!newContract.start_at || !newContract.expired_at) {
-      toast.error('保存失败', '请填写生效时间和过期时间');
+    if (!newContract.start_at) {
+      toast.error('保存失败', '请填写生效时间');
       return;
     }
 
     const startTime = new Date(newContract.start_at).getTime();
-    const endTime = new Date(newContract.expired_at).getTime();
-
-    if (startTime >= endTime) {
-      toast.error('保存失败', '生效时间必须早于过期时间');
-      return;
+    
+    // 如果填写了过期时间，需要验证
+    if (newContract.expired_at) {
+      const endTime = new Date(newContract.expired_at).getTime();
+      if (startTime >= endTime) {
+        toast.error('保存失败', '生效时间必须早于过期时间');
+        return;
+      }
     }
 
     setShowConfirm(true);
@@ -162,15 +165,21 @@ export function UserContractModal({ open, onOpenChange, userId, userName, userTy
   // 确认创建合同
   const confirmCreateContract = async () => {
     try {
-      const response = await contractService.createMerchantContract({
+      const contractData: any = {
         user_id: userId,
         user_type: userType,
         start_at: new Date(newContract.start_at).getTime(),
-        expired_at: new Date(newContract.expired_at).getTime(),
-        status: newContract.status,
+        status: newContract.status === 'active' ? 'active' : 'inactive',
         payin: newContract.payin,
         payout: newContract.payout
-      });
+      };
+      
+      // 只有当过期时间填写了才传递
+      if (newContract.expired_at) {
+        contractData.expired_at = new Date(newContract.expired_at).getTime();
+      }
+
+      const response = await contractService.createMerchantContract(contractData);
 
       if (response.success) {
         toast.success('创建合同成功');
@@ -285,16 +294,18 @@ export function UserContractModal({ open, onOpenChange, userId, userName, userTy
 
                   <div>
                     <label className="text-sm font-medium mb-1 block">状态</label>
-                    <Select value={newContract.status} onValueChange={(value) => setNewContract({...newContract, status: value})}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">激活</SelectItem>
-                        <SelectItem value="inactive">未激活</SelectItem>
-                        <SelectItem value="expired">已过期</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="contract-status"
+                        checked={newContract.status === 'active'}
+                        onChange={(e) => setNewContract({...newContract, status: e.target.checked ? 'active' : 'inactive'})}
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                      <label htmlFor="contract-status" className="text-sm cursor-pointer">
+                        {newContract.status === 'active' ? '激活' : '未激活'}
+                      </label>
+                    </div>
                   </div>
 
                   <div>
@@ -307,11 +318,12 @@ export function UserContractModal({ open, onOpenChange, userId, userName, userTy
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium mb-1 block">过期时间</label>
+                    <label className="text-sm font-medium mb-1 block">过期时间（可选，留空表示永久有效）</label>
                     <Input
                       type="datetime-local"
                       value={newContract.expired_at}
                       onChange={(e) => setNewContract({...newContract, expired_at: e.target.value})}
+                      placeholder="留空表示永久有效"
                     />
                   </div>
 
