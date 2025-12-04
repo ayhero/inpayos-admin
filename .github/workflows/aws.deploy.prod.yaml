@@ -3,7 +3,7 @@ name: AWS Prod Deployment
 on:
   workflow_dispatch:
   release:
-    types: [published]
+    types: [main]
 
 env:
   REGISTRY: ghcr.io
