@@ -108,7 +108,7 @@ jobs:
             -v /opt/inpayos-admin/logs:/var/log/nginx \
             -v /opt/inpayos-admin/.env.production:/app/.env.production \
             --add-host host.docker.internal:host-gateway \
-            ghcr.io/ayhero/inpayos-admin:latest
+            ghcr.io/ayhero/inpayos-admin:prod-latest
           
           # 等待服务启动
           sleep 15
