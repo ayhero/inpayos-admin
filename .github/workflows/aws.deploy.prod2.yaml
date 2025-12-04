@@ -1,0 +1,127 @@
+name: AWS Prod2 Deployment
+
+on:
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  AWS_HOST: 52.66.146.93  # Prod2服务器IP
+  API_HOST: 52.66.146.93
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Create environment file
+      run: |
+        echo "${{ secrets.ENV }}" > .env.production
+        echo "📄 Environment configuration loaded from secrets"
+        cat .env.production
+
+    - name: Build application
+      run: |
+        npx vite build --mode production
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=prod-latest
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment: PROD
+    needs: build
+    
+    steps:
+    - name: Deploy to Prod2 Server
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ env.AWS_HOST }}
+        username: dev
+        key: ${{ secrets.AWS_SSH_KEY }}
+        port: 22
+        timeout: 30s
+        command_timeout: 10m
+        script: |
+          # 创建应用目录
+          mkdir -p /opt/inpayos-admin/logs
+          cd /opt/inpayos-admin
+          
+          # 登录到 GitHub Container Registry
+          echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          # 停止并删除现有容器
+          docker stop inpayos-admin-prod || true
+          docker rm inpayos-admin-prod || true
+          
+          # 拉取最新镜像
+          docker pull ghcr.io/ayhero/inpayos-admin:prod-latest
+          
+          # 创建环境配置文件
+          echo '${{ secrets.ENV }}' > .env.production
+          
+          # 启动应用容器
+          docker run -d \
+            --name inpayos-admin-prod \
+            --restart unless-stopped \
+            -p 3301:80 \
+            -v /opt/inpayos-admin/logs:/var/log/nginx \
+            -v /opt/inpayos-admin/.env.production:/app/.env.production \
+            --add-host host.docker.internal:host-gateway \
+            ghcr.io/ayhero/inpayos-admin:prod-latest
+          
+          # 等待服务启动
+          sleep 15
+          
+          # 检查容器状态
+          echo "🔍 Checking container status:"
+          docker ps -a | grep inpayos-admin-prod
+          
+          # 健康检查
+          if docker ps | grep inpayos-admin-prod | grep -q "Up"; then
+            echo "✅ InPayOS Admin (PROD2) is running"
+            curl -f http://localhost:3301 && echo "✅ Health check passed" || echo "⚠️ Health check failed"
+            docker logs --tail=20 inpayos-admin-prod
+          else
+            echo "❌ Container failed to start"
+            docker logs inpayos-admin-prod
+            exit 1
+          fi
