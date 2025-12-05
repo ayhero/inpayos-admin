@@ -91,8 +91,8 @@ jobs:
           echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           
           # 停止并删除现有容器
-          docker stop inpayos-admin || true
-          docker rm inpayos-admin || true
+          docker stop inpayos-admin-frontend || true
+          docker rm inpayos-admin-frontend || true
           
           # 拉取最新镜像
           docker pull ghcr.io/ayhero/inpayos-admin:prod-latest
@@ -102,7 +102,7 @@ jobs:
           
           # 启动应用容器
           docker run -d \
-            --name inpayos-admin \
+            --name inpayos-admin-frontend \
             --restart unless-stopped \
             -p 3301:80 \
             -v /opt/inpayos-admin/logs:/var/log/nginx \
@@ -115,15 +115,15 @@ jobs:
           
           # 检查容器状态
           echo "🔍 Checking container status:"
-          docker ps -a | grep inpayos-admin
+          docker ps -a | grep inpayos-admin-frontend
           
           # 健康检查
-          if docker ps | grep inpayos-admin | grep -q "Up"; then
+          if docker ps | grep inpayos-admin-frontend | grep -q "Up"; then
             echo "✅ InPayOS Admin (PROD2) is running"
             curl -f http://localhost:3301 && echo "✅ Health check passed" || echo "⚠️ Health check failed"
-            docker logs --tail=20 inpayos-admin
+            docker logs --tail=20 inpayos-admin-frontend
           else
             echo "❌ Container failed to start"
-            docker logs inpayos-admin
+            docker logs inpayos-admin-frontend
             exit 1
           fi
