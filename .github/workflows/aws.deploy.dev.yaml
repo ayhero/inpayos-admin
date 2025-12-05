@@ -2,7 +2,7 @@ name: AWS Dev Deployment
 
 on:
   push:
-    branches: [ main ]
+    branches: [ dev ]
   workflow_dispatch:
 
 env:
