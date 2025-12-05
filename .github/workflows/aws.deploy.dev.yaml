@@ -8,7 +8,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  AWS_HOST: 43.204.234.146
+  AWS_HOST: 47.76.27.35
 
 jobs:
   build:
@@ -32,7 +32,7 @@ jobs:
 
     - name: Create environment file
       run: |
-        echo "${{ secrets.ENV }}" > .env.production
+        echo "${{ secrets.ENV_DEV2 }}" > .env.production
         echo "📄 Environment configuration loaded from secrets"
         cat .env.production
 
@@ -78,7 +78,7 @@ jobs:
       with:
         host: ${{ env.AWS_HOST }}
         username: root
-        key: ${{ secrets.AWS_SSH_KEY }}
+        key: ${{ secrets.AWS_SSH_KEY_2 }}
         port: 22
         timeout: 30s
         command_timeout: 10m
@@ -115,7 +115,7 @@ jobs:
           
           # 检查应用是否启动成功
           if docker ps | grep inpayos-admin | grep -q "Up"; then
-            echo "✅ InPayOS Admin frontend is running"
+            echo "✅ InPayOS Admin Dev2 frontend is running"
             
             # 检查端口监听
             echo "🔍 Checking port status:"
@@ -124,16 +124,16 @@ jobs:
             # 尝试健康检查
             echo "🏥 Health check:"
             if curl -f http://localhost:3301 2>/dev/null; then
-              echo "✅ Admin frontend health check passed"
+              echo "✅ Admin Dev2 frontend health check passed"
             else
-              echo "⚠️ Admin frontend health check failed (may still be starting)"
+              echo "⚠️ Admin Dev2 frontend health check failed (may still be starting)"
             fi
             
             # 显示最近日志
             echo "📝 Recent logs:"
             docker logs --tail=20 inpayos-admin
           else
-            echo "❌ InPayOS Admin container failed to start"
+            echo "❌ InPayOS Admin Dev2 container failed to start"
             docker logs inpayos-admin
             exit 1
           fi
