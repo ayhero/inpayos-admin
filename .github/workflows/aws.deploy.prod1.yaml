@@ -86,7 +86,7 @@ jobs:
           docker rm ${{ env.IMAGE_NAME }} || true
           
           # 拉取最新镜像
-          docker pull ghcr.io/ayhero/inpayos-admin:${{ env.VERSION }}
+          docker pull ghcr.io/ayhero/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
           
           # 创建环境配置文件
           echo '${{ secrets.ENV }}' > .env.production
