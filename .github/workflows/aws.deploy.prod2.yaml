@@ -7,8 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: inpayos-admin
-  CONTAINER_NAME: inpayos-admin-frontend
+  IMAGE_NAME: inpayos-admin-frontend
   AWS_HOST: 52.66.146.93  # Prod2服务器IP
   API_HOST: 52.66.146.93
   VERSION: prod-latest
@@ -87,15 +86,15 @@ jobs:
           echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           
           # 停止并删除现有容器
-          docker stop ${{ env.CONTAINER_NAME }} || true
-          docker rm ${{ env.CONTAINER_NAME }} || true
+          docker stop ${{ env.IMAGE_NAME }} || true
+          docker rm ${{ env.IMAGE_NAME }} || true
           
           # 拉取最新镜像
           docker pull ${{ env.REGISTRY }}/ayhero/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
           
           # 启动应用容器
           docker run -d \
-            --name ${{ env.CONTAINER_NAME }} \
+            --name ${{ env.IMAGE_NAME }} \
             --restart unless-stopped \
             -p 3301:80 \
             -e TARGET_HOST=172.31.42.93 \
@@ -107,15 +106,15 @@ jobs:
           
           # 检查容器状态
           echo "🔍 Checking container status:"
-          docker ps -a | grep ${{ env.CONTAINER_NAME }}
+          docker ps -a | grep ${{ env.IMAGE_NAME }}
           
           # 健康检查
-          if docker ps | grep ${{ env.CONTAINER_NAME }} | grep -q "Up"; then
+          if docker ps | grep ${{ env.IMAGE_NAME }} | grep -q "Up"; then
             echo "✅ InPayOS Admin Frontend (PROD2) is running"
             curl -f http://localhost:3301 && echo "✅ Health check passed" || echo "⚠️ Health check failed"
-            docker logs --tail=20 ${{ env.CONTAINER_NAME }}
+            docker logs --tail=20 ${{ env.IMAGE_NAME }}
           else
             echo "❌ Container failed to start"
-            docker logs ${{ env.CONTAINER_NAME }}
+            docker logs ${{ env.IMAGE_NAME }}
             exit 1
           fi
