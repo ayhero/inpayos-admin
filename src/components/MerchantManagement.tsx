@@ -17,6 +17,7 @@ import { UserRouterModal } from './UserRouterModal';
 import { StatusBadge } from './StatusBadge';
 import { getChannelCodeLabel, getCcyLabel, getCountryLabel } from '../constants/business';
 import { CreateUserModal } from './CreateUserModal';
+import { formatAmountRange } from '../utils/amountRange';
 
 export function MerchantManagement() {
   const [searchTerm, setSearchTerm] = useState('');
