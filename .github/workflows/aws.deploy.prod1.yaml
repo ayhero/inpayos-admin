@@ -7,9 +7,10 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: inpayos-admin-frontend
   AWS_HOST: 13.127.163.14  # Prod1服务器IP
   API_HOST: 13.127.163.14
+  VERSION: ${{ env.VERSION }}
 
 jobs:
   build:
@@ -48,24 +49,14 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
-          type=raw,value=prod-latest
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
+    - name: Build Docker image
+      run: |
+        # 构建镜像
+        docker build -t ${{ env.IMAGE_NAME }}:${{ env.VERSION }} .
+        docker tag ${{ env.IMAGE_NAME }}:${{ env.VERSION }} ${{ env.IMAGE_NAME }}:latest
+        
+        echo "VERSION=${{ env.VERSION }}" >> $GITHUB_ENV
 
   deploy:
     runs-on: ubuntu-latest
@@ -91,39 +82,39 @@ jobs:
           echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           
           # 停止并删除现有容器
-          docker stop inpayos-admin-prod || true
-          docker rm inpayos-admin-prod || true
+          docker stop ${{ env.IMAGE_NAME }} || true
+          docker rm ${{ env.IMAGE_NAME }} || true
           
           # 拉取最新镜像
-          docker pull ghcr.io/ayhero/inpayos-admin:prod-latest
+          docker pull ghcr.io/ayhero/inpayos-admin:${{ env.VERSION }}
           
           # 创建环境配置文件
           echo '${{ secrets.ENV }}' > .env.production
           
           # 启动应用容器
           docker run -d \
-            --name inpayos-admin-prod \
+            --name ${{ env.IMAGE_NAME }} \
             --restart unless-stopped \
             -p 3301:80 \
             -v /opt/inpayos-admin/logs:/var/log/nginx \
             -v /opt/inpayos-admin/.env.production:/app/.env.production \
             --add-host host.docker.internal:host-gateway \
-            ghcr.io/ayhero/inpayos-admin:prod-latest
+            ghcr.io/ayhero/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
           
           # 等待服务启动
           sleep 15
           
           # 检查容器状态
           echo "🔍 Checking container status:"
-          docker ps -a | grep inpayos-admin-prod
+          docker ps -a | grep ${{ env.IMAGE_NAME }}
           
           # 健康检查
-          if docker ps | grep inpayos-admin-prod | grep -q "Up"; then
+          if docker ps | grep ${{ env.IMAGE_NAME }} | grep -q "Up"; then
             echo "✅ InPayOS Admin (PROD1) is running"
             curl -f http://localhost:3301 && echo "✅ Health check passed" || echo "⚠️ Health check failed"
-            docker logs --tail=20 inpayos-admin-prod
+            docker logs --tail=20 ${{ env.IMAGE_NAME }}
           else
             echo "❌ Container failed to start"
-            docker logs inpayos-admin-prod
+            docker logs ${{ env.IMAGE_NAME }}
             exit 1
           fi
