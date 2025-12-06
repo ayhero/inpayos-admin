@@ -378,6 +378,7 @@ export function PayinRecords() {
             <TableHeader>
               <TableRow>
                 <TableHead>交易ID</TableHead>
+                <TableHead>请求ID</TableHead>
                 <TableHead>交易类型</TableHead>
                 <TableHead>金额</TableHead>
                 <TableHead>支付方式</TableHead>
@@ -399,6 +400,7 @@ export function PayinRecords() {
                 return (
                   <TableRow key={record.trxID}>
                     <TableCell className="font-mono text-sm">{record.trxID}</TableCell>
+                    <TableCell className="font-mono text-sm">{record.reqID || '-'}</TableCell>
                     <TableCell>
                       {(() => {
                         const config = getTrxTypeBadgeConfig(record.trxType || '');
@@ -489,11 +491,15 @@ export function PayinRecords() {
                   <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                     <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-300 dark:border-gray-600">基本信息</h3>
                 <div className="space-y-4">
-                  {/* 1.1 交易ID、状态 */}
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* 1.1 交易ID、请求ID、状态 */}
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="text-sm text-muted-foreground">交易ID</label>
                       <p className="text-base font-semibold font-mono mt-1">{selectedRecord.trxID}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground">请求ID</label>
+                      <p className="text-base font-semibold font-mono mt-1">{selectedRecord.reqID || '-'}</p>
                     </div>
                     <div>
                       <label className="text-sm text-muted-foreground">状态</label>
