@@ -37,6 +37,21 @@ export function PayinRecords() {
     totalPages: 0
   });
 
+  // 手动通知交易
+  const handleNotifyTransaction = async (trxID: string) => {
+    try {
+      const response = await transactionService.notifyTransaction(trxID, TransactionType.PAYIN);
+      if (response.success) {
+        toast.success('通知发送成功');
+      } else {
+        toast.error(response.msg || '通知发送失败');
+      }
+    } catch (error) {
+      console.error('通知交易失败:', error);
+      toast.error('通知发送失败');
+    }
+  };
+
   // 确认交易相关状态
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [confirmingRecord, setConfirmingRecord] = useState<TransactionInfo | null>(null);
@@ -89,7 +104,7 @@ export function PayinRecords() {
         params.status = statusFilter as TransactionStatus;
       }
       if (searchTerm) {
-        params.trxID = searchTerm;
+        params.keyword = searchTerm;
       }
 
       const response = await transactionService.getTransactions(params);
@@ -422,6 +437,12 @@ export function PayinRecords() {
                           onClick={() => handleViewDetail(record)}
                         >
                           详情
+                        </span>
+                        <span
+                          className="text-green-600 hover:text-green-700 cursor-pointer"
+                          onClick={() => handleNotifyTransaction(record.trxID)}
+                        >
+                          通知
                         </span>
                         {record.status === TransactionStatus.FAILED && (
                           <span

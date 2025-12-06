@@ -324,6 +324,7 @@ export interface TransactionQueryParams {
   trxType: TransactionType;
   page: number;
   pageSize: number;
+  keyword?: string;  // 关键字搜索（支持trx_id和req_id）
   startDate?: string;
   endDate?: string;
   status?: TransactionStatus;
@@ -491,6 +492,9 @@ export const transactionService = {
       };
 
       // 添加可选筛选条件
+      if (params.keyword) {
+        queryParams.keyword = params.keyword;
+      }
       if (params.status !== undefined) {
         queryParams.status = params.status;
       }
@@ -667,6 +671,40 @@ export const transactionService = {
         msg: error.message || '网络错误',
         success: false,
         data: null,
+      };
+    }
+  },
+
+  // 手动通知商户交易
+  notifyTransaction: async (trxID: string, trxType: TransactionType): Promise<ApiResponse<string>> => {
+    try {
+      const response = await api.post<string>('/transactions/notify', {
+        trx_id: trxID,
+        trx_type: trxType
+      });
+
+      if (response.code === '0000') {
+        return {
+          code: '200',
+          msg: response.msg || '通知发送成功',
+          success: true,
+          data: response.data,
+        };
+      } else {
+        return {
+          code: response.code,
+          msg: response.msg || '通知发送失败',
+          success: false,
+          data: '',
+        };
+      }
+    } catch (error: any) {
+      console.error('通知交易失败:', error);
+      return {
+        code: '500',
+        msg: error.message || '网络错误',
+        success: false,
+        data: '',
       };
     }
   },
