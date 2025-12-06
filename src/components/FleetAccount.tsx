@@ -194,10 +194,10 @@ export function FleetAccount() {
                     <TableCell className="font-mono text-xs">{account.account_id}</TableCell>
                     <TableCell className="font-mono text-xs">{account.user_id}</TableCell>
                     <TableCell>{account.ccy}</TableCell>
-                    <TableCell className="font-mono">{formatAmount(account.balance?.balance)}</TableCell>
-                    <TableCell className="font-mono text-green-600">{formatAmount(account.balance?.available_balance)}</TableCell>
-                    <TableCell className="font-mono text-red-600">{formatAmount(account.balance?.frozen_balance)}</TableCell>
-                    <TableCell className="font-mono">{formatAmount(account.balance?.margin_balance)}</TableCell>
+                    <TableCell className="font-mono">{formatAmount(account.balance)}</TableCell>
+                    <TableCell className="font-mono text-green-600">{formatAmount(account.available_balance)}</TableCell>
+                    <TableCell className="font-mono text-red-600">{formatAmount(account.frozen_balance)}</TableCell>
+                    <TableCell className="font-mono">{formatAmount(account.margin_balance)}</TableCell>
                     <TableCell>{getStatusBadge(account.status)}</TableCell>
                     <TableCell>{formatDateTime(account.created_at)}</TableCell>
                     <TableCell>
@@ -307,12 +307,6 @@ export function FleetAccount() {
                 <label className="text-sm text-muted-foreground">更新时间</label>
                 <p className="text-base font-semibold mt-1">{formatDateTime(selectedAccount.updated_at)}</p>
               </div>
-              {selectedAccount.balance?.updated_at && (
-                <div>
-                  <label className="text-sm text-muted-foreground">余额更新时间</label>
-                  <p className="text-base font-semibold mt-1">{formatDateTime(selectedAccount.balance.updated_at)}</p>
-                </div>
-              )}
             </div>
           )}
         </DialogContent>

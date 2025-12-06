@@ -21,16 +21,12 @@ export interface AccountData {
   user_id: string;
   user_type: string;
   ccy: string; // 后端返回的是ccy，不是currency
-  balance?: {
-    balance: string;
-    available_balance: string;
-    frozen_balance: string;
-    margin_balance: string;
-    available_margin_balance: string; // 后端返回的字段
-    frozen_margin_balance: string; // 后端返回的字段
-    ccy: string;
-    updated_at: number;
-  };
+  balance: string; // 总余额
+  available_balance: string; // 可用余额
+  frozen_balance: string; // 冻结余额
+  margin_balance: string; // 保证金
+  available_margin_balance: string; // 可用保证金
+  frozen_margin_balance: string; // 冻结保证金
   status: string; // 状态是字符串，如 "active", "inactive", "frozen" 等
   version: number;
   last_active_at: number;

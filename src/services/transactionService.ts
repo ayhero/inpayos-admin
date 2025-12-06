@@ -190,6 +190,11 @@ interface BackendTransactionInfo {
   cashier_app_account_id?: string;
   dispatch_history?: BackendDispatchHistory[];
   dispatch_records?: BackendDispatchRecord[];
+  // 通知相关字段
+  notify_url?: string;
+  notified_at?: number;
+  notify_status?: string;
+  notify_count?: number;
 }
 
 // 派单候选人信息
@@ -317,6 +322,11 @@ export interface TransactionInfo {
   cashierAppAccountId?: string;
   dispatchHistory?: DispatchHistory[];
   dispatchRecords?: DispatchRecord[];
+  // 通知相关字段
+  notifyUrl?: string;
+  notifiedAt?: string;
+  notifyStatus?: string;
+  notifyCount?: number;
 }
 
 // 查询参数接口

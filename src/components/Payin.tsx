@@ -399,6 +399,7 @@ export function PayinRecords() {
                 <TableHead>支付方式</TableHead>
                 <TableHead>派单轮数/结果</TableHead>
                 <TableHead>状态</TableHead>
+                <TableHead>通知状态</TableHead>
                 <TableHead>创建时间</TableHead>
                 <TableHead>完成时间</TableHead>
                 <TableHead></TableHead>
@@ -428,6 +429,24 @@ export function PayinRecords() {
                     <TableCell>{getTrxMethodLabel(record.trxMethod)}</TableCell>
                     <TableCell className="font-mono text-xs">{dispatchDisplay}</TableCell>
                     <TableCell>{getStatusBadge(record.status)}</TableCell>
+                    <TableCell className="text-xs">
+                      <div className="flex flex-col gap-1">
+                        <span className={`font-medium ${
+                          record.notifyStatus === 'success' ? 'text-green-600' : 
+                          record.notifyStatus === 'failed' ? 'text-red-600' : 'text-gray-400'
+                        }`}>
+                          {record.notifyStatus === 'success' ? '✓ 成功' : 
+                           record.notifyStatus === 'failed' ? '✗ 失败' : 
+                           record.notifyStatus === 'pending' ? '⏳ 待通知' : '-'}
+                        </span>
+                        {record.notifyCount !== undefined && record.notifyCount > 0 && (
+                          <span className="text-gray-500">次数: {record.notifyCount}</span>
+                        )}
+                        {record.notifiedAt && (
+                          <span className="text-gray-500">{formatDateTime(record.notifiedAt)}</span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>{formatDateTime(record.createdAt)}</TableCell>
                     <TableCell>{record.completedAt ? formatDateTime(record.completedAt) : '-'}</TableCell>
                     <TableCell>

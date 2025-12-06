@@ -202,10 +202,10 @@ export function UserAccountModal({ open, onOpenChange, userId, userName, userTyp
                 {accounts.map((account) => (
                   <TableRow key={account.account_id}>
                     <TableCell>{account.ccy}</TableCell>
-                    <TableCell className="font-mono">{parseFloat(account.balance?.balance || '0').toFixed(2)}</TableCell>
-                    <TableCell className="font-mono text-green-600">{parseFloat(account.balance?.available_balance || '0').toFixed(2)}</TableCell>
-                    <TableCell className="font-mono text-red-600">{parseFloat(account.balance?.frozen_balance || '0').toFixed(2)}</TableCell>
-                    <TableCell className="font-mono">{parseFloat(account.balance?.margin_balance || '0').toFixed(2)}</TableCell>
+                    <TableCell className="font-mono">{parseFloat(account.balance || '0').toFixed(2)}</TableCell>
+                    <TableCell className="font-mono text-green-600">{parseFloat(account.available_balance || '0').toFixed(2)}</TableCell>
+                    <TableCell className="font-mono text-red-600">{parseFloat(account.frozen_balance || '0').toFixed(2)}</TableCell>
+                    <TableCell className="font-mono">{parseFloat(account.margin_balance || '0').toFixed(2)}</TableCell>
                     <TableCell><StatusBadge status={account.status} type="account" /></TableCell>
                     <TableCell className="text-xs">{formatDateTime(account.last_active_at)}</TableCell>
                     <TableCell className="text-xs">{formatDateTime(account.created_at)}</TableCell>

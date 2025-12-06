@@ -335,7 +335,6 @@ export function AccountBalance() {
           accountBalances.map((account, index) => {
             const symbol = getCurrencySymbol(account.currency);
             const isPrimary = index === 0; // 第一个账户作为主账户
-            const balance = account.balance;
             
             return (
               <Card key={account.account_id} className={isPrimary ? 'border-primary' : ''}>
@@ -349,19 +348,19 @@ export function AccountBalance() {
                   <div>
                     <label className="font-medium">可用余额</label>
                     <p className="text-2xl font-bold text-green-600">
-                      {symbol}{balance ? parseFloat(balance.available_balance).toLocaleString() : '0'} {account.currency}
+                      {symbol}{parseFloat(account.available_balance || '0').toLocaleString()} {account.currency}
                     </p>
                   </div>
                   <div>
                     <label className="font-medium">冻结余额</label>
                     <p className="text-lg">
-                      {symbol}{balance ? parseFloat(balance.frozen_balance).toLocaleString() : '0'} {account.currency}
+                      {symbol}{parseFloat(account.frozen_balance || '0').toLocaleString()} {account.currency}
                     </p>
                   </div>
                   <div>
                     <label className="font-medium">总余额</label>
                     <p className="text-lg font-medium">
-                      {symbol}{balance ? parseFloat(balance.balance).toLocaleString() : '0'} {account.currency}
+                      {symbol}{parseFloat(account.balance || '0').toLocaleString()} {account.currency}
                     </p>
                   </div>
                 </CardContent>
