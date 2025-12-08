@@ -122,5 +122,120 @@ export const accountService = {
         success: false
       };
     }
+  },
+
+  // 账户充值
+  depositAccount: async (params: {
+    user_id: string;
+    user_type: string;
+    amount: string;
+    ccy: string;
+    remark?: string;
+  }): Promise<ApiResponse<{
+    account_id: string;
+    new_balance: string;
+    trx_id: string;
+  }>> => {
+    try {
+      const response = await api.post('/user/account/deposit', params);
+      return {
+        ...response,
+        success: response.code === '0000'
+      };
+    } catch (error: any) {
+      console.error('账户充值失败:', error);
+      return {
+        code: 'ERROR',
+        msg: error.message || '账户充值失败',
+        data: {} as any,
+        success: false
+      };
+    }
+  },
+
+  // 创建用户提现申请
+  createWithdraw: async (params: {
+    user_id: string;
+    user_type: string;
+    amount: string;
+    ccy: string;
+    remark?: string;
+  }): Promise<ApiResponse<{
+    withdraw_id: string;
+    status: string;
+    settle_status: string;
+  }>> => {
+    try {
+      const response = await api.post('/user/withdraw', params);
+      return {
+        ...response,
+        success: response.code === '0000'
+      };
+    } catch (error: any) {
+      console.error('创建提现申请失败:', error);
+      return {
+        code: 'ERROR',
+        msg: error.message || '创建提现申请失败',
+        data: {} as any,
+        success: false
+      };
+    }
+  },
+
+  // 审核用户提现申请
+  reviewWithdraw: async (params: {
+    withdraw_id: string;
+    action: 'approve' | 'reject';
+    review_remark?: string;
+  }): Promise<ApiResponse<{
+    withdraw_id: string;
+    status: string;
+    settle_status: string;
+    auto_settled: boolean;
+    flow_no?: string;
+    new_balance?: string;
+  }>> => {
+    try {
+      const response = await api.post('/user/withdraw/review', params);
+      return {
+        ...response,
+        success: response.code === '0000'
+      };
+    } catch (error: any) {
+      console.error('审核提现申请失败:', error);
+      return {
+        code: 'ERROR',
+        msg: error.message || '审核提现申请失败',
+        data: {} as any,
+        success: false
+      };
+    }
+  },
+
+  // 结算用户提现
+  settleWithdraw: async (params: {
+    withdraw_id: string;
+  }): Promise<ApiResponse<{
+    withdraw_id: string;
+    status: string;
+    settle_status: string;
+    flow_no: string;
+    new_balance: string;
+  }>> => {
+    try {
+      const response = await api.post('/user/withdraw/settle', params);
+      return {
+        ...response,
+        success: response.code === '0000'
+      };
+    } catch (error: any) {
+      console.error('结算提现失败:', error);
+      return {
+        code: 'ERROR',
+        msg: error.message || '结算提现失败',
+        data: {} as any,
+        success: false
+      };
+    }
   }
 };

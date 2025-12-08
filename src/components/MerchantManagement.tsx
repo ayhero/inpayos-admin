@@ -7,13 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Search, RefreshCw, Building2, Eye, EyeOff, Key, FileText, Route, Wallet, Plus } from 'lucide-react';
+import { Search, RefreshCw, Building2, Eye, EyeOff, Key, FileText, Route, Wallet, Plus, DollarSign, ArrowDownToLine } from 'lucide-react';
 import { merchantService, Merchant, MerchantListParams, MerchantStats } from '../services/merchantService';
 import { toast } from '../utils/toast';
 import { MerchantSecretModal } from './MerchantSecretModal';
 import { UserAccountModal } from './UserAccountModal';
 import { UserContractModal } from './UserContractModal';
 import { UserRouterModal } from './UserRouterModal';
+import { RechargeModal } from './RechargeModal';
+import { WithdrawModal } from './WithdrawModal';
 import { StatusBadge } from './StatusBadge';
 import { getChannelCodeLabel, getCcyLabel, getCountryLabel } from '../constants/business';
 import { CreateUserModal } from './CreateUserModal';
@@ -52,6 +54,14 @@ export function MerchantManagement() {
 
   const [showAccountsModal, setShowAccountsModal] = useState(false);
   const [selectedMerchantForAccounts, setSelectedMerchantForAccounts] = useState<Merchant | null>(null);
+
+  // 充值模态窗状态
+  const [showRechargeModal, setShowRechargeModal] = useState(false);
+  const [selectedMerchantForRecharge, setSelectedMerchantForRecharge] = useState<Merchant | null>(null);
+
+  // 提现模态窗状态
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [selectedMerchantForWithdraw, setSelectedMerchantForWithdraw] = useState<Merchant | null>(null);
 
   // 新建商户模态窗状态
   const [showCreateMerchantModal, setShowCreateMerchantModal] = useState(false);
@@ -157,6 +167,36 @@ export function MerchantManagement() {
       }
       return newSet;
     });
+  };
+
+  // 打开充值弹窗
+  const handleRecharge = (merchant: Merchant) => {
+    setSelectedMerchantForRecharge(merchant);
+    setShowRechargeModal(true);
+  };
+
+  // 充值成功后刷新数据
+  const handleRechargeSuccess = () => {
+    fetchMerchants();
+    // 如果详情窗口打开，也刷新详情
+    if (selectedMerchant) {
+      handleViewDetail(selectedMerchant);
+    }
+  };
+
+  // 打开提现弹窗
+  const handleWithdraw = (merchant: Merchant) => {
+    setSelectedMerchantForWithdraw(merchant);
+    setShowWithdrawModal(true);
+  };
+
+  // 提现成功后刷新数据
+  const handleWithdrawSuccess = () => {
+    fetchMerchants();
+    // 如果详情窗口打开，也刷新详情
+    if (selectedMerchant) {
+      handleViewDetail(selectedMerchant);
+    }
   };
 
   const maskSecretKey = (secretKey: string) => {
@@ -340,6 +380,14 @@ export function MerchantManagement() {
                         <Button variant="ghost" size="sm" onClick={() => handleViewAccounts(merchant)}>
                           <Wallet className="h-4 w-4 mr-1" />
                           账户
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleRecharge(merchant)} className="text-green-600 hover:text-green-700">
+                          <DollarSign className="h-4 w-4 mr-1" />
+                          充值
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleWithdraw(merchant)} className="text-amber-600 hover:text-amber-700">
+                          <ArrowDownToLine className="h-4 w-4 mr-1" />
+                          提现
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleViewSecrets(merchant)}>
                           <Key className="h-4 w-4 mr-1" />
@@ -655,6 +703,30 @@ export function MerchantManagement() {
           userId={selectedMerchantForRouters.user_id}
           userName={selectedMerchantForRouters.name}
           userType="merchant"
+        />
+      )}
+
+      {/* 独立的账户充值模块 */}
+      {selectedMerchantForRecharge && (
+        <RechargeModal
+          open={showRechargeModal}
+          onOpenChange={setShowRechargeModal}
+          userId={selectedMerchantForRecharge.user_id}
+          userName={selectedMerchantForRecharge.name}
+          userType="merchant"
+          onSuccess={handleRechargeSuccess}
+        />
+      )}
+
+      {/* 独立的账户提现模块 */}
+      {selectedMerchantForWithdraw && (
+        <WithdrawModal
+          open={showWithdrawModal}
+          onOpenChange={setShowWithdrawModal}
+          userId={selectedMerchantForWithdraw.user_id}
+          userName={selectedMerchantForWithdraw.name}
+          userType="merchant"
+          onSuccess={handleWithdrawSuccess}
         />
       )}
 

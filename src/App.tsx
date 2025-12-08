@@ -9,6 +9,8 @@ import {
   Home, 
   ArrowDownLeft, 
   ArrowUpRight,
+  ArrowDownCircle,
+  ArrowUpCircle,
   // Calculator,
   Wallet, 
   LogOut,
@@ -30,6 +32,8 @@ import { AuthContainer } from './components/AuthContainer';
 import { Dashboard } from './components/Dashboard';
 import { PayinRecords } from './components/Payin';
 import { PayoutRecords } from './components/Payout';
+import { DepositRecords } from './components/DepositRecords';
+import { WithdrawRecords } from './components/WithdrawRecords';
 // import { Config } from './components/Config';
 // import { RefundRecords } from './components/RefundRecords';
 // import { RechargeRecords } from './components/RechargeRecords';
@@ -136,6 +140,24 @@ export default function App() {
           label: '代付',
           icon: ArrowUpRight,
           component: PayoutRecords
+        }
+      ]
+    },
+    {
+      id: 'finance',
+      label: '资金管理',
+      items: [
+        {
+          id: 'deposit-records',
+          label: '充值',
+          icon: ArrowDownCircle,
+          component: DepositRecords
+        },
+        {
+          id: 'withdraw-records',
+          label: '提现',
+          icon: ArrowUpCircle,
+          component: WithdrawRecords
         }
       ]
     },

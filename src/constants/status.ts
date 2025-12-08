@@ -24,6 +24,7 @@ export const STATUS = {
   COMPLETED: 'completed',
   
   // 审批状态
+  REVIEWING: 'reviewing',
   APPROVED: 'approved',
   REJECTED: 'rejected',
   
@@ -69,6 +70,7 @@ export const STATUS_DISPLAY_NAMES: Record<StatusType, string> = {
   canceled: '已取消',
   expired: '已过期',
   completed: '已完成',
+  reviewing: '待审核',
   approved: '已批准',
   rejected: '已拒绝',
   enabled: '启用',
@@ -103,6 +105,7 @@ export const STATUS_COLORS: Record<StatusType, string> = {
   canceled: 'default',
   expired: 'warning',
   completed: 'success',
+  reviewing: 'processing',
   approved: 'success',
   rejected: 'error',
   enabled: 'success',

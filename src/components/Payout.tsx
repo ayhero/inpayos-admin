@@ -773,8 +773,41 @@ export function PayoutRecords() {
                         </p>
                       </div>
                     </div>
+                </div>
+              </div>
+
+              {/* 5. 通知信息模块 */}
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-300 dark:border-gray-600">通知信息</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm text-muted-foreground">通知状态</label>
+                    <p className="text-base font-semibold mt-1">
+                      {selectedRecord.notifyStatus === 'success' ? (
+                        <Badge variant="default">已通知</Badge>
+                      ) : selectedRecord.notifyStatus === 'failed' ? (
+                        <Badge variant="destructive">通知失败</Badge>
+                      ) : (
+                        <Badge variant="secondary">待通知</Badge>
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">通知时间</label>
+                    <p className="text-base font-semibold mt-1">
+                      {selectedRecord.notifiedAt ? formatDateTime(selectedRecord.notifiedAt) : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">通知次数</label>
+                    <p className="text-base font-semibold mt-1">{selectedRecord.notifyCount || 0} 次</p>
+                  </div>
+                  <div className="col-span-3">
+                    <label className="text-sm text-muted-foreground">通知地址</label>
+                    <p className="text-base font-mono text-sm mt-1 break-all">{selectedRecord.notifyURL || '-'}</p>
                   </div>
                 </div>
+              </div>
 
               </div>
             </div>
