@@ -10,7 +10,7 @@ env:
   IMAGE_NAME: inpayos-admin-frontend
   AWS_HOST: 13.127.163.14  # Prod1服务器IP
   API_HOST: 13.127.163.14
-  VERSION: ${{ env.VERSION }}
+  VERSION: prod-latest
 
 jobs:
   build:
