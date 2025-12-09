@@ -485,7 +485,12 @@ const convertBackendToFrontend = (backend: BackendTransactionInfo): TransactionI
       notifyType: r.notify_type,
       createdAt: timestampToISOString(r.created_at) || '',
       updatedAt: timestampToISOString(r.updated_at) || ''
-    }))
+    })),
+    // 通知相关字段
+    notifyUrl: backend.notify_url,
+    notifiedAt: timestampToISOString(backend.notified_at),
+    notifyStatus: backend.notify_status,
+    notifyCount: backend.notify_count
   };
 };
 
