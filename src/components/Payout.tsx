@@ -623,15 +623,10 @@ export function PayoutRecords() {
                         <label className="text-sm text-muted-foreground">渠道交易ID</label>
                         <p className="text-base font-semibold font-mono mt-1">{selectedRecord.channelTrxID || '-'}</p>
                       </div>
-                      <div>
-                        <label className="text-sm text-muted-foreground">渠道状态</label>
-                        <p className="mt-1">
-                          {(() => {
-                            const config = getChannelStatusBadgeConfig(selectedRecord.channelStatus);
-                            return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
-                          })()}
-                        </p>
-                      </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground">渠道状态</label>
+                      <p className="text-base font-semibold mt-1">{selectedRecord.channelStatus !== undefined && selectedRecord.channelStatus !== null ? String(selectedRecord.channelStatus) : '-'}</p>
+                    </div>
                     </div>
                     <div className="grid grid-cols-3 gap-4">
                       <div>
