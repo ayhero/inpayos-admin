@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Search, Download, RefreshCw } from 'lucide-react';
 import { DispatchHistory } from './DispatchHistory';
+import { MerchantSelector } from './MerchantSelector';
 import { 
   transactionService, 
   TransactionInfo, 
@@ -24,6 +25,7 @@ import { toast } from '../utils/toast';
 export function PayinRecords() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [merchantFilter, setMerchantFilter] = useState<string>('all');
   const [selectedRecord, setSelectedRecord] = useState<TransactionInfo | null>(null);
   const [records, setRecords] = useState<TransactionInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -102,6 +104,10 @@ export function PayinRecords() {
       // 添加筛选条件
       if (statusFilter !== 'all') {
         params.status = statusFilter as TransactionStatus;
+      }
+      if (merchantFilter !== 'all') {
+        params.uid = merchantFilter;
+        params.userType = 'merchant';
       }
       if (searchTerm) {
         params.keyword = searchTerm;
@@ -354,6 +360,11 @@ export function PayinRecords() {
                 />
               </div>
             </div>
+            <MerchantSelector
+              value={merchantFilter}
+              onChange={setMerchantFilter}
+              className="w-full md:w-64"
+            />
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full md:w-32">
                 <SelectValue placeholder="状态" />
@@ -376,6 +387,7 @@ export function PayinRecords() {
             <Button variant="outline" onClick={() => { 
               setSearchTerm('');
               setStatusFilter('all');
+              setMerchantFilter('all');
               setPagination(prev => ({ ...prev, page: 1 }));
               fetchRecords();
             }} disabled={loading}>
@@ -712,7 +724,7 @@ export function PayinRecords() {
                     </div>
                     <div>
                       <label className="text-sm text-muted-foreground">结算ID</label>
-                      <p className="text-base font-semibold font-mono mt-1">{selectedRecord.settleId || '-'}</p>
+                      <p className="text-base font-semibold font-mono mt-1">{selectedRecord.settleID || '-'}</p>
                     </div>
                     <div>
                       <label className="text-sm text-muted-foreground">结算时间</label>
@@ -772,7 +784,7 @@ export function PayinRecords() {
                   </div>
                   <div className="col-span-3">
                     <label className="text-sm text-muted-foreground">通知地址</label>
-                    <p className="text-base font-mono text-sm mt-1 break-all">{selectedRecord.notifyURL || '-'}</p>
+                    <p className="text-base font-mono text-sm mt-1 break-all">{selectedRecord.notifyUrl || '-'}</p>
                   </div>
                 </div>
               </div>

@@ -519,6 +519,9 @@ export const transactionService = {
       if (params.ccy) {
         queryParams.ccy = params.ccy;
       }
+      if (params.uid) {
+        queryParams.mid = params.uid; // 商户ID映射为后端的mid字段
+      }
       if (params.trxID) {
         queryParams.trx_id = params.trxID;
       }
