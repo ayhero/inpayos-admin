@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { DispatchHistory } from './DispatchHistory';
 import { MerchantSelector } from './MerchantSelector';
+import { DateTimePicker } from './ui/date-time-picker';
 import { Search, RefreshCw, X } from 'lucide-react';
 import { 
   transactionService, 
@@ -26,6 +27,8 @@ export function PayoutRecords() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [merchantFilter, setMerchantFilter] = useState<string>('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [selectedRecord, setSelectedRecord] = useState<TransactionInfo | null>(null);
   const [records, setRecords] = useState<TransactionInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -100,6 +103,13 @@ export function PayoutRecords() {
         page: pagination.page,
         pageSize: pagination.pageSize
       };
+
+      if (startDate) {
+        params.startDate = startDate;
+      }
+      if (endDate) {
+        params.endDate = endDate;
+      }
 
       // 添加筛选条件
       if (statusFilter !== 'all') {
@@ -340,53 +350,71 @@ export function PayoutRecords() {
       {/* 筛选和搜索 */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 md:flex-initial md:w-80">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="搜索交易ID..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                  maxLength={100}
-                />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 md:flex-initial md:w-80">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="搜索交易ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                    maxLength={100}
+                  />
+                </div>
+              </div>
+              <MerchantSelector
+                value={merchantFilter}
+                onChange={setMerchantFilter}
+                className="w-full md:w-64"
+              />
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full md:w-32">
+                  <SelectValue placeholder="状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">所有状态</SelectItem>
+                  <SelectItem value="success">成功</SelectItem>
+                  <SelectItem value="pending">处理中</SelectItem>
+                  <SelectItem value="failed">失败</SelectItem>
+                  <SelectItem value="cancelled">已取消</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col md:flex-row gap-4">
+              <DateTimePicker
+                value={startDate}
+                onChange={setStartDate}
+                placeholder="开始时间"
+              />
+              <DateTimePicker
+                value={endDate}
+                onChange={setEndDate}
+                placeholder="结束时间"
+              />
+              <div className="flex gap-2">
+                <Button onClick={() => {
+                  setPagination(prev => ({ ...prev, page: 1 }));
+                  fetchRecords();
+                }} disabled={loading}>
+                  <Search className="h-4 w-4 mr-2" />
+                  搜索
+                </Button>
+                <Button variant="outline" onClick={() => { 
+                  setSearchTerm('');
+                  setStatusFilter('all');
+                  setMerchantFilter('all');
+                  setStartDate('');
+                  setEndDate('');
+                  setPagination(prev => ({ ...prev, page: 1 }));
+                  fetchRecords();
+                }} disabled={loading}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  重置
+                </Button>
               </div>
             </div>
-            <MerchantSelector
-              value={merchantFilter}
-              onChange={setMerchantFilter}
-              className="w-full md:w-64"
-            />
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-32">
-                <SelectValue placeholder="状态" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">所有状态</SelectItem>
-                <SelectItem value="success">成功</SelectItem>
-                <SelectItem value="pending">处理中</SelectItem>
-                <SelectItem value="failed">失败</SelectItem>
-                <SelectItem value="cancelled">已取消</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button onClick={() => {
-              setPagination(prev => ({ ...prev, page: 1 }));
-              fetchRecords();
-            }} disabled={loading}>
-              <Search className="h-4 w-4 mr-2" />
-              搜索
-            </Button>
-            <Button variant="outline" onClick={() => { 
-              setSearchTerm('');
-              setStatusFilter('all');
-              setMerchantFilter('all');
-              setPagination(prev => ({ ...prev, page: 1 }));
-              fetchRecords();
-            }} disabled={loading}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              重置
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -590,20 +618,6 @@ export function PayoutRecords() {
                 <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                   <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-300 dark:border-gray-600">渠道信息</h3>
                   <div className="space-y-4">
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <label className="text-sm text-muted-foreground">渠道</label>
-                        <p className="text-base font-semibold mt-1">{getChannelCodeLabel(selectedRecord.channelCode)}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm text-muted-foreground">渠道账户</label>
-                        <p className="text-base font-semibold mt-1">{selectedRecord.channelAccount || '-'}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm text-muted-foreground">渠道组</label>
-                        <p className="text-base font-semibold mt-1">{selectedRecord.channelGroup || '-'}</p>
-                      </div>
-                    </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="text-sm text-muted-foreground">渠道交易ID</label>
@@ -617,6 +631,20 @@ export function PayoutRecords() {
                             return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
                           })()}
                         </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-sm text-muted-foreground">渠道</label>
+                        <p className="text-base font-semibold mt-1">{getChannelCodeLabel(selectedRecord.channelCode)}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">渠道账户</label>
+                        <p className="text-base font-semibold mt-1">{selectedRecord.channelAccount || '-'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">渠道组</label>
+                        <p className="text-base font-semibold mt-1">{selectedRecord.channelGroup || '-'}</p>
                       </div>
                     </div>
                   </div>

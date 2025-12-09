@@ -7,6 +7,7 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { DatePicker } from './ui/date-picker';
 import { ArrowUpRight, ArrowDownLeft, Plus, ArrowRightLeft, Minus, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -543,20 +544,20 @@ export function AccountBalance() {
                   <SelectItem value="debit">出账</SelectItem>
                 </SelectContent>
               </Select>
-              <div className="flex items-center gap-1 bg-gray-50 px-3 py-1 rounded-md border">
+              <div className="flex items-center gap-2">
                 <Label className="text-sm text-gray-600 whitespace-nowrap">从</Label>
-                <Input
-                  type="date"
-                  className="w-[140px] border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
+                <DatePicker
                   value={dateStartFilter}
-                  onChange={(e) => setDateStartFilter(e.target.value)}
+                  onChange={setDateStartFilter}
+                  placeholder="开始日期"
+                  className="w-[160px]"
                 />
                 <Label className="text-sm text-gray-600">至</Label>
-                <Input
-                  type="date"
-                  className="w-[140px] border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
+                <DatePicker
                   value={dateEndFilter}
-                  onChange={(e) => setDateEndFilter(e.target.value)}
+                  onChange={setDateEndFilter}
+                  placeholder="结束日期"
+                  className="w-[160px]"
                 />
               </div>
               <Button

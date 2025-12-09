@@ -7,9 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
-import { Search, Download, RefreshCw } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Search, Download, RefreshCw, CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { DispatchHistory } from './DispatchHistory';
 import { MerchantSelector } from './MerchantSelector';
+import { DayPicker } from 'react-day-picker';
+import { format } from 'date-fns';
+import { cn } from './ui/utils';
+import { buttonVariants } from './ui/button';
 import { 
   transactionService, 
   TransactionInfo, 
@@ -26,6 +31,8 @@ export function PayinRecords() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [merchantFilter, setMerchantFilter] = useState<string>('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [selectedRecord, setSelectedRecord] = useState<TransactionInfo | null>(null);
   const [records, setRecords] = useState<TransactionInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -100,6 +107,13 @@ export function PayinRecords() {
         page: pagination.page,
         pageSize: pagination.pageSize
       };
+
+      if (startDate) {
+        params.startDate = startDate;
+      }
+      if (endDate) {
+        params.endDate = endDate;
+      }
 
       // 添加筛选条件
       if (statusFilter !== 'all') {
@@ -347,53 +361,173 @@ export function PayinRecords() {
       {/* 筛选和搜索 */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 md:flex-initial md:w-80">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="搜索交易ID..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                  maxLength={100}
-                />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 md:flex-initial md:w-80">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="搜索交易ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                    maxLength={100}
+                  />
+                </div>
+              </div>
+              <MerchantSelector
+                value={merchantFilter}
+                onChange={setMerchantFilter}
+                className="w-full md:w-64"
+              />
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full md:w-32">
+                  <SelectValue placeholder="状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">所有状态</SelectItem>
+                  <SelectItem value="success">成功</SelectItem>
+                  <SelectItem value="pending">处理中</SelectItem>
+                  <SelectItem value="failed">失败</SelectItem>
+                  <SelectItem value="cancelled">已取消</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col md:flex-row gap-4">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[280px] justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(new Date(startDate), "PPP") : <span>开始时间</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <DayPicker
+                    mode="single"
+                    selected={startDate ? new Date(startDate) : undefined}
+                    onSelect={(date) => date && setStartDate(date.toISOString())}
+                    initialFocus
+                    className="p-3"
+                    classNames={{
+                      months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                      month: "space-y-4",
+                      caption: "flex justify-center pt-1 relative items-center",
+                      caption_label: "text-sm font-medium",
+                      nav: "space-x-1 flex items-center",
+                      nav_button: cn(
+                        buttonVariants({ variant: "outline" }),
+                        "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+                      ),
+                      nav_button_previous: "absolute left-1",
+                      nav_button_next: "absolute right-1",
+                      table: "w-full border-collapse space-y-1",
+                      head_row: "flex",
+                      head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+                      row: "flex w-full mt-2",
+                      cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                      day: cn(
+                        buttonVariants({ variant: "ghost" }),
+                        "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
+                      ),
+                      day_range_end: "day-range-end",
+                      day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                      day_today: "bg-accent text-accent-foreground",
+                      day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+                      day_disabled: "text-muted-foreground opacity-50",
+                      day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                      day_hidden: "invisible",
+                    }}
+                    components={{
+                      IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
+                      IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[280px] justify-start text-left font-normal",
+                      !endDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(new Date(endDate), "PPP") : <span>结束时间</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <DayPicker
+                    mode="single"
+                    selected={endDate ? new Date(endDate) : undefined}
+                    onSelect={(date) => date && setEndDate(date.toISOString())}
+                    initialFocus
+                    className="p-3"
+                    classNames={{
+                      months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                      month: "space-y-4",
+                      caption: "flex justify-center pt-1 relative items-center",
+                      caption_label: "text-sm font-medium",
+                      nav: "space-x-1 flex items-center",
+                      nav_button: cn(
+                        buttonVariants({ variant: "outline" }),
+                        "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+                      ),
+                      nav_button_previous: "absolute left-1",
+                      nav_button_next: "absolute right-1",
+                      table: "w-full border-collapse space-y-1",
+                      head_row: "flex",
+                      head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+                      row: "flex w-full mt-2",
+                      cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                      day: cn(
+                        buttonVariants({ variant: "ghost" }),
+                        "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
+                      ),
+                      day_range_end: "day-range-end",
+                      day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                      day_today: "bg-accent text-accent-foreground",
+                      day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+                      day_disabled: "text-muted-foreground opacity-50",
+                      day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                      day_hidden: "invisible",
+                    }}
+                    components={{
+                      IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
+                      IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+              <div className="flex gap-2">
+                <Button onClick={() => {
+                  setPagination(prev => ({ ...prev, page: 1 }));
+                  fetchRecords();
+                }} disabled={loading}>
+                  <Search className="h-4 w-4 mr-2" />
+                  搜索
+                </Button>
+                <Button variant="outline" onClick={() => { 
+                  setSearchTerm('');
+                  setStatusFilter('all');
+                  setMerchantFilter('all');
+                  setStartDate('');
+                  setEndDate('');
+                  setPagination(prev => ({ ...prev, page: 1 }));
+                  fetchRecords();
+                }} disabled={loading}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  重置
+                </Button>
               </div>
             </div>
-            <MerchantSelector
-              value={merchantFilter}
-              onChange={setMerchantFilter}
-              className="w-full md:w-64"
-            />
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-32">
-                <SelectValue placeholder="状态" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">所有状态</SelectItem>
-                <SelectItem value="success">成功</SelectItem>
-                <SelectItem value="pending">处理中</SelectItem>
-                <SelectItem value="failed">失败</SelectItem>
-                <SelectItem value="cancelled">已取消</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button onClick={() => {
-              setPagination(prev => ({ ...prev, page: 1 }));
-              fetchRecords();
-            }} disabled={loading}>
-              <Search className="h-4 w-4 mr-2" />
-              搜索
-            </Button>
-            <Button variant="outline" onClick={() => { 
-              setSearchTerm('');
-              setStatusFilter('all');
-              setMerchantFilter('all');
-              setPagination(prev => ({ ...prev, page: 1 }));
-              fetchRecords();
-            }} disabled={loading}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              重置
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -610,37 +744,37 @@ export function PayinRecords() {
                     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                       <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-300 dark:border-gray-600">渠道信息</h3>
                       <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm text-muted-foreground">渠道交易ID</label>
+                            <p className="text-base font-semibold font-mono mt-1">{selectedRecord.channelTrxID || '-'}</p>
+                          </div>
+                          <div>
+                            <label className="text-sm text-muted-foreground">渠道状态</label>
+                            <p className="mt-1">
+                              {(() => {
+                                const config = getChannelStatusBadgeConfig(selectedRecord.channelStatus);
+                                return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
+                              })()}
+                            </p>
+                          </div>
+                        </div>
                         <div className="grid grid-cols-3 gap-4">
                           <div>
                             <label className="text-sm text-muted-foreground">渠道</label>
                             <p className="text-base font-semibold mt-1">{getChannelCodeLabel(selectedRecord.channelCode)}</p>
                           </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground">渠道账户</label>
-                      <p className="text-base font-semibold mt-1">{selectedRecord.channelAccount || '-'}</p>
+                          <div>
+                            <label className="text-sm text-muted-foreground">渠道账户</label>
+                            <p className="text-base font-semibold mt-1">{selectedRecord.channelAccount || '-'}</p>
+                          </div>
+                          <div>
+                            <label className="text-sm text-muted-foreground">渠道组</label>
+                            <p className="text-base font-semibold mt-1">{selectedRecord.channelGroup || '-'}</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground">渠道组</label>
-                      <p className="text-base font-semibold mt-1">{selectedRecord.channelGroup || '-'}</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm text-muted-foreground">渠道交易ID</label>
-                      <p className="text-base font-semibold font-mono mt-1">{selectedRecord.channelTrxID || '-'}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground">渠道状态</label>
-                      <p className="mt-1">
-                        {(() => {
-                          const config = getChannelStatusBadgeConfig(selectedRecord.channelStatus);
-                          return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
-                        })()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {/* 3. 派单历史模块 - 仅在有派单记录时显示 */}
               {selectedRecord.dispatchHistory && selectedRecord.dispatchHistory.length > 0 && (

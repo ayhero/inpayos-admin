@@ -529,10 +529,10 @@ export const transactionService = {
         queryParams.req_id = params.reqID;
       }
       if (params.startDate) {
-        queryParams.created_at_start = Math.floor(new Date(params.startDate).getTime() / 1000);
+        queryParams.created_at_start = new Date(params.startDate).getTime();
       }
       if (params.endDate) {
-        queryParams.created_at_end = Math.floor(new Date(params.endDate).getTime() / 1000);
+        queryParams.created_at_end = new Date(params.endDate).getTime();
       }
 
       // 调用后端 API - 通过代理转发
