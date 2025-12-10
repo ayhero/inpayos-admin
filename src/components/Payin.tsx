@@ -8,14 +8,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { Search, Download, RefreshCw, CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar } from './ui/calendar';
+import { Search, Download, RefreshCw, CalendarIcon } from 'lucide-react';
 import { DispatchHistory } from './DispatchHistory';
 import { MerchantSelector } from './MerchantSelector';
 import { ChannelSelector } from './ChannelSelector';
-import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import { cn } from './ui/utils';
-import { buttonVariants } from './ui/button';
 import { 
   transactionService, 
   TransactionInfo, 
@@ -414,50 +414,38 @@ export function PayinRecords() {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {startDate ? format(new Date(startDate), "PPP") : <span>开始时间</span>}
+                    {startDate ? format(new Date(startDate), "yyyy年M月d日 HH:mm:ss", { locale: zhCN }) : <span>开始时间</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
-                  <DayPicker
-                    mode="single"
-                    selected={startDate ? new Date(startDate) : undefined}
-                    onSelect={(date) => date && setStartDate(date.toISOString())}
-                    initialFocus
-                    className="p-3"
-                    classNames={{
-                      months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                      month: "space-y-4",
-                      caption: "flex justify-center pt-1 relative items-center",
-                      caption_label: "text-sm font-medium",
-                      nav: "space-x-1 flex items-center",
-                      nav_button: cn(
-                        buttonVariants({ variant: "outline" }),
-                        "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-                      ),
-                      nav_button_previous: "absolute left-1",
-                      nav_button_next: "absolute right-1",
-                      table: "w-full border-collapse space-y-1",
-                      head_row: "flex",
-                      head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
-                      row: "flex w-full mt-2",
-                      cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                      day: cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
-                      ),
-                      day_range_end: "day-range-end",
-                      day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                      day_today: "bg-accent text-accent-foreground",
-                      day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
-                      day_disabled: "text-muted-foreground opacity-50",
-                      day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
-                      day_hidden: "invisible",
-                    }}
-                    components={{
-                      IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-                      IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-                    }}
-                  />
+                  <div className="flex flex-col">
+                    <Calendar
+                      mode="single"
+                      selected={startDate ? new Date(startDate) : undefined}
+                      onSelect={(date) => {
+                        if (date) {
+                          const current = startDate ? new Date(startDate) : new Date();
+                          date.setHours(current.getHours(), current.getMinutes(), current.getSeconds());
+                          setStartDate(date.toISOString());
+                        }
+                      }}
+                      initialFocus
+                    />
+                    <div className="border-t p-3 flex gap-2">
+                      <Input
+                        type="time"
+                        step="1"
+                        value={startDate ? format(new Date(startDate), "HH:mm:ss") : "00:00:00"}
+                        onChange={(e) => {
+                          const [hours, minutes, seconds] = e.target.value.split(':').map(Number);
+                          const date = startDate ? new Date(startDate) : new Date();
+                          date.setHours(hours, minutes, seconds || 0);
+                          setStartDate(date.toISOString());
+                        }}
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
                 </PopoverContent>
               </Popover>
               <Popover>
@@ -470,50 +458,38 @@ export function PayinRecords() {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {endDate ? format(new Date(endDate), "PPP") : <span>结束时间</span>}
+                    {endDate ? format(new Date(endDate), "yyyy年M月d日 HH:mm:ss", { locale: zhCN }) : <span>结束时间</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
-                  <DayPicker
-                    mode="single"
-                    selected={endDate ? new Date(endDate) : undefined}
-                    onSelect={(date) => date && setEndDate(date.toISOString())}
-                    initialFocus
-                    className="p-3"
-                    classNames={{
-                      months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                      month: "space-y-4",
-                      caption: "flex justify-center pt-1 relative items-center",
-                      caption_label: "text-sm font-medium",
-                      nav: "space-x-1 flex items-center",
-                      nav_button: cn(
-                        buttonVariants({ variant: "outline" }),
-                        "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-                      ),
-                      nav_button_previous: "absolute left-1",
-                      nav_button_next: "absolute right-1",
-                      table: "w-full border-collapse space-y-1",
-                      head_row: "flex",
-                      head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
-                      row: "flex w-full mt-2",
-                      cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                      day: cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
-                      ),
-                      day_range_end: "day-range-end",
-                      day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                      day_today: "bg-accent text-accent-foreground",
-                      day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
-                      day_disabled: "text-muted-foreground opacity-50",
-                      day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
-                      day_hidden: "invisible",
-                    }}
-                    components={{
-                      IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-                      IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-                    }}
-                  />
+                  <div className="flex flex-col">
+                    <Calendar
+                      mode="single"
+                      selected={endDate ? new Date(endDate) : undefined}
+                      onSelect={(date) => {
+                        if (date) {
+                          const current = endDate ? new Date(endDate) : new Date();
+                          date.setHours(current.getHours(), current.getMinutes(), current.getSeconds());
+                          setEndDate(date.toISOString());
+                        }
+                      }}
+                      initialFocus
+                    />
+                    <div className="border-t p-3 flex gap-2">
+                      <Input
+                        type="time"
+                        step="1"
+                        value={endDate ? format(new Date(endDate), "HH:mm:ss") : "23:59:59"}
+                        onChange={(e) => {
+                          const [hours, minutes, seconds] = e.target.value.split(':').map(Number);
+                          const date = endDate ? new Date(endDate) : new Date();
+                          date.setHours(hours, minutes, seconds || 0);
+                          setEndDate(date.toISOString());
+                        }}
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
                 </PopoverContent>
               </Popover>
               <div className="flex gap-2">
