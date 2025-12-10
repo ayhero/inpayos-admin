@@ -7,11 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Search, RefreshCw } from 'lucide-react';
 import { DispatchHistory } from './DispatchHistory';
 import { MerchantSelector } from './MerchantSelector';
 import { ChannelSelector } from './ChannelSelector';
 import { DateTimePicker } from './ui/date-time-picker';
-import { Search, RefreshCw, X } from 'lucide-react';
 import { 
   transactionService, 
   TransactionInfo, 
@@ -397,11 +397,13 @@ export function PayoutRecords() {
                 value={startDate}
                 onChange={setStartDate}
                 placeholder="开始时间"
+                defaultTime="00:00:00"
               />
               <DateTimePicker
                 value={endDate}
                 onChange={setEndDate}
                 placeholder="结束时间"
+                defaultTime="23:59:59"
               />
               <div className="flex gap-2">
                 <Button onClick={() => {
