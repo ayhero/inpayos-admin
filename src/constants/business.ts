@@ -66,6 +66,7 @@ export const CHANNEL_CODE_MAP: { [key: string]: string } = {
   'test': '测试',
   'cashier': '收银员',
   'anypay': 'Anypay',
+  'aympay': 'Aympay',
 };
 
 // 渠道选项
