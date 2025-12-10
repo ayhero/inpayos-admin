@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Search, Download, RefreshCw, CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { DispatchHistory } from './DispatchHistory';
 import { MerchantSelector } from './MerchantSelector';
+import { ChannelSelector } from './ChannelSelector';
 import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
 import { cn } from './ui/utils';
@@ -31,6 +32,7 @@ export function PayinRecords() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [merchantFilter, setMerchantFilter] = useState<string>('all');
+  const [channelFilter, setChannelFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedRecord, setSelectedRecord] = useState<TransactionInfo | null>(null);
@@ -122,6 +124,9 @@ export function PayinRecords() {
       if (merchantFilter !== 'all') {
         params.uid = merchantFilter;
         params.userType = 'merchant';
+      }
+      if (channelFilter !== 'all') {
+        params.channelCode = channelFilter;
       }
       if (searchTerm) {
         params.keyword = searchTerm;
@@ -380,6 +385,11 @@ export function PayinRecords() {
                 onChange={setMerchantFilter}
                 className="w-full md:w-64"
               />
+              <ChannelSelector
+                value={channelFilter}
+                onChange={setChannelFilter}
+                className="w-full md:w-40"
+              />
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full md:w-32">
                   <SelectValue placeholder="状态" />
@@ -543,6 +553,7 @@ export function PayinRecords() {
                 <TableHead>交易类型</TableHead>
                 <TableHead>金额</TableHead>
                 <TableHead>支付方式</TableHead>
+                <TableHead>渠道</TableHead>
                 <TableHead>派单轮数/结果</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead>通知状态</TableHead>
@@ -573,6 +584,7 @@ export function PayinRecords() {
                       {formatCurrencyForModal(record.amount, record.ccy, record.usdAmount)}
                     </TableCell>
                     <TableCell>{getTrxMethodLabel(record.trxMethod)}</TableCell>
+                    <TableCell>{getChannelCodeLabel(record.channelCode)}</TableCell>
                     <TableCell className="font-mono text-xs">{dispatchDisplay}</TableCell>
                     <TableCell>{getStatusBadge(record.status)}</TableCell>
                     <TableCell className="text-xs">

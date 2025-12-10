@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { DispatchHistory } from './DispatchHistory';
 import { MerchantSelector } from './MerchantSelector';
+import { ChannelSelector } from './ChannelSelector';
 import { DateTimePicker } from './ui/date-time-picker';
 import { Search, RefreshCw, X } from 'lucide-react';
 import { 
@@ -27,6 +28,7 @@ export function PayoutRecords() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [merchantFilter, setMerchantFilter] = useState<string>('all');
+  const [channelFilter, setChannelFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedRecord, setSelectedRecord] = useState<TransactionInfo | null>(null);
@@ -118,6 +120,9 @@ export function PayoutRecords() {
       if (merchantFilter !== 'all') {
         params.uid = merchantFilter;
         params.userType = 'merchant';
+      }
+      if (channelFilter !== 'all') {
+        params.channelCode = channelFilter;
       }
       if (searchTerm) {
         params.keyword = searchTerm;
@@ -369,6 +374,11 @@ export function PayoutRecords() {
                 onChange={setMerchantFilter}
                 className="w-full md:w-64"
               />
+              <ChannelSelector
+                value={channelFilter}
+                onChange={setChannelFilter}
+                className="w-full md:w-40"
+              />
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full md:w-32">
                   <SelectValue placeholder="状态" />
@@ -405,6 +415,7 @@ export function PayoutRecords() {
                   setSearchTerm('');
                   setStatusFilter('all');
                   setMerchantFilter('all');
+                  setChannelFilter('all');
                   setStartDate('');
                   setEndDate('');
                   setPagination(prev => ({ ...prev, page: 1 }));
@@ -430,6 +441,7 @@ export function PayoutRecords() {
                 <TableHead>交易类型</TableHead>
                 <TableHead>金额</TableHead>
                 <TableHead>支付方式</TableHead>
+                <TableHead>渠道</TableHead>
                 <TableHead>派单轮数/结果</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead>通知状态</TableHead>
@@ -460,6 +472,7 @@ export function PayoutRecords() {
                       {formatCurrencyForModal(record.amount, record.ccy, record.usdAmount)}
                     </TableCell>
                     <TableCell>{getTrxMethodLabel(record.trxMethod)}</TableCell>
+                    <TableCell>{getChannelCodeLabel(record.channelCode)}</TableCell>
                     <TableCell className="font-mono text-xs">{dispatchDisplay}</TableCell>
                     <TableCell>{getStatusBadge(record.status)}</TableCell>
                     <TableCell className="text-xs">
