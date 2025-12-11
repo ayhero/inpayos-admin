@@ -37,13 +37,6 @@ export enum TransactionStatus {
   OFF = 'off'
 }
 
-// 渠道状态枚举
-export enum ChannelStatus {
-  PENDING = 0,
-  SUCCESS = 1,
-  FAILED = 2
-}
-
 // 结算状态枚举
 export enum SettleStatus {
   PENDING = 0,
@@ -268,7 +261,7 @@ export interface TransactionInfo {
   oriTrxID?: string;
   oriReqID?: string;
   status: TransactionStatus;
-  channelStatus?: ChannelStatus;
+  channelStatus?: string;
   resCode?: string;
   resMsg?: string;
   reason?: string;
@@ -377,7 +370,7 @@ const convertBackendToFrontend = (backend: BackendTransactionInfo): TransactionI
     oriTrxID: backend.ori_trx_id,
     oriReqID: backend.ori_req_id,
     status: backend.status as TransactionStatus,
-    channelStatus: backend.channel_status ? parseInt(backend.channel_status) as ChannelStatus : undefined,
+    channelStatus: backend.channel_status,
     resCode: backend.res_code,
     resMsg: backend.res_msg,
     reason: backend.reason,
