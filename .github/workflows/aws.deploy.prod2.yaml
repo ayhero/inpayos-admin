@@ -68,7 +68,7 @@ jobs:
     needs: build
     
     steps:
-    - name: Deploy to Prod1 Server
+    - name: Deploy to Prod2 Server
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ env.AWS_HOST }}
