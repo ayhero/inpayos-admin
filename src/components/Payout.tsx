@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
-import { Search, RefreshCw } from 'lucide-react';
+import { Search, RefreshCw, Download, Loader2 } from 'lucide-react';
 import { DispatchHistory } from './DispatchHistory';
 import { MerchantSelector } from './MerchantSelector';
 import { ChannelSelector } from './ChannelSelector';
@@ -20,6 +20,7 @@ import {
   TransactionQueryParams,
   TodayStats 
 } from '../services/transactionService';
+import { exportService } from '../services/exportService';
 import { getStatusDisplayName, getStatusColor, getTrxTypeBadgeConfig, getChannelStatusBadgeConfig, getSettleStatusBadgeConfig } from '../constants/status';
 import { getTrxMethodLabel, getChannelCodeLabel } from '../constants/business';
 import { toast } from '../utils/toast';
@@ -66,6 +67,10 @@ export function PayoutRecords() {
   const [secondConfirmOpen, setSecondConfirmOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [confirmError, setConfirmError] = useState<string>('');
+
+  // 导出相关状态
+  const [exporting, setExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState<{ message: string; progress: number } | null>(null);
 
   // 获取今日统计
   const fetchTodayStats = async () => {
@@ -298,6 +303,65 @@ export function PayoutRecords() {
     setConfirmError('');
   };
 
+  // 导出交易数据
+  const handleExport = async () => {
+    setExporting(true);
+    setExportProgress({ message: '准备导出...', progress: 0 });
+
+    try {
+      const queryParams: Record<string, any> = {};
+
+      // 添加时间范围
+      if (startDate) {
+        queryParams.start_date = startDate;
+      }
+      if (endDate) {
+        queryParams.end_date = endDate;
+      }
+
+      // 添加筛选条件
+      if (statusFilter !== 'all') {
+        queryParams.status = statusFilter;
+      }
+      if (merchantFilter !== 'all') {
+        queryParams.mid = merchantFilter;
+      }
+      if (searchTerm) {
+        queryParams.keyword = searchTerm;
+      }
+
+      await exportService.exportAndDownload(
+        {
+          template_id: 'transaction_payout',
+          format: 'csv',
+          columns: [
+            'trx_id',
+            'mid',
+            'req_id',
+            'amount',
+            'ccy',
+            'bank_name',
+            'card_number',
+            'status',
+            'created_at'
+          ],
+          query_params: queryParams
+        },
+        (message, progress) => {
+          setExportProgress({ message, progress: progress || 0 });
+        }
+      );
+
+      toast.success('导出成功');
+    } catch (error) {
+      console.error('导出失败:', error);
+      toast.error(error instanceof Error ? error.message : '导出失败，请重试');
+    } finally {
+      setExporting(false);
+      setExportProgress(null);
+    }
+  };
+
 
 
   return (
@@ -425,6 +489,23 @@ export function PayoutRecords() {
                 }} disabled={loading}>
                   <RefreshCw className="h-4 w-4 mr-2" />
                   重置
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleExport} 
+                  disabled={exporting || loading}
+                >
+                  {exporting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {exportProgress?.message || '导出中...'}
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      导出
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
