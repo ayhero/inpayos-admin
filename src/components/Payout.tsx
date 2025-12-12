@@ -334,17 +334,6 @@ export function PayoutRecords() {
         {
           template_id: 'transaction_payout',
           format: 'csv',
-          columns: [
-            'trx_id',
-            'mid',
-            'req_id',
-            'amount',
-            'ccy',
-            'bank_name',
-            'card_number',
-            'status',
-            'created_at'
-          ],
           query_params: queryParams
         },
         (message, progress) => {

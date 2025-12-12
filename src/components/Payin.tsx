@@ -343,19 +343,6 @@ export function PayinRecords() {
         {
           template_id: 'transaction_payin',
           format: 'csv',
-          columns: [
-            'trx_id',
-            'mid',
-            'req_id',
-            'amount',
-            'ccy',
-            'fee_amount',
-            'settle_amount',
-            'settle_status',
-            'status',
-            'created_at',
-            'completed_at'
-          ],
           query_params: queryParams
         },
         (message, progress) => {
