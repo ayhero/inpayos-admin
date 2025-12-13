@@ -72,31 +72,38 @@ export function PayinRecords() {
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState<{ message: string; progress: number } | null>(null);
 
-  // 获取今日统计
+  // 获取今日和昨日统计
   const fetchTodayStats = async () => {
     try {
       const response = await transactionService.getTodayStats(TransactionType.PAYIN);
+
       if (response.success) {
         setTodayStats(response.data);
       } else {
-        // API调用成功但返回失败时，显示默认数据
         setTodayStats({
           totalAmount: '0.00',
           totalCount: 0,
           successCount: 0,
           successRate: 0,
-          pendingCount: 0
+          pendingCount: 0,
+          yesterdayTotalAmount: '0.00',
+          yesterdayTotalCount: 0,
+          yesterdaySuccessCount: 0,
+          yesterdaySuccessRate: 0
         });
       }
     } catch (error) {
-      console.error('获取今日统计失败:', error);
-      // 网络错误时也显示默认数据
+      console.error('获取统计失败:', error);
       setTodayStats({
         totalAmount: '0.00',
         totalCount: 0,
         successCount: 0,
         successRate: 0,
-        pendingCount: 0
+        pendingCount: 0,
+        yesterdayTotalAmount: '0.00',
+        yesterdayTotalCount: 0,
+        yesterdaySuccessCount: 0,
+        yesterdaySuccessRate: 0
       });
     }
   };
@@ -371,12 +378,14 @@ export function PayinRecords() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">今日代收总额</CardTitle>
+              <CardTitle className="text-sm font-medium">总额</CardTitle>
               <div className="h-4 w-4 text-muted-foreground">₹</div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₹{parseInt(todayStats.totalAmount).toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">{todayStats.totalCount}笔交易</p>
+              <div className="text-2xl font-bold">₹{parseFloat(todayStats.totalAmount || '0').toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+              <p className="text-xs text-muted-foreground">
+                {todayStats.totalCount}笔 | 昨日 ₹{parseFloat(todayStats.yesterdayTotalAmount || '0').toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ({todayStats.yesterdayTotalCount}笔)
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -385,18 +394,20 @@ export function PayinRecords() {
               <div className="h-4 w-4 text-muted-foreground">%</div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{todayStats.successRate}%</div>
-              <p className="text-xs text-muted-foreground">{todayStats.successCount}/{todayStats.totalCount} 成功</p>
+              <div className="text-2xl font-bold">{(todayStats.successRate || 0).toFixed(2)}%</div>
+              <p className="text-xs text-muted-foreground">
+                {todayStats.successCount}/{todayStats.totalCount} | 昨日 {(todayStats.yesterdaySuccessRate || 0).toFixed(2)}%
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">代收笔数</CardTitle>
+              <CardTitle className="text-sm font-medium">总数</CardTitle>
               <div className="h-4 w-4 text-muted-foreground">#</div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{todayStats.totalCount}</div>
-              <p className="text-xs text-muted-foreground">今日交易</p>
+              <p className="text-xs text-muted-foreground">昨日 {todayStats.yesterdayTotalCount}笔</p>
             </CardContent>
           </Card>
           <Card>
@@ -406,7 +417,7 @@ export function PayinRecords() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{todayStats.pendingCount}</div>
-              <p className="text-xs text-muted-foreground">需要关注</p>
+              <p className="text-xs text-muted-foreground">待处理</p>
             </CardContent>
           </Card>
         </div>

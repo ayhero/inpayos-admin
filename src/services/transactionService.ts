@@ -355,6 +355,11 @@ export interface TodayStats {
   successCount: number;
   successRate: number;
   pendingCount: number;
+  // 昨日统计数据
+  yesterdayTotalAmount: string;
+  yesterdayTotalCount: number;
+  yesterdaySuccessCount: number;
+  yesterdaySuccessRate: number;
 }
 
 // 时间戳转换为 ISO 字符串的辅助函数
