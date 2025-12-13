@@ -23,15 +23,31 @@ export interface ExportJobInfo {
     total_count?: number;
     processed_count?: number;
     file_size?: number;
+    error_message?: string;  // 错误信息
+    stage?: string;
   };
 }
 
+// 前端使用的导出任务类型
+export interface ExportJob {
+  jobId: string;
+  templateId: string;
+  filename: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  createdAt: number;
+  updatedAt: number;
+  downloadUrl?: string;
+  totalCount?: number;
+  processedCount?: number;
+  fileSize?: number;
+  errorMessage?: string;
+}
+
 export interface ExportJobListResponse {
-  items: ExportJobInfo[];
+  list: ExportJobInfo[];  // 后端返回的是 list 不是 items
   total: number;
   page: number;
-  pageSize: number;
-  totalPages: number;
+  size: number;  // 后端返回的是 size 不是 pageSize
 }
 
 export interface ApiResponse<T = any> {
@@ -42,6 +58,23 @@ export interface ApiResponse<T = any> {
 }
 
 class ExportService {
+  // 转换后端任务格式到前端格式
+  private convertJob(job: ExportJobInfo): ExportJob {
+    return {
+      jobId: job.task_id,
+      templateId: job.params.template_id,
+      filename: job.params.filename,
+      status: job.status as 'pending' | 'processing' | 'completed' | 'failed',
+      createdAt: job.created_at,
+      updatedAt: job.updated_at,
+      downloadUrl: job.params.download_url,
+      totalCount: job.params.total_count,
+      processedCount: job.params.processed_count,
+      fileSize: job.params.file_size,
+      errorMessage: job.params.error_message || (job.status === 'failed' ? '导出失败' : undefined)
+    };
+  }
+
   // 创建导出任务
   async createExport(params: ExportRequest): Promise<ApiResponse<ExportJobInfo>> {
     const response = await apiClient.post<ApiResponse<ExportJobInfo>>('/system/export/create', params);
@@ -56,13 +89,37 @@ class ExportService {
     return response.data;
   }
 
-  // 获取导出任务列表
-  async getExportJobs(page: number = 1, pageSize: number = 20): Promise<ApiResponse<ExportJobListResponse>> {
-    const response = await apiClient.post<ApiResponse<ExportJobListResponse>>('/system/export/list', {
-      page_index: page,
-      page_size: pageSize
-    });
-    return response.data;
+  // 获取导出任务列表（返回前端格式）
+  async getExportJobs(page: number = 1, pageSize: number = 20): Promise<ApiResponse<ExportJob[]>> {
+    try {
+      const response = await apiClient.post<ApiResponse<ExportJobListResponse>>('/system/export/list', {
+        page_index: page,
+        page_size: pageSize
+      });
+      
+      if (response.data.success && response.data.data && response.data.data.list) {
+        const jobs = response.data.data.list.map(job => this.convertJob(job));
+        return {
+          ...response.data,
+          data: jobs
+        };
+      }
+      
+      return {
+        code: response.data.code || '500',
+        msg: response.data.msg || '获取失败',
+        success: false,
+        data: []
+      };
+    } catch (error) {
+      console.error('获取导出任务列表失败:', error);
+      return {
+        code: '500',
+        msg: '获取失败',
+        success: false,
+        data: []
+      };
+    }
   }
 
   // 删除导出任务

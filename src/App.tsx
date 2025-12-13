@@ -3,8 +3,10 @@ import { Button } from './components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/ui/dialog';
+import { Badge } from './components/ui/badge';
 import { useAuthStore, User as UserType } from './store/authStore';
 import { UserService, UserInfo } from './services/userService';
+import { exportService, ExportJob } from './services/exportService';
 import { 
   Home, 
   ArrowDownLeft, 
@@ -25,7 +27,8 @@ import {
   Route,
   Percent,
   Database,
-  ChevronDown
+  ChevronDown,
+  Download
 } from 'lucide-react';
 
 import { AuthContainer } from './components/AuthContainer';
@@ -34,6 +37,7 @@ import { PayinRecords } from './components/Payin';
 import { PayoutRecords } from './components/Payout';
 import { DepositRecords } from './components/DepositRecords';
 import { WithdrawRecords } from './components/WithdrawRecords';
+import { ExportSpace } from './components/ExportSpace';
 // import { Config } from './components/Config';
 // import { RefundRecords } from './components/RefundRecords';
 // import { RechargeRecords } from './components/RechargeRecords';
@@ -59,13 +63,16 @@ import { ChannelGroupManagement } from './components/ChannelGroupManagement';
 import DictionaryManagement from './components/DictionaryManagement';
 import { DispatchStrategyManagement } from './components/DispatchStrategyManagement';
 import { CommissionManagementPage } from './components/CommissionManagementPage';
+import { TransactionArchive } from './components/TransactionArchive';
 
 export default function App() {
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showChangePasswordDialog, setShowChangePasswordDialog] = useState(false);
+  const [showExportSpace, setShowExportSpace] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [merchantInfo, setMerchantInfo] = useState<UserInfo | null>(null);
+  const [processingExportsCount, setProcessingExportsCount] = useState(0);
   const { isLoggedIn, currentUser, login, logout } = useAuthStore();
 
   const handleLogin = (userInfo: UserType, token: string, refreshToken?: string) => {
@@ -99,6 +106,33 @@ export default function App() {
           console.error('获取商户信息失败:', error);
         });
     }
+  }, [isLoggedIn]);
+
+  // 定期检查导出任务状态
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const checkExports = async () => {
+      try {
+        const response = await exportService.getExportJobs(1, 50);
+        if (response.success && response.data) {
+          const processing = response.data.filter(
+            (job: ExportJob) => job.status === 'pending' || job.status === 'processing'
+          );
+          setProcessingExportsCount(processing.length);
+        }
+      } catch (error) {
+        console.error('检查导出任务失败:', error);
+      }
+    };
+
+    // 立即执行一次
+    checkExports();
+
+    // 每10秒检查一次
+    const interval = setInterval(checkExports, 10000);
+
+    return () => clearInterval(interval);
   }, [isLoggedIn]);
 
   // 切换菜单组折叠状态
@@ -200,6 +234,12 @@ export default function App() {
           label: '渠道组',
           icon: Route,
           component: ChannelGroupManagement
+        },
+        {
+          id: 'transaction-archive',
+          label: '交易存档',
+          icon: Database,
+          component: TransactionArchive
         }
       ]
     },
@@ -361,6 +401,22 @@ export default function App() {
               </Button>
               
               <div className="flex-1" />
+
+              {/* 导出空间按钮 */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowExportSpace(true)}
+                className="relative gap-2"
+              >
+                <Download className="h-4 w-4" />
+                <span>下载历史</span>
+                {processingExportsCount > 0 && (
+                  <Badge variant="destructive" className="ml-1 h-5 min-w-5 px-1">
+                    {processingExportsCount}
+                  </Badge>
+                )}
+              </Button>
               
               {/* 用户菜单 */}
               <DropdownMenu>
@@ -421,6 +477,12 @@ export default function App() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* 导出空间弹窗 */}
+      <ExportSpace 
+        open={showExportSpace} 
+        onOpenChange={setShowExportSpace}
+      />
     </>
   );
 }

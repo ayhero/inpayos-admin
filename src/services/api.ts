@@ -113,4 +113,5 @@ export const api = {
     apiClient.patch(url, data, config).then((res: any) => res.data),
 };
 
+export { apiClient };
 export default apiClient;
